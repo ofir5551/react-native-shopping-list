@@ -1,0 +1,36 @@
+import React from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { ShoppingItem } from '../types';
+import { styles } from '../styles/appStyles';
+
+type ItemRowProps = {
+  item: ShoppingItem;
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+};
+
+export const ItemRow = ({ item, onToggle, onDelete }: ItemRowProps) => (
+  <View style={styles.listItem}>
+    <Pressable
+      style={[styles.checkbox, item.purchased && styles.checkboxChecked]}
+      onPress={() => onToggle(item.id)}
+    >
+      {item.purchased && <Text style={styles.checkmark}>✓</Text>}
+    </Pressable>
+
+    <Pressable style={styles.itemTextWrap} onPress={() => onToggle(item.id)}>
+      <Text
+        style={[
+          styles.itemText,
+          item.purchased && styles.itemTextPurchased,
+        ]}
+      >
+        {item.name}
+      </Text>
+    </Pressable>
+
+    <Pressable style={styles.deleteButton} onPress={() => onDelete(item.id)}>
+      <Text style={styles.deleteButtonText}>Delete</Text>
+    </Pressable>
+  </View>
+);
