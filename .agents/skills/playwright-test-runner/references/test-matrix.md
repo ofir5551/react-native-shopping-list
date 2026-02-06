@@ -1,0 +1,11 @@
+Suggested coverage matrix for this app:
+- Add single item
+- Add multiple items
+- Toggle item complete/incomplete
+- Delete item
+- Recents populate after add
+- Recents dedupe
+- Recents cap at 12
+- Persistence survives reload
+- Empty state rendering
+- Modal open/close and keyboard submit behavior

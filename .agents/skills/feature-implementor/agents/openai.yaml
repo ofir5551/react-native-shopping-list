@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature Implementor"
+  short_description: "Implement Expo RN features safely"
+  default_prompt: "Use $feature-implementor to implement this request while preserving hydration, storage keys, and recents behavior."

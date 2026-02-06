@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Commit Push"
+  short_description: "Write commit message and push"
+  default_prompt: "Use $gh-commit-push to inspect diffs, write a precise commit message, commit, and push." 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Playwright Test Runner"
+  short_description: "Run extensive Playwright app tests"
+  default_prompt: "Use $playwright-test-runner to run extensive UI and regression tests, then report failures with artifacts."
