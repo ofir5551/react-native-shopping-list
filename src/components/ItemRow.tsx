@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { ShoppingItem } from '../types';
 import { styles } from '../styles/appStyles';
 
@@ -30,7 +31,7 @@ export const ItemRow = ({ item, onToggle, onDelete }: ItemRowProps) => (
     </Pressable>
 
     <Pressable style={styles.deleteButton} onPress={() => onDelete(item.id)}>
-      <Text style={styles.deleteButtonText}>Delete</Text>
+      <Feather name="trash-2" size={18} color="#9a3d3d" />
     </Pressable>
   </View>
 );

@@ -1,44 +1,90 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ShoppingItem } from './types';
+import { AppRoute, ShoppingItem, ShoppingList } from './types';
+import { sanitizeRecents } from './utils/recents';
 
-const STORAGE_KEY = '@shopping_list_items';
-const RECENTS_KEY = '@shopping_list_recent';
+const LISTS_KEY = '@shopping_lists_v2';
+const ROUTE_KEY = '@shopping_route_v1';
 
-export async function loadItems(): Promise<ShoppingItem[]> {
+const isShoppingItem = (value: unknown): value is ShoppingItem => {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<ShoppingItem>;
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.purchased === 'boolean' &&
+    typeof candidate.createdAt === 'number'
+  );
+};
+
+const isShoppingList = (value: unknown): value is ShoppingList => {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<ShoppingList>;
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.createdAt === 'number' &&
+    typeof candidate.updatedAt === 'number' &&
+    Array.isArray(candidate.items) &&
+    candidate.items.every(isShoppingItem) &&
+    Array.isArray(candidate.recents) &&
+    candidate.recents.every((item) => typeof item === 'string')
+  );
+};
+
+const normalizeList = (list: ShoppingList): ShoppingList => ({
+  ...list,
+  recents: sanitizeRecents(list.recents),
+});
+
+const parseRoute = (raw: string | null): AppRoute | null => {
+  if (!raw) return null;
   try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    const parsed = JSON.parse(raw);
+    if (parsed?.name === 'lists') return { name: 'lists' };
+    if (parsed?.name === 'list' && typeof parsed.listId === 'string') {
+      return { name: 'list', listId: parsed.listId };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+export async function loadLists(): Promise<ShoppingList[]> {
+  try {
+    const raw = await AsyncStorage.getItem(LISTS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed as ShoppingItem[];
+    return parsed.filter(isShoppingList).map(normalizeList);
   } catch {
     return [];
   }
 }
 
-export async function saveItems(items: ShoppingItem[]): Promise<void> {
+export async function saveLists(lists: ShoppingList[]): Promise<void> {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    await AsyncStorage.setItem(
+      LISTS_KEY,
+      JSON.stringify(lists.map(normalizeList))
+    );
   } catch {
     // Ignore write errors for prototype reliability
   }
 }
 
-export async function loadRecents(): Promise<string[]> {
+export async function loadRoute(): Promise<AppRoute | null> {
   try {
-    const raw = await AsyncStorage.getItem(RECENTS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item) => typeof item === 'string');
+    const raw = await AsyncStorage.getItem(ROUTE_KEY);
+    return parseRoute(raw);
   } catch {
-    return [];
+    return null;
   }
 }
 
-export async function saveRecents(items: string[]): Promise<void> {
+export async function saveRoute(route: AppRoute): Promise<void> {
   try {
-    await AsyncStorage.setItem(RECENTS_KEY, JSON.stringify(items));
+    await AsyncStorage.setItem(ROUTE_KEY, JSON.stringify(route));
   } catch {
     // Ignore write errors for prototype reliability
   }

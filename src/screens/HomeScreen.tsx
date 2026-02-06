@@ -1,16 +1,29 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { SafeAreaView } from 'react-native';
-import { EmptyState } from '../components/EmptyState';
-import { Fab } from '../components/Fab';
-import { Header } from '../components/Header';
-import { OverlayModal } from '../components/OverlayModal';
-import { ShoppingList } from '../components/ShoppingList';
-import { useShoppingList } from '../hooks/useShoppingList';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, BackHandler, SafeAreaView, View } from 'react-native';
+import { useShoppingListsApp } from '../hooks/useShoppingListsApp';
+import { ListsScreen } from './ListsScreen';
+import { ShoppingListScreen } from './ShoppingListScreen';
 import { styles } from '../styles/appStyles';
 
 export const HomeScreen = () => {
   const {
+    isHydrated,
+    route,
+    lists,
+    currentList,
+    openList,
+    goToLists,
+    isListNameModalOpen,
+    listNameMode,
+    listNameInput,
+    listNameError,
+    setListNameInput,
+    openCreateListModal,
+    openRenameListModal,
+    closeListNameModal,
+    submitListName,
+    deleteList,
     hasItems,
     activeItems,
     completedItems,
@@ -29,45 +42,76 @@ export const HomeScreen = () => {
     handleToggle,
     handleDelete,
     handleClearAll,
-  } = useShoppingList();
+  } = useShoppingListsApp();
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (route.name === 'list') {
+          goToLists();
+          return true;
+        }
+        return false;
+      }
+    );
+
+    return () => subscription.remove();
+  }, [route.name, goToLists]);
+
+  if (!isHydrated) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator size="large" color="#1f7a5a" />
+        </View>
+        <StatusBar style="dark" />
+      </SafeAreaView>
+    );
+  }
+
+  if (route.name === 'lists' || !currentList) {
+    return (
+      <ListsScreen
+        lists={lists}
+        onOpenList={openList}
+        onOpenCreateListModal={openCreateListModal}
+        onOpenRenameListModal={openRenameListModal}
+        onDeleteList={deleteList}
+        isListNameModalOpen={isListNameModalOpen}
+        listNameMode={listNameMode}
+        listNameInput={listNameInput}
+        listNameError={listNameError}
+        onChangeListName={setListNameInput}
+        onCloseListNameModal={closeListNameModal}
+        onSubmitListName={submitListName}
+      />
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header
-        title="Shopping List"
-        subtitle="Simple, fast, and focused"
-        onClearAll={handleClearAll}
-      />
-
-      {!hasItems && <EmptyState />}
-
-      {hasItems && (
-        <ShoppingList
-          activeItems={activeItems}
-          completedItems={completedItems}
-          showCompleted={showCompleted}
-          onToggleCompleted={() => setShowCompleted(!showCompleted)}
-          onToggleItem={handleToggle}
-          onDeleteItem={handleDelete}
-        />
-      )}
-
-      <Fab onPress={openOverlay} />
-
-      <OverlayModal
-        visible={isOverlayOpen}
-        overlayInput={overlayInput}
-        onChangeInput={setOverlayInput}
-        onAddInput={handleOverlayAdd}
-        recentItems={recentItems}
-        selectedRecent={selectedRecent}
-        onToggleRecent={handleToggleRecent}
-        onAddSelected={handleAddSelected}
-        onClose={closeOverlay}
-      />
-
-      <StatusBar style="auto" />
-    </SafeAreaView>
+    <ShoppingListScreen
+      listName={currentList.name}
+      hasItems={hasItems}
+      activeItems={activeItems}
+      completedItems={completedItems}
+      showCompleted={showCompleted}
+      setShowCompleted={setShowCompleted}
+      isOverlayOpen={isOverlayOpen}
+      openOverlay={openOverlay}
+      closeOverlay={closeOverlay}
+      overlayInput={overlayInput}
+      setOverlayInput={setOverlayInput}
+      recentItems={recentItems}
+      selectedRecent={selectedRecent}
+      handleOverlayAdd={handleOverlayAdd}
+      handleAddSelected={handleAddSelected}
+      handleToggleRecent={handleToggleRecent}
+      handleToggle={handleToggle}
+      handleDelete={handleDelete}
+      handleClearAll={handleClearAll}
+      onBack={goToLists}
+    />
   );
 };
 

@@ -17,10 +17,17 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
   title: {
     fontSize: 32,
     fontWeight: '700',
     color: '#1f1f1f',
+    flexShrink: 1,
   },
   subtitle: {
     marginTop: 6,
@@ -36,6 +43,22 @@ export const styles = StyleSheet.create({
   clearButtonText: {
     color: '#9a3d3d',
     fontWeight: '600',
+  },
+  secondaryButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: '#f0e6df',
+    marginRight: 10,
+  },
+  secondaryButtonText: {
+    color: '#4a4a4a',
+    fontWeight: '600',
+  },
+  loadingWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputRow: {
     flexDirection: 'row',
@@ -82,10 +105,61 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
     color: '#7b7b7b',
+    textAlign: 'center',
+  },
+  listsEmptyState: {
+    marginTop: 40,
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
   list: {
     paddingTop: 16,
     paddingBottom: 140,
+  },
+  listCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  listCardMain: {
+    marginBottom: 10,
+  },
+  listCardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2a2a2a',
+  },
+  listCardMeta: {
+    marginTop: 4,
+    fontSize: 13,
+    color: '#7a7a7a',
+  },
+  listCardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  listCardActionButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: '#f0e6df',
+    marginLeft: 8,
+  },
+  listCardActionText: {
+    color: '#4a4a4a',
+    fontWeight: '600',
+  },
+  listCardDeleteText: {
+    color: '#9a3d3d',
+    fontWeight: '600',
   },
   completedSection: {
     marginTop: 4,
@@ -154,13 +228,8 @@ export const styles = StyleSheet.create({
   },
   deleteButton: {
     paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    backgroundColor: '#f0e6df',
-  },
-  deleteButtonText: {
-    color: '#9a3d3d',
-    fontWeight: '600',
+    paddingHorizontal: 6,
+    opacity: 0.5,
   },
   fab: {
     position: 'absolute',
@@ -282,6 +351,73 @@ export const styles = StyleSheet.create({
   addSelectedButtonText: {
     color: '#ffffff',
     fontSize: 16,
+    fontWeight: '700',
+  },
+  nameModalContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+  },
+  nameModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  nameModalCard: {
+    width: '100%',
+    borderRadius: 18,
+    backgroundColor: '#fdfaf6',
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    paddingBottom: 14,
+    borderWidth: 1,
+    borderColor: '#efe6df',
+  },
+  nameModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1f1f1f',
+    marginBottom: 12,
+  },
+  nameModalInput: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2d4c6',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: '#222222',
+  },
+  nameModalError: {
+    marginTop: 8,
+    fontSize: 13,
+    color: '#9a3d3d',
+  },
+  nameModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 14,
+  },
+  nameModalCancelButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#f0e6df',
+    marginRight: 8,
+  },
+  nameModalCancelText: {
+    color: '#4a4a4a',
+    fontWeight: '600',
+  },
+  nameModalSubmitButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#1f7a5a',
+  },
+  nameModalSubmitText: {
+    color: '#ffffff',
     fontWeight: '700',
   },
 });
