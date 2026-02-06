@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Keyboard } from 'react-native';
 import {
   loadLists,
   loadRoute,
@@ -282,7 +281,6 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       current.includes(name) ? current : [...current, name]
     );
     setOverlayInput('');
-    Keyboard.dismiss();
   };
 
   const handleAddSelected = () => {
