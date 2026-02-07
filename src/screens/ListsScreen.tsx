@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Alert, FlatList, Pressable, SafeAreaView, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Fab } from '../components/Fab';
 import { ListNameModal } from '../components/ListNameModal';
 import { Header } from '../components/Header';
@@ -82,14 +83,18 @@ export const ListsScreen = ({
                   <Pressable
                     style={styles.listCardActionButton}
                     onPress={() => onOpenRenameListModal(item.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Rename ${item.name}`}
                   >
-                    <Text style={styles.listCardActionText}>Rename</Text>
+                    <Ionicons name="create-outline" size={18} color="#4a4a4a" />
                   </Pressable>
                   <Pressable
                     style={styles.listCardActionButton}
                     onPress={() => handleDeleteList(item.id, item.name)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Delete ${item.name}`}
                   >
-                    <Text style={styles.listCardDeleteText}>Delete</Text>
+                    <Ionicons name="trash-outline" size={18} color="#9a3d3d" />
                   </Pressable>
                 </View>
               </View>

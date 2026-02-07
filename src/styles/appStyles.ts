@@ -23,6 +23,10 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginRight: 12,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 32,
     fontWeight: '700',
@@ -54,6 +58,14 @@ export const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#4a4a4a',
     fontWeight: '600',
+  },
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#f0e6df',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingWrap: {
     flex: 1,
@@ -279,6 +291,47 @@ export const styles = StyleSheet.create({
   modalContent: {
     flex: 1,
   },
+  selectedTray: {
+    backgroundColor: '#f6eee7',
+    borderWidth: 1,
+    borderColor: '#e6d8ca',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  selectedTrayHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  selectedTrayTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#2a2a2a',
+  },
+  selectedClearButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#f0e6df',
+  },
+  selectedClearText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4a4a4a',
+  },
+  selectedEmptyText: {
+    fontSize: 13,
+    color: '#767676',
+  },
+  overlaySectionsScroll: {
+    flex: 1,
+  },
+  overlaySectionsContent: {
+    paddingBottom: 20,
+  },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
@@ -294,31 +347,55 @@ export const styles = StyleSheet.create({
     color: '#4a4a4a',
     fontWeight: '600',
   },
-  recentsHeader: {
+  overlaySection: {
+    backgroundColor: '#f6eee7',
+    borderWidth: 1,
+    borderColor: '#e6d8ca',
+    borderRadius: 14,
     marginBottom: 10,
+    overflow: 'hidden',
   },
-  recentsTitle: {
+  overlaySectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  overlaySectionTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#2a2a2a',
   },
+  overlaySectionChevron: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#4a4a4a',
+    lineHeight: 20,
+  },
+  overlaySectionBody: {
+    borderTopWidth: 1,
+    borderTopColor: '#e6d8ca',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
   recentsHint: {
-    marginTop: 4,
     fontSize: 12,
     color: '#7a7a7a',
+    marginBottom: 10,
   },
   recentsEmpty: {
     fontSize: 14,
     color: '#7a7a7a',
-    marginTop: 12,
-  },
-  recentsScroll: {
-    flex: 1,
+    marginTop: 2,
   },
   tagsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingBottom: 20,
+  },
+  overlayPlaceholderText: {
+    fontSize: 14,
+    color: '#6f6f6f',
   },
   tag: {
     paddingHorizontal: 14,
@@ -329,6 +406,9 @@ export const styles = StyleSheet.create({
     borderColor: '#e2d4c6',
     marginRight: 10,
     marginBottom: 10,
+  },
+  selectedTag: {
+    marginBottom: 8,
   },
   tagText: {
     fontSize: 14,
@@ -352,6 +432,41 @@ export const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  settingsPopoverBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 5,
+  },
+  settingsPopover: {
+    position: 'absolute',
+    top: 80,
+    right: 20,
+    minWidth: 180,
+    borderRadius: 12,
+    backgroundColor: '#fdfaf6',
+    borderWidth: 1,
+    borderColor: '#efe6df',
+    zIndex: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  settingsPopoverButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  settingsPopoverButtonText: {
+    color: '#4a4a4a',
+    fontWeight: '600',
+  },
+  settingsPopoverDangerText: {
+    color: '#9a3d3d',
+  },
+  settingsPopoverDivider: {
+    height: 1,
+    backgroundColor: '#efe6df',
   },
   nameModalContainer: {
     flex: 1,

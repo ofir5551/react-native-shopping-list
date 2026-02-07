@@ -30,6 +30,7 @@ export type ShoppingListsAppState = {
   handleOverlayAdd: () => void;
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
+  handleClearRecents: () => void;
   handleToggle: (id: string) => void;
   handleDelete: (id: string) => void;
   handleClearAll: () => void;
@@ -307,6 +308,15 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     );
   };
 
+  const handleClearRecents = () => {
+    if (!currentList) return;
+    updateListById(currentList.id, (list) => ({
+      ...list,
+      recents: [],
+    }));
+    setSelectedRecent([]);
+  };
+
   const handleToggle = (id: string) => {
     if (!currentList) return;
     updateListById(currentList.id, (list) => ({
@@ -360,6 +370,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     handleOverlayAdd,
     handleAddSelected,
     handleToggleRecent,
+    handleClearRecents,
     handleToggle,
     handleDelete,
     handleClearAll,

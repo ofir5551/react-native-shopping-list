@@ -1,13 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Pressable, SafeAreaView, Text, View } from 'react-native';
 import { EmptyState } from '../components/EmptyState';
 import { Fab } from '../components/Fab';
 import { Header } from '../components/Header';
 import { OverlayModal } from '../components/OverlayModal';
 import { ShoppingList } from '../components/ShoppingList';
-import { ShoppingItem } from '../types';
 import { styles } from '../styles/appStyles';
+import { ShoppingItem } from '../types';
 
 type ShoppingListScreenProps = {
   listName: string;
@@ -26,6 +26,7 @@ type ShoppingListScreenProps = {
   handleOverlayAdd: () => void;
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
+  handleClearRecents: () => void;
   handleToggle: (id: string) => void;
   handleDelete: (id: string) => void;
   handleClearAll: () => void;
@@ -49,51 +50,111 @@ export const ShoppingListScreen = ({
   handleOverlayAdd,
   handleAddSelected,
   handleToggleRecent,
+  handleClearRecents,
   handleToggle,
   handleDelete,
   handleClearAll,
   onBack,
-}: ShoppingListScreenProps) => (
-  <SafeAreaView style={styles.container}>
-    <Header
-      title={listName}
-      subtitle="Simple, fast, and focused"
-      onBack={onBack}
-      onClearAll={hasItems ? handleClearAll : undefined}
-    />
+}: ShoppingListScreenProps) => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    {!hasItems && (
-      <EmptyState
-        title="Your list is empty"
-        subtitle="Add your first item to get started."
+  const handleClearRecentsPress = () => {
+    setIsSettingsOpen(false);
+    Alert.alert(
+      'Clear recents?',
+      'This will remove all recent items from this list.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: handleClearRecents,
+        },
+      ]
+    );
+  };
+
+  const handleClearAllPress = () => {
+    setIsSettingsOpen(false);
+    handleClearAll();
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header
+        title={listName}
+        subtitle="Simple, fast, and focused"
+        onBack={onBack}
+        onOpenSettings={() => setIsSettingsOpen((current) => !current)}
       />
-    )}
+      {isSettingsOpen ? (
+        <>
+          <Pressable
+            style={styles.settingsPopoverBackdrop}
+            onPress={() => setIsSettingsOpen(false)}
+          />
+          <View style={styles.settingsPopover}>
+            <Pressable
+              style={styles.settingsPopoverButton}
+              onPress={handleClearRecentsPress}
+            >
+              <Text style={styles.settingsPopoverButtonText}>Clear recents</Text>
+            </Pressable>
+            {hasItems ? (
+              <>
+                <View style={styles.settingsPopoverDivider} />
+                <Pressable
+                  style={styles.settingsPopoverButton}
+                  onPress={handleClearAllPress}
+                >
+                  <Text
+                    style={[
+                      styles.settingsPopoverButtonText,
+                      styles.settingsPopoverDangerText,
+                    ]}
+                  >
+                    Clear all items
+                  </Text>
+                </Pressable>
+              </>
+            ) : null}
+          </View>
+        </>
+      ) : null}
 
-    {hasItems && (
-      <ShoppingList
-        activeItems={activeItems}
-        completedItems={completedItems}
-        showCompleted={showCompleted}
-        onToggleCompleted={() => setShowCompleted(!showCompleted)}
-        onToggleItem={handleToggle}
-        onDeleteItem={handleDelete}
+      {!hasItems && (
+        <EmptyState
+          title="Your list is empty"
+          subtitle="Add your first item to get started."
+        />
+      )}
+
+      {hasItems && (
+        <ShoppingList
+          activeItems={activeItems}
+          completedItems={completedItems}
+          showCompleted={showCompleted}
+          onToggleCompleted={() => setShowCompleted(!showCompleted)}
+          onToggleItem={handleToggle}
+          onDeleteItem={handleDelete}
+        />
+      )}
+
+      <Fab onPress={openOverlay} />
+
+      <OverlayModal
+        visible={isOverlayOpen}
+        overlayInput={overlayInput}
+        onChangeInput={setOverlayInput}
+        onAddInput={handleOverlayAdd}
+        recentItems={recentItems}
+        selectedRecent={selectedRecent}
+        onToggleRecent={handleToggleRecent}
+        onAddSelected={handleAddSelected}
+        onClose={closeOverlay}
       />
-    )}
 
-    <Fab onPress={openOverlay} />
-
-    <OverlayModal
-      visible={isOverlayOpen}
-      overlayInput={overlayInput}
-      onChangeInput={setOverlayInput}
-      onAddInput={handleOverlayAdd}
-      recentItems={recentItems}
-      selectedRecent={selectedRecent}
-      onToggleRecent={handleToggleRecent}
-      onAddSelected={handleAddSelected}
-      onClose={closeOverlay}
-    />
-
-    <StatusBar style="dark" />
-  </SafeAreaView>
-);
+      <StatusBar style="dark" />
+    </SafeAreaView>
+  );
+};

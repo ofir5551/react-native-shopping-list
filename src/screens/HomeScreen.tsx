@@ -39,6 +39,7 @@ export const HomeScreen = () => {
     handleOverlayAdd,
     handleAddSelected,
     handleToggleRecent,
+    handleClearRecents,
     handleToggle,
     handleDelete,
     handleClearAll,
@@ -107,6 +108,7 @@ export const HomeScreen = () => {
       handleOverlayAdd={handleOverlayAdd}
       handleAddSelected={handleAddSelected}
       handleToggleRecent={handleToggleRecent}
+      handleClearRecents={handleClearRecents}
       handleToggle={handleToggle}
       handleDelete={handleDelete}
       handleClearAll={handleClearAll}
