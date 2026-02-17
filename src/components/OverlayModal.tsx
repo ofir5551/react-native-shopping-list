@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from '../styles/appStyles';
+import { useAppStyles } from '../styles/appStyles';
 import { getTagColor } from '../utils/recents';
 
 type OverlayModalProps = {
@@ -37,15 +37,18 @@ const OverlaySection = ({
   isExpanded,
   onToggle,
   children,
-}: OverlaySectionProps) => (
-  <View style={styles.overlaySection}>
-    <Pressable style={styles.overlaySectionHeader} onPress={onToggle}>
-      <Text style={styles.overlaySectionTitle}>{title}</Text>
-      <Text style={styles.overlaySectionChevron}>{isExpanded ? '−' : '+'}</Text>
-    </Pressable>
-    {isExpanded ? <View style={styles.overlaySectionBody}>{children}</View> : null}
-  </View>
-);
+}: OverlaySectionProps) => {
+  const styles = useAppStyles();
+  return (
+    <View style={styles.overlaySection}>
+      <Pressable style={styles.overlaySectionHeader} onPress={onToggle}>
+        <Text style={styles.overlaySectionTitle}>{title}</Text>
+        <Text style={styles.overlaySectionChevron}>{isExpanded ? '−' : '+'}</Text>
+      </Pressable>
+      {isExpanded ? <View style={styles.overlaySectionBody}>{children}</View> : null}
+    </View>
+  );
+};
 
 export const OverlayModal = ({
   visible,
@@ -58,6 +61,7 @@ export const OverlayModal = ({
   onAddSelected,
   onClose,
 }: OverlayModalProps) => {
+  const styles = useAppStyles();
   const inputRef = useRef<TextInput | null>(null);
   const unselectedRecents = recentItems.filter(
     (item) => !selectedRecent.includes(item)

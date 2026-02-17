@@ -16,4 +16,6 @@ export type ShoppingList = {
 
 export type AppRoute =
   | { name: 'lists' }
-  | { name: 'list'; listId: string };
+  | { name: 'list'; listId: string }
+  | { name: 'settings' };
+

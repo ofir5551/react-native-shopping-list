@@ -1,7 +1,7 @@
 import React from 'react';
 import { FlatList } from 'react-native';
 import { ShoppingItem } from '../types';
-import { styles } from '../styles/appStyles';
+import { useAppStyles } from '../styles/appStyles';
 import { CompletedSection } from './CompletedSection';
 import { ItemRow } from './ItemRow';
 
@@ -21,24 +21,27 @@ export const ShoppingList = ({
   onToggleCompleted,
   onToggleItem,
   onDeleteItem,
-}: ShoppingListProps) => (
-  <FlatList
-    data={activeItems}
-    keyExtractor={(item) => item.id}
-    contentContainerStyle={styles.list}
-    ListFooterComponent={
-      completedItems.length > 0 ? (
-        <CompletedSection
-          items={completedItems}
-          isExpanded={showCompleted}
-          onToggleExpanded={onToggleCompleted}
-          onToggleItem={onToggleItem}
-          onDeleteItem={onDeleteItem}
-        />
-      ) : null
-    }
-    renderItem={({ item }) => (
-      <ItemRow item={item} onToggle={onToggleItem} onDelete={onDeleteItem} />
-    )}
-  />
-);
+}: ShoppingListProps) => {
+  const styles = useAppStyles();
+  return (
+    <FlatList
+      data={activeItems}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={styles.list}
+      ListFooterComponent={
+        completedItems.length > 0 ? (
+          <CompletedSection
+            items={completedItems}
+            isExpanded={showCompleted}
+            onToggleExpanded={onToggleCompleted}
+            onToggleItem={onToggleItem}
+            onDeleteItem={onDeleteItem}
+          />
+        ) : null
+      }
+      renderItem={({ item }) => (
+        <ItemRow item={item} onToggle={onToggleItem} onDelete={onDeleteItem} />
+      )}
+    />
+  );
+};

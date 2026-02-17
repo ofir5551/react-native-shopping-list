@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Fab } from '../components/Fab';
 import { ListNameModal } from '../components/ListNameModal';
 import { Header } from '../components/Header';
-import { styles } from '../styles/appStyles';
+import { useAppStyles } from '../styles/appStyles';
 import { ShoppingList } from '../types';
 
 type ListsScreenProps = {
@@ -21,6 +21,7 @@ type ListsScreenProps = {
   onChangeListName: (value: string) => void;
   onCloseListNameModal: () => void;
   onSubmitListName: () => void;
+  onOpenSettings: () => void;
 };
 
 const getItemsLabel = (count: number) => (count === 1 ? '1 item' : `${count} items`);
@@ -38,7 +39,10 @@ export const ListsScreen = ({
   onChangeListName,
   onCloseListNameModal,
   onSubmitListName,
+  onOpenSettings,
 }: ListsScreenProps) => {
+  const styles = useAppStyles();
+
   const handleDeleteList = (listId: string, name: string) => {
     Alert.alert('Delete list?', `Delete "${name}" permanently?`, [
       { text: 'Cancel', style: 'cancel' },
@@ -52,7 +56,11 @@ export const ListsScreen = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Lists" subtitle="Choose a list or create a new one" />
+      <Header
+        title="Lists"
+        subtitle="Choose a list or create a new one"
+        onOpenSettings={onOpenSettings}
+      />
 
       {lists.length === 0 ? (
         <View style={styles.listsEmptyState}>

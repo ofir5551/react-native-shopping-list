@@ -6,7 +6,7 @@ import { Fab } from '../components/Fab';
 import { Header } from '../components/Header';
 import { OverlayModal } from '../components/OverlayModal';
 import { ShoppingList } from '../components/ShoppingList';
-import { styles } from '../styles/appStyles';
+import { useAppStyles } from '../styles/appStyles';
 import { ShoppingItem } from '../types';
 
 type ShoppingListScreenProps = {
@@ -56,6 +56,7 @@ export const ShoppingListScreen = ({
   handleClearAll,
   onBack,
 }: ShoppingListScreenProps) => {
+  const styles = useAppStyles();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleClearRecentsPress = () => {

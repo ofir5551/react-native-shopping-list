@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Modal, Pressable, Text, TextInput, View } from 'react-native';
-import { styles } from '../styles/appStyles';
+import { useAppStyles } from '../styles/appStyles';
 
 type ListNameModalProps = {
   visible: boolean;
@@ -21,6 +21,7 @@ export const ListNameModal = ({
   onSubmit,
   onClose,
 }: ListNameModalProps) => {
+  const styles = useAppStyles();
   const inputRef = useRef<TextInput | null>(null);
   const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

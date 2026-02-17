@@ -4,9 +4,11 @@ import { ActivityIndicator, BackHandler, SafeAreaView, View } from 'react-native
 import { useShoppingListsApp } from '../hooks/useShoppingListsApp';
 import { ListsScreen } from './ListsScreen';
 import { ShoppingListScreen } from './ShoppingListScreen';
-import { styles } from '../styles/appStyles';
+import { SettingsScreen } from './SettingsScreen';
+import { useAppStyles } from '../styles/appStyles';
 
 export const HomeScreen = () => {
+  const styles = useAppStyles();
   const {
     isHydrated,
     route,
@@ -14,6 +16,7 @@ export const HomeScreen = () => {
     currentList,
     openList,
     goToLists,
+    goToSettings,
     isListNameModalOpen,
     listNameMode,
     listNameInput,
@@ -71,6 +74,10 @@ export const HomeScreen = () => {
     );
   }
 
+  if (route.name === 'settings') {
+    return <SettingsScreen onBack={goToLists} />;
+  }
+
   if (route.name === 'lists' || !currentList) {
     return (
       <ListsScreen
@@ -86,6 +93,7 @@ export const HomeScreen = () => {
         onChangeListName={setListNameInput}
         onCloseListNameModal={closeListNameModal}
         onSubmitListName={submitListName}
+        onOpenSettings={goToSettings}
       />
     );
   }

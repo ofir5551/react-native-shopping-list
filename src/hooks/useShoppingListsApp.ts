@@ -38,6 +38,7 @@ export type ShoppingListsAppState = {
   goToLists: () => void;
   isListNameModalOpen: boolean;
   listNameMode: ListNameModalMode;
+
   listNameInput: string;
   setListNameInput: (value: string) => void;
   listNameError: string;
@@ -46,6 +47,7 @@ export type ShoppingListsAppState = {
   closeListNameModal: () => void;
   submitListName: () => void;
   deleteList: (listId: string) => void;
+  goToSettings: () => void;
 };
 
 const DEFAULT_ROUTE: AppRoute = { name: 'lists' };
@@ -250,6 +252,10 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     }
   };
 
+  const goToSettings = () => {
+    setRoute({ name: 'settings' });
+  };
+
   const closeOverlay = () => {
     setIsOverlayOpen(false);
     setOverlayInput('');
@@ -386,5 +392,6 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     closeListNameModal,
     submitListName,
     deleteList,
+    goToSettings,
   };
 };
