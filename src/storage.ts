@@ -9,6 +9,8 @@ export interface StorageProvider {
   saveLists(lists: ShoppingList[]): Promise<void>;
   subscribe?(onChange: (lists: ShoppingList[]) => void): () => void;
   joinList?(listId: string): Promise<void>;
+  leaveList?(listId: string): Promise<void>;
+  deleteList?(listId: string): Promise<void>;
 }
 
 const LISTS_KEY = '@shopping_lists';

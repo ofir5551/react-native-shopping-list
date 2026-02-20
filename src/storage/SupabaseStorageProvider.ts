@@ -29,25 +29,40 @@ export class SupabaseStorageProvider implements StorageProvider {
     }
 
     async saveLists(lists: ShoppingList[]): Promise<void> {
-        // Only save lists we own — shared lists are managed by their owner
-        const ownedLists = lists.filter(
-            (list) => !list.ownerId || list.ownerId === this.userId
-        );
-        for (const list of ownedLists) {
-            const { error } = await supabase
-                .from('lists')
-                .upsert({
-                    id: list.id,
-                    user_id: this.userId,
-                    name: list.name,
-                    created_at: list.createdAt,
-                    updated_at: list.updatedAt,
-                    items: list.items,
-                    recents: list.recents,
-                }, { onConflict: 'id' });
+        for (const list of lists) {
+            const isOwned = !list.ownerId || list.ownerId === this.userId;
 
-            if (error) {
-                console.error('Error saving list to cloud:', list.id, error);
+            if (isOwned) {
+                // Owned lists: upsert (handles both new and existing)
+                const { error } = await supabase
+                    .from('lists')
+                    .upsert({
+                        id: list.id,
+                        user_id: this.userId,
+                        name: list.name,
+                        created_at: list.createdAt,
+                        updated_at: list.updatedAt,
+                        items: list.items,
+                        recents: list.recents,
+                    }, { onConflict: 'id' });
+
+                if (error) {
+                    console.error('Error saving owned list:', list.id, error);
+                }
+            } else {
+                // Shared lists: use update (INSERT policy would block upsert)
+                const { error } = await supabase
+                    .from('lists')
+                    .update({
+                        items: list.items,
+                        recents: list.recents,
+                        updated_at: list.updatedAt,
+                    })
+                    .eq('id', list.id);
+
+                if (error) {
+                    console.error('Error saving shared list:', list.id, error);
+                }
             }
         }
     }
@@ -58,7 +73,7 @@ export class SupabaseStorageProvider implements StorageProvider {
             onChange(lists);
         };
 
-        // Listen for changes on lists the user owns
+        // Listen for changes on lists the user owns or is shared with
         const listsChannel = supabase
             .channel('shared:lists')
             .on(
@@ -66,7 +81,7 @@ export class SupabaseStorageProvider implements StorageProvider {
                 { event: '*', schema: 'public', table: 'lists' },
                 refetch
             )
-            // Also listen for new list_shares (e.g. user joins a list)
+            // Listen for new list_shares (e.g. user joins a list)
             .on(
                 'postgres_changes',
                 {
@@ -74,6 +89,16 @@ export class SupabaseStorageProvider implements StorageProvider {
                     schema: 'public',
                     table: 'list_shares',
                     filter: `user_id=eq.${this.userId}`,
+                },
+                refetch
+            )
+            // Listen for deleted list_shares (e.g. user exits or owner removes them)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'list_shares',
                 },
                 refetch
             )
@@ -109,6 +134,32 @@ export class SupabaseStorageProvider implements StorageProvider {
             }
             console.error('Error joining list:', error);
             throw new Error('Failed to join list. Please try again.');
+        }
+    }
+
+    async leaveList(listId: string): Promise<void> {
+        const { error } = await supabase
+            .from('list_shares')
+            .delete()
+            .eq('list_id', listId)
+            .eq('user_id', this.userId);
+
+        if (error) {
+            console.error('Error leaving list:', error);
+            throw new Error('Failed to leave list. Please try again.');
+        }
+    }
+
+    async deleteList(listId: string): Promise<void> {
+        const { error } = await supabase
+            .from('lists')
+            .delete()
+            .eq('id', listId)
+            .eq('user_id', this.userId);
+
+        if (error) {
+            console.error('Error deleting list from DB:', error);
+            throw new Error('Failed to delete list. Please try again.');
         }
     }
 }

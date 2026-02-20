@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   loadRoute,
   saveRoute,
 } from '../storage';
 import { useSync } from '../context/SyncContext';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { AppRoute, SelectedRecentItem, ShoppingItem, ShoppingList } from '../types';
 import { MAX_RECENTS, sanitizeRecents } from '../utils/recents';
 
@@ -51,6 +53,8 @@ export type ShoppingListsAppState = {
   closeListNameModal: () => void;
   submitListName: () => void;
   deleteList: (listId: string) => void;
+  leaveList: (listId: string) => void;
+  currentUserId: string | undefined;
   goToSettings: () => void;
   handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
@@ -64,10 +68,15 @@ const createId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 export const useShoppingListsApp = (): ShoppingListsAppState => {
   const { storageProvider, isInitializing } = useSync();
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const currentUserId = user?.id;
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [route, setRoute] = useState<AppRoute>(DEFAULT_ROUTE);
   const [isHydrated, setIsHydrated] = useState(false);
   const [showCompleted, setShowCompleted] = useState(true);
+  const prevListMapRef = useRef<Map<string, string>>(new Map());
+  const isFromRealtimeRef = useRef(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [overlayInput, setOverlayInput] = useState('');
   const [selectedRecent, setSelectedRecent] = useState<SelectedRecentItem[]>([]);
@@ -90,6 +99,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       if (!mounted) return;
 
       setLists(storedLists);
+      prevListMapRef.current = new Map(storedLists.map((l) => [l.id, l.name]));
 
       const hasRouteList =
         storedRoute?.name === 'list' &&
@@ -107,7 +117,20 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
 
       if (storageProvider.subscribe) {
         unsubscribe = storageProvider.subscribe((updatedLists) => {
-          if (mounted) setLists(updatedLists);
+          if (!mounted) return;
+          // Detect shared lists that vanished (owner deleted them)
+          const newIds = new Set(updatedLists.map((l) => l.id));
+          prevListMapRef.current.forEach((name, id) => {
+            if (!newIds.has(id)) {
+              // List disappeared – it was a shared list whose owner deleted it
+              showToast(`"${name}" was deleted by its owner.`);
+            }
+          });
+          // Update the ref with the latest list map
+          prevListMapRef.current = new Map(updatedLists.map((l) => [l.id, l.name]));
+          // Mark this update as coming from realtime to avoid re-saving
+          isFromRealtimeRef.current = true;
+          setLists(updatedLists);
         });
       }
     };
@@ -121,6 +144,11 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
 
   useEffect(() => {
     if (!isHydrated || isInitializing) return;
+    // Skip saving when the update came from a realtime event to avoid loops
+    if (isFromRealtimeRef.current) {
+      isFromRealtimeRef.current = false;
+      return;
+    }
     storageProvider.saveLists(lists);
   }, [lists, isHydrated, storageProvider, isInitializing]);
 
@@ -305,9 +333,28 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   };
 
   const deleteList = (listId: string) => {
+    // Remove from the prevListMap so *we* don't trigger the "deleted by owner" toast
+    prevListMapRef.current.delete(listId);
+    storageProvider.deleteList?.(listId);
     setLists((current) => current.filter((list) => list.id !== listId));
     if (route.name === 'list' && route.listId === listId) {
       setRoute(DEFAULT_ROUTE);
+    }
+  };
+
+  const leaveList = async (listId: string) => {
+    try {
+      // Remove from prevListMap so we don't trigger the "deleted by owner" toast
+      prevListMapRef.current.delete(listId);
+      if (storageProvider.leaveList) {
+        await storageProvider.leaveList(listId);
+      }
+      setLists((current) => current.filter((list) => list.id !== listId));
+      if (route.name === 'list' && route.listId === listId) {
+        setRoute(DEFAULT_ROUTE);
+      }
+    } catch (err: any) {
+      console.error('Error leaving list:', err);
     }
   };
 
@@ -591,6 +638,8 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     closeListNameModal,
     submitListName,
     deleteList,
+    leaveList,
+    currentUserId,
     goToSettings,
     handleAddMultipleSelected,
     handleQuickAddMultiple,

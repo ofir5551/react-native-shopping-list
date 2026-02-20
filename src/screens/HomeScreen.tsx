@@ -29,6 +29,8 @@ export const HomeScreen = () => {
     closeListNameModal,
     submitListName,
     deleteList,
+    leaveList,
+    currentUserId,
     hasItems,
     activeItems,
     completedItems,
@@ -89,11 +91,13 @@ export const HomeScreen = () => {
     return (
       <ListsScreen
         lists={lists}
+        currentUserId={currentUserId}
         onOpenList={openList}
         onOpenCreateListModal={openCreateListModal}
         onOpenRenameListModal={openRenameListModal}
         onOpenJoinListModal={openJoinListModal}
         onDeleteList={deleteList}
+        onLeaveList={leaveList}
         isListNameModalOpen={isListNameModalOpen}
         listNameMode={listNameMode}
         listNameInput={listNameInput}
@@ -141,11 +145,13 @@ export const HomeScreen = () => {
       {/* We need to render the Modal here so it can overlay ShoppingListScreen too */}
       <ListsScreen
         lists={lists}
+        currentUserId={currentUserId}
         onOpenList={openList}
         onOpenCreateListModal={openCreateListModal}
         onOpenRenameListModal={openRenameListModal}
         onOpenJoinListModal={openJoinListModal}
         onDeleteList={deleteList}
+        onLeaveList={leaveList}
         isListNameModalOpen={isListNameModalOpen}
         listNameMode={listNameMode}
         listNameInput={listNameInput}

@@ -156,6 +156,13 @@ export const useAppStyles = () => {
         fontWeight: '700',
         color: theme.colors.text,
       },
+      listCardTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      listCardSharedIcon: {
+        marginLeft: 8,
+      },
       listCardMeta: {
         marginTop: 4,
         fontSize: 13,
