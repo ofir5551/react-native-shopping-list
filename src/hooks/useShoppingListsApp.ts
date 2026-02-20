@@ -343,6 +343,9 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   };
 
   const leaveList = async (listId: string) => {
+    const list = lists.find(l => l.id === listId);
+    const listName = list?.name || 'the list';
+
     try {
       // Remove from prevListMap so we don't trigger the "deleted by owner" toast
       prevListMapRef.current.delete(listId);
@@ -353,8 +356,10 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       if (route.name === 'list' && route.listId === listId) {
         setRoute(DEFAULT_ROUTE);
       }
+      showToast(`Left "${listName}".`);
     } catch (err: any) {
       console.error('Error leaving list:', err);
+      showToast('Failed to leave list. Please try again.');
     }
   };
 

@@ -140,14 +140,16 @@ export const ListsScreen = ({
                   </Text>
                 </Pressable>
                 <View style={styles.listCardActions}>
-                  <Pressable
-                    style={styles.listCardActionButton}
-                    onPress={() => onOpenRenameListModal(item.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Rename ${item.name}`}
-                  >
-                    <Ionicons name="create-outline" size={18} color="#4a4a4a" />
-                  </Pressable>
+                  {isOwner && (
+                    <Pressable
+                      style={styles.listCardActionButton}
+                      onPress={() => onOpenRenameListModal(item.id)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Rename ${item.name}`}
+                    >
+                      <Ionicons name="create-outline" size={18} color="#4a4a4a" />
+                    </Pressable>
+                  )}
                   {isOwner ? (
                     <Pressable
                       style={styles.listCardActionButton}
