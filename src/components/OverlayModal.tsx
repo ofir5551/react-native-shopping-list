@@ -7,9 +7,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
 import { getTagColor } from '../utils/recents';
+import { SelectedRecentItem } from '../types';
 
 type OverlayModalProps = {
   visible: boolean;
@@ -17,8 +18,9 @@ type OverlayModalProps = {
   onChangeInput: (value: string) => void;
   onAddInput: () => void;
   recentItems: string[];
-  selectedRecent: string[];
+  selectedRecent: SelectedRecentItem[];
   onToggleRecent: (name: string) => void;
+  onUpdateRecentQuantity: (name: string, delta: number) => void;
   onAddSelected: () => void;
   onClose: () => void;
 };
@@ -58,13 +60,14 @@ export const OverlayModal = ({
   recentItems,
   selectedRecent,
   onToggleRecent,
+  onUpdateRecentQuantity,
   onAddSelected,
   onClose,
 }: OverlayModalProps) => {
   const styles = useAppStyles();
   const inputRef = useRef<TextInput | null>(null);
   const unselectedRecents = recentItems.filter(
-    (item) => !selectedRecent.includes(item)
+    (item) => !selectedRecent.some((sel) => sel.name === item)
   );
   const [expandedSections, setExpandedSections] = useState<Record<OverlaySectionKey, boolean>>({
     recents: true,
@@ -85,14 +88,14 @@ export const OverlayModal = ({
   };
 
   const addRecentToSelection = (item: string) => {
-    if (selectedRecent.includes(item)) {
+    if (selectedRecent.some((sel) => sel.name === item)) {
       return;
     }
     onToggleRecent(item);
   };
 
   const clearSelected = () => {
-    selectedRecent.forEach((item) => onToggleRecent(item));
+    selectedRecent.forEach((item) => onToggleRecent(item.name));
   };
 
   return (
@@ -163,24 +166,36 @@ export const OverlayModal = ({
               ) : (
                 <View style={styles.tagsWrap}>
                   {selectedRecent.map((item) => {
-                    const color = getTagColor(item);
+                    const color = getTagColor(item.name);
                     return (
-                      <Pressable
-                        key={item}
-                        onPress={() => onToggleRecent(item)}
+                      <View
+                        key={item.name}
                         style={[
                           styles.tag,
                           styles.selectedTag,
                           {
                             backgroundColor: color,
                             borderColor: color,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingVertical: 4,
+                            paddingHorizontal: 8,
                           },
                         ]}
                       >
-                        <Text style={[styles.tagText, styles.tagTextSelected]}>
-                          {item} ×
+                        <Pressable style={styles.quantityButton} onPress={() => onUpdateRecentQuantity(item.name, -1)}>
+                          <Feather name="minus" size={14} color="#fff" />
+                        </Pressable>
+                        <Text style={[styles.tagText, styles.tagTextSelected, { marginHorizontal: 8 }]}>
+                          {item.quantity}x {item.name}
                         </Text>
-                      </Pressable>
+                        <Pressable style={styles.quantityButton} onPress={() => onUpdateRecentQuantity(item.name, 1)}>
+                          <Feather name="plus" size={14} color="#fff" />
+                        </Pressable>
+                        <Pressable style={{ marginLeft: 6, padding: 4 }} onPress={() => onToggleRecent(item.name)}>
+                          <Feather name="x" size={14} color="#fff" />
+                        </Pressable>
+                      </View>
                     );
                   })}
                 </View>

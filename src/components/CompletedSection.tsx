@@ -7,9 +7,12 @@ import { ItemRow } from './ItemRow';
 type CompletedSectionProps = {
   items: ShoppingItem[];
   isExpanded: boolean;
+  showCompleted?: boolean;
   onToggleExpanded: () => void;
   onToggleItem: (id: string) => void;
   onDeleteItem: (id: string) => void;
+  onIncrementItem: (id: string) => void;
+  onDecrementItem: (id: string) => void;
 };
 
 export const CompletedSection = ({
@@ -18,6 +21,8 @@ export const CompletedSection = ({
   onToggleExpanded,
   onToggleItem,
   onDeleteItem,
+  onIncrementItem,
+  onDecrementItem,
 }: CompletedSectionProps) => {
   const styles = useAppStyles();
   return (
@@ -33,7 +38,13 @@ export const CompletedSection = ({
           keyExtractor={(item) => item.id}
           scrollEnabled={false}
           renderItem={({ item }) => (
-            <ItemRow item={item} onToggle={onToggleItem} onDelete={onDeleteItem} />
+            <ItemRow
+              item={item}
+              onToggle={onToggleItem}
+              onDelete={onDeleteItem}
+              onIncrement={onIncrementItem}
+              onDecrement={onDecrementItem}
+            />
           )}
         />
       )}

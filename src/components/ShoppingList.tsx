@@ -12,6 +12,8 @@ type ShoppingListProps = {
   onToggleCompleted: () => void;
   onToggleItem: (id: string) => void;
   onDeleteItem: (id: string) => void;
+  onIncrementItem: (id: string) => void;
+  onDecrementItem: (id: string) => void;
 };
 
 export const ShoppingList = ({
@@ -21,6 +23,8 @@ export const ShoppingList = ({
   onToggleCompleted,
   onToggleItem,
   onDeleteItem,
+  onIncrementItem,
+  onDecrementItem,
 }: ShoppingListProps) => {
   const styles = useAppStyles();
   return (
@@ -36,11 +40,19 @@ export const ShoppingList = ({
             onToggleExpanded={onToggleCompleted}
             onToggleItem={onToggleItem}
             onDeleteItem={onDeleteItem}
+            onIncrementItem={onIncrementItem}
+            onDecrementItem={onDecrementItem}
           />
         ) : null
       }
       renderItem={({ item }) => (
-        <ItemRow item={item} onToggle={onToggleItem} onDelete={onDeleteItem} />
+        <ItemRow
+          item={item}
+          onToggle={onToggleItem}
+          onDelete={onDeleteItem}
+          onIncrement={onIncrementItem}
+          onDecrement={onDecrementItem}
+        />
       )}
     />
   );

@@ -7,7 +7,7 @@ import { Header } from '../components/Header';
 import { OverlayModal } from '../components/OverlayModal';
 import { ShoppingList } from '../components/ShoppingList';
 import { useAppStyles } from '../styles/appStyles';
-import { ShoppingItem } from '../types';
+import { ShoppingItem, SelectedRecentItem } from '../types';
 
 type ShoppingListScreenProps = {
   listName: string;
@@ -22,14 +22,17 @@ type ShoppingListScreenProps = {
   overlayInput: string;
   setOverlayInput: (value: string) => void;
   recentItems: string[];
-  selectedRecent: string[];
+  selectedRecent: SelectedRecentItem[];
   handleOverlayAdd: () => void;
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
+  handleUpdateRecentQuantity: (name: string, delta: number) => void;
   handleClearRecents: () => void;
   handleToggle: (id: string) => void;
   handleDelete: (id: string) => void;
   handleClearAll: () => void;
+  handleIncrementQuantity: (id: string) => void;
+  handleDecrementQuantity: (id: string) => void;
   onBack: () => void;
 };
 
@@ -50,10 +53,13 @@ export const ShoppingListScreen = ({
   handleOverlayAdd,
   handleAddSelected,
   handleToggleRecent,
+  handleUpdateRecentQuantity,
   handleClearRecents,
   handleToggle,
   handleDelete,
   handleClearAll,
+  handleIncrementQuantity,
+  handleDecrementQuantity,
   onBack,
 }: ShoppingListScreenProps) => {
   const styles = useAppStyles();
@@ -138,6 +144,8 @@ export const ShoppingListScreen = ({
           onToggleCompleted={() => setShowCompleted(!showCompleted)}
           onToggleItem={handleToggle}
           onDeleteItem={handleDelete}
+          onIncrementItem={handleIncrementQuantity}
+          onDecrementItem={handleDecrementQuantity}
         />
       )}
 
@@ -151,6 +159,7 @@ export const ShoppingListScreen = ({
         recentItems={recentItems}
         selectedRecent={selectedRecent}
         onToggleRecent={handleToggleRecent}
+        onUpdateRecentQuantity={handleUpdateRecentQuantity}
         onAddSelected={handleAddSelected}
         onClose={closeOverlay}
       />

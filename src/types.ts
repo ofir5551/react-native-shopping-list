@@ -3,6 +3,7 @@ export type ShoppingItem = {
   name: string;
   purchased: boolean;
   createdAt: number;
+  quantity: number;
 };
 
 export type ShoppingList = {
@@ -18,4 +19,9 @@ export type AppRoute =
   | { name: 'lists' }
   | { name: 'list'; listId: string }
   | { name: 'settings' };
+
+export type SelectedRecentItem = {
+  name: string;
+  quantity: number;
+};
 

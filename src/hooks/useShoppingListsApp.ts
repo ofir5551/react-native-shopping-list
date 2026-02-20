@@ -5,7 +5,7 @@ import {
   saveLists,
   saveRoute,
 } from '../storage';
-import { AppRoute, ShoppingItem, ShoppingList } from '../types';
+import { AppRoute, SelectedRecentItem, ShoppingItem, ShoppingList } from '../types';
 import { MAX_RECENTS, sanitizeRecents } from '../utils/recents';
 
 type ListNameModalMode = 'create' | 'rename';
@@ -26,14 +26,17 @@ export type ShoppingListsAppState = {
   overlayInput: string;
   setOverlayInput: (value: string) => void;
   recentItems: string[];
-  selectedRecent: string[];
+  selectedRecent: SelectedRecentItem[];
   handleOverlayAdd: () => void;
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
+  handleUpdateRecentQuantity: (name: string, delta: number) => void;
   handleClearRecents: () => void;
   handleToggle: (id: string) => void;
   handleDelete: (id: string) => void;
   handleClearAll: () => void;
+  handleIncrementQuantity: (id: string) => void;
+  handleDecrementQuantity: (id: string) => void;
   openList: (listId: string) => void;
   goToLists: () => void;
   isListNameModalOpen: boolean;
@@ -63,7 +66,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const [showCompleted, setShowCompleted] = useState(true);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [overlayInput, setOverlayInput] = useState('');
-  const [selectedRecent, setSelectedRecent] = useState<string[]>([]);
+  const [selectedRecent, setSelectedRecent] = useState<SelectedRecentItem[]>([]);
   const [isListNameModalOpen, setIsListNameModalOpen] = useState(false);
   const [listNameMode, setListNameMode] = useState<ListNameModalMode>('create');
   const [editingListId, setEditingListId] = useState<string | null>(null);
@@ -275,6 +278,38 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     const name = overlayInput.trim();
     if (!name) return;
 
+    const existingActiveItem = currentList.items.find(
+      (item) => !item.purchased && normalizeName(item.name) === normalizeName(name)
+    );
+
+    if (existingActiveItem) {
+      updateListById(currentList.id, (list) => ({
+        ...list,
+        items: list.items.map((item) =>
+          item.id === existingActiveItem.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        ),
+      }));
+      setOverlayInput('');
+      return;
+    }
+
+    const existingSelected = selectedRecent.find(
+      (item) => normalizeName(item.name) === normalizeName(name)
+    );
+    if (existingSelected) {
+      setSelectedRecent((current) =>
+        current.map((item) =>
+          normalizeName(item.name) === normalizeName(name)
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+    } else {
+      setSelectedRecent((current) => [...current, { name, quantity: 1 }]);
+    }
+
     updateListById(currentList.id, (list) => ({
       ...list,
       recents: sanitizeRecents(
@@ -284,33 +319,61 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
         )
       ),
     }));
-    setSelectedRecent((current) =>
-      current.includes(name) ? current : [...current, name]
-    );
     setOverlayInput('');
   };
 
   const handleAddSelected = () => {
     if (!currentList || selectedRecent.length === 0) return;
     const timestamp = Date.now();
-    const newItems: ShoppingItem[] = selectedRecent.map((name, index) => ({
-      id: `${timestamp}-${index}`,
-      name,
-      purchased: false,
-      createdAt: timestamp + index,
-    }));
-    updateListById(currentList.id, (list) => ({
-      ...list,
-      items: [...newItems, ...list.items],
-    }));
+
+    updateListById(currentList.id, (list) => {
+      let currentItems = [...list.items];
+      const newItems: ShoppingItem[] = [];
+
+      selectedRecent.forEach((selected, index) => {
+        const existingActiveIndex = currentItems.findIndex(
+          (item) => !item.purchased && normalizeName(item.name) === normalizeName(selected.name)
+        );
+
+        if (existingActiveIndex !== -1) {
+          currentItems[existingActiveIndex] = {
+            ...currentItems[existingActiveIndex],
+            quantity: currentItems[existingActiveIndex].quantity + selected.quantity,
+          };
+        } else {
+          newItems.push({
+            id: `${timestamp}-${index}`,
+            name: selected.name,
+            purchased: false,
+            createdAt: timestamp + index,
+            quantity: selected.quantity,
+          });
+        }
+      });
+
+      return {
+        ...list,
+        items: [...newItems, ...currentItems],
+      };
+    });
+
     closeOverlay();
   };
 
   const handleToggleRecent = (name: string) => {
     setSelectedRecent((current) =>
-      current.includes(name)
-        ? current.filter((item) => item !== name)
-        : [...current, name]
+      current.some((item) => item.name === name)
+        ? current.filter((item) => item.name !== name)
+        : [...current, { name, quantity: 1 }]
+    );
+  };
+
+  const handleUpdateRecentQuantity = (name: string, delta: number) => {
+    setSelectedRecent((current) =>
+      current.map((item) => {
+        if (item.name !== name) return item;
+        return { ...item, quantity: Math.max(1, item.quantity + delta) };
+      })
     );
   };
 
@@ -349,6 +412,28 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     }));
   };
 
+  const handleIncrementQuantity = (id: string) => {
+    if (!currentList) return;
+    updateListById(currentList.id, (list) => ({
+      ...list,
+      items: list.items.map((item) =>
+        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+      ),
+    }));
+  };
+
+  const handleDecrementQuantity = (id: string) => {
+    if (!currentList) return;
+    updateListById(currentList.id, (list) => ({
+      ...list,
+      items: list.items.map((item) =>
+        item.id === id
+          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
+          : item
+      ),
+    }));
+  };
+
   const handleListNameInputChange = (value: string) => {
     setListNameInput(value);
     if (listNameError) {
@@ -376,10 +461,13 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     handleOverlayAdd,
     handleAddSelected,
     handleToggleRecent,
+    handleUpdateRecentQuantity,
     handleClearRecents,
     handleToggle,
     handleDelete,
     handleClearAll,
+    handleIncrementQuantity,
+    handleDecrementQuantity,
     openList,
     goToLists,
     isListNameModalOpen,

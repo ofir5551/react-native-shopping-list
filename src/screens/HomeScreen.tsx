@@ -42,10 +42,13 @@ export const HomeScreen = () => {
     handleOverlayAdd,
     handleAddSelected,
     handleToggleRecent,
+    handleUpdateRecentQuantity,
     handleClearRecents,
     handleToggle,
     handleDelete,
     handleClearAll,
+    handleIncrementQuantity,
+    handleDecrementQuantity,
   } = useShoppingListsApp();
 
   useEffect(() => {
@@ -116,10 +119,13 @@ export const HomeScreen = () => {
       handleOverlayAdd={handleOverlayAdd}
       handleAddSelected={handleAddSelected}
       handleToggleRecent={handleToggleRecent}
+      handleUpdateRecentQuantity={handleUpdateRecentQuantity}
       handleClearRecents={handleClearRecents}
       handleToggle={handleToggle}
       handleDelete={handleDelete}
       handleClearAll={handleClearAll}
+      handleIncrementQuantity={handleIncrementQuantity}
+      handleDecrementQuantity={handleDecrementQuantity}
       onBack={goToLists}
     />
   );

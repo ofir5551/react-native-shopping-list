@@ -12,7 +12,8 @@ const isShoppingItem = (value: unknown): value is ShoppingItem => {
     typeof candidate.id === 'string' &&
     typeof candidate.name === 'string' &&
     typeof candidate.purchased === 'boolean' &&
-    typeof candidate.createdAt === 'number'
+    typeof candidate.createdAt === 'number' &&
+    typeof candidate.quantity === 'number'
   );
 };
 

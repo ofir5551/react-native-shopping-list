@@ -251,6 +251,26 @@ export const useAppStyles = () => {
         paddingHorizontal: 6,
         opacity: 0.5,
       },
+      quantityWrap: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 10,
+        backgroundColor: theme.colors.surfaceHighlight,
+        borderRadius: 8,
+        paddingHorizontal: 4,
+        paddingVertical: 2,
+      },
+      quantityButton: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+      },
+      quantityText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: theme.colors.text,
+        minWidth: 20,
+        textAlign: 'center',
+      },
       fab: {
         position: 'absolute',
         right: 20,
