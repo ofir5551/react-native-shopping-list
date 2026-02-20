@@ -11,6 +11,9 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { AuthModal } from '../components/AuthModal';
+import { supabase } from '../supabase';
 
 type SettingsScreenProps = {
     onBack: () => void;
@@ -19,9 +22,15 @@ type SettingsScreenProps = {
 export const SettingsScreen = ({ onBack }: SettingsScreenProps) => {
     const styles = useAppStyles();
     const { theme, isDark, setThemeType } = useTheme();
+    const { user } = useAuth();
+    const [isAuthModalVisible, setAuthModalVisible] = React.useState(false);
 
     const toggleTheme = (value: boolean) => {
         setThemeType(value ? 'dark' : 'light');
+    };
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
     };
 
     return (
@@ -59,34 +68,52 @@ export const SettingsScreen = ({ onBack }: SettingsScreenProps) => {
 
                 <View style={styles.settingsSection}>
                     <Text style={styles.settingsSectionTitle}>Account</Text>
-                    <View style={styles.authPlaceholder}>
-                        <Ionicons
-                            name="person-circle-outline"
-                            size={64}
-                            color={theme.colors.textSecondary}
-                            style={{ marginBottom: 16 }}
-                        />
-                        <Text style={[styles.settingsLabel, { marginBottom: 8 }]}>
-                            Sign in to sync your lists
-                        </Text>
-                        <Text
-                            style={[
-                                styles.settingsValue,
-                                { textAlign: 'center', marginBottom: 20 },
-                            ]}
-                        >
-                            Create an account to backup your shopping lists and access them on
-                            other devices.
-                        </Text>
+                    {user ? (
+                        <View style={styles.authPlaceholder}>
+                            <Ionicons
+                                name="person-circle"
+                                size={64}
+                                color={theme.colors.primary}
+                                style={{ marginBottom: 16 }}
+                            />
+                            <Text style={[styles.settingsLabel, { marginBottom: 8 }]}>
+                                Logged in
+                            </Text>
+                            <Text style={[styles.settingsValue, { textAlign: 'center', marginBottom: 20 }]}>
+                                {user.email}
+                            </Text>
+                            <Text style={[styles.settingsValue, { textAlign: 'center', color: '#4caf50', marginBottom: 20 }]}>
+                                Cloud Sync Active
+                            </Text>
+                            <TouchableOpacity style={styles.authButtonSecondary} onPress={handleSignOut}>
+                                <Text style={styles.authButtonTextSecondary}>Sign Out</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View style={styles.authPlaceholder}>
+                            <Ionicons
+                                name="cloud-offline-outline"
+                                size={64}
+                                color={theme.colors.textSecondary}
+                                style={{ marginBottom: 16 }}
+                            />
+                            <Text style={[styles.settingsLabel, { marginBottom: 8 }]}>
+                                Guest Mode
+                            </Text>
+                            <Text
+                                style={[
+                                    styles.settingsValue,
+                                    { textAlign: 'center', marginBottom: 20 },
+                                ]}
+                            >
+                                Local Storage Only. Sign in to sync your lists to the cloud.
+                            </Text>
 
-                        <TouchableOpacity style={styles.authButton}>
-                            <Text style={styles.authButtonText}>Sign In</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.authButtonSecondary}>
-                            <Text style={styles.authButtonTextSecondary}>Create Account</Text>
-                        </TouchableOpacity>
-                    </View>
+                            <TouchableOpacity style={styles.authButton} onPress={() => setAuthModalVisible(true)}>
+                                <Text style={styles.authButtonText}>Sign In / Create Account</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
 
                 <View style={styles.settingsSection}>
@@ -107,6 +134,7 @@ export const SettingsScreen = ({ onBack }: SettingsScreenProps) => {
             </ScrollView>
 
             <StatusBar style={isDark ? 'light' : 'dark'} />
+            <AuthModal visible={isAuthModalVisible} onClose={() => setAuthModalVisible(false)} />
         </SafeAreaView>
     );
 };

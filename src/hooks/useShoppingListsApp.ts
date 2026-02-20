@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  loadLists,
   loadRoute,
-  saveLists,
   saveRoute,
 } from '../storage';
+import { useSync } from '../context/SyncContext';
 import { AppRoute, SelectedRecentItem, ShoppingItem, ShoppingList } from '../types';
 import { MAX_RECENTS, sanitizeRecents } from '../utils/recents';
 
@@ -60,6 +59,7 @@ const normalizeName = (value: string) => value.trim().toLowerCase();
 const createId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const useShoppingListsApp = (): ShoppingListsAppState => {
+  const { storageProvider, isInitializing } = useSync();
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [route, setRoute] = useState<AppRoute>(DEFAULT_ROUTE);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -74,13 +74,16 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const [listNameError, setListNameError] = useState('');
 
   useEffect(() => {
-    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+    let mounted = true;
     const hydrate = async () => {
+      if (isInitializing) return;
+
       const [storedLists, storedRoute] = await Promise.all([
-        loadLists(),
+        storageProvider.loadLists(),
         loadRoute(),
       ]);
-      if (!isMounted) return;
+      if (!mounted) return;
 
       setLists(storedLists);
 
@@ -97,18 +100,25 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
         }
       }
       setIsHydrated(true);
+
+      if (storageProvider.subscribe) {
+        unsubscribe = storageProvider.subscribe((updatedLists) => {
+          if (mounted) setLists(updatedLists);
+        });
+      }
     };
 
     hydrate();
     return () => {
-      isMounted = false;
+      mounted = false;
+      if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [storageProvider, isInitializing]);
 
   useEffect(() => {
-    if (!isHydrated) return;
-    saveLists(lists);
-  }, [lists, isHydrated]);
+    if (!isHydrated || isInitializing) return;
+    storageProvider.saveLists(lists);
+  }, [lists, isHydrated, storageProvider, isInitializing]);
 
   useEffect(() => {
     if (!isHydrated) return;

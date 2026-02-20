@@ -2,8 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppRoute, ShoppingItem, ShoppingList } from './types';
 import { sanitizeRecents } from './utils/recents';
 
-const LISTS_KEY = '@shopping_lists';
 const ROUTE_KEY = '@shopping_route';
+
+export interface StorageProvider {
+  loadLists(): Promise<ShoppingList[]>;
+  saveLists(lists: ShoppingList[]): Promise<void>;
+  subscribe?(onChange: (lists: ShoppingList[]) => void): () => void;
+}
+
+const LISTS_KEY = '@shopping_lists';
 
 const isShoppingItem = (value: unknown): value is ShoppingItem => {
   if (!value || typeof value !== 'object') return false;
@@ -37,6 +44,31 @@ const normalizeList = (list: ShoppingList): ShoppingList => ({
   recents: sanitizeRecents(list.recents),
 });
 
+export const LocalStorageProvider: StorageProvider = {
+  async loadLists(): Promise<ShoppingList[]> {
+    try {
+      const raw = await AsyncStorage.getItem(LISTS_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(isShoppingList).map(normalizeList);
+    } catch {
+      return [];
+    }
+  },
+
+  async saveLists(lists: ShoppingList[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(
+        LISTS_KEY,
+        JSON.stringify(lists.map(normalizeList))
+      );
+    } catch {
+      // Ignore write errors for prototype reliability
+    }
+  },
+};
+
 const parseRoute = (raw: string | null): AppRoute | null => {
   if (!raw) return null;
   try {
@@ -50,29 +82,6 @@ const parseRoute = (raw: string | null): AppRoute | null => {
     return null;
   }
 };
-
-export async function loadLists(): Promise<ShoppingList[]> {
-  try {
-    const raw = await AsyncStorage.getItem(LISTS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isShoppingList).map(normalizeList);
-  } catch {
-    return [];
-  }
-}
-
-export async function saveLists(lists: ShoppingList[]): Promise<void> {
-  try {
-    await AsyncStorage.setItem(
-      LISTS_KEY,
-      JSON.stringify(lists.map(normalizeList))
-    );
-  } catch {
-    // Ignore write errors for prototype reliability
-  }
-}
 
 export async function loadRoute(): Promise<AppRoute | null> {
   try {
