@@ -24,6 +24,8 @@ export const HomeScreen = () => {
     setListNameInput,
     openCreateListModal,
     openRenameListModal,
+    openJoinListModal,
+    openShareListModal,
     closeListNameModal,
     submitListName,
     deleteList,
@@ -43,6 +45,8 @@ export const HomeScreen = () => {
     handleAddSelected,
     handleToggleRecent,
     handleUpdateRecentQuantity,
+    handleAddMultipleSelected,
+    handleQuickAddMultiple,
     handleClearRecents,
     handleToggle,
     handleDelete,
@@ -88,6 +92,7 @@ export const HomeScreen = () => {
         onOpenList={openList}
         onOpenCreateListModal={openCreateListModal}
         onOpenRenameListModal={openRenameListModal}
+        onOpenJoinListModal={openJoinListModal}
         onDeleteList={deleteList}
         isListNameModalOpen={isListNameModalOpen}
         listNameMode={listNameMode}
@@ -102,32 +107,56 @@ export const HomeScreen = () => {
   }
 
   return (
-    <ShoppingListScreen
-      listName={currentList.name}
-      hasItems={hasItems}
-      activeItems={activeItems}
-      completedItems={completedItems}
-      showCompleted={showCompleted}
-      setShowCompleted={setShowCompleted}
-      isOverlayOpen={isOverlayOpen}
-      openOverlay={openOverlay}
-      closeOverlay={closeOverlay}
-      overlayInput={overlayInput}
-      setOverlayInput={setOverlayInput}
-      recentItems={recentItems}
-      selectedRecent={selectedRecent}
-      handleOverlayAdd={handleOverlayAdd}
-      handleAddSelected={handleAddSelected}
-      handleToggleRecent={handleToggleRecent}
-      handleUpdateRecentQuantity={handleUpdateRecentQuantity}
-      handleClearRecents={handleClearRecents}
-      handleToggle={handleToggle}
-      handleDelete={handleDelete}
-      handleClearAll={handleClearAll}
-      handleIncrementQuantity={handleIncrementQuantity}
-      handleDecrementQuantity={handleDecrementQuantity}
-      onBack={goToLists}
-    />
+    <>
+      <ShoppingListScreen
+        listId={currentList.id}
+        listName={currentList.name}
+        hasItems={hasItems}
+        activeItems={activeItems}
+        completedItems={completedItems}
+        showCompleted={showCompleted}
+        setShowCompleted={setShowCompleted}
+        isOverlayOpen={isOverlayOpen}
+        openOverlay={openOverlay}
+        closeOverlay={closeOverlay}
+        overlayInput={overlayInput}
+        setOverlayInput={setOverlayInput}
+        recentItems={recentItems}
+        selectedRecent={selectedRecent}
+        handleOverlayAdd={handleOverlayAdd}
+        handleAddSelected={handleAddSelected}
+        handleToggleRecent={handleToggleRecent}
+        handleUpdateRecentQuantity={handleUpdateRecentQuantity}
+        handleAddMultipleSelected={handleAddMultipleSelected}
+        handleQuickAddMultiple={handleQuickAddMultiple}
+        handleClearRecents={handleClearRecents}
+        handleToggle={handleToggle}
+        handleDelete={handleDelete}
+        handleClearAll={handleClearAll}
+        handleIncrementQuantity={handleIncrementQuantity}
+        handleDecrementQuantity={handleDecrementQuantity}
+        onBack={goToLists}
+        onShareList={() => openShareListModal(currentList.id)}
+      />
+      {/* We need to render the Modal here so it can overlay ShoppingListScreen too */}
+      <ListsScreen
+        lists={lists}
+        onOpenList={openList}
+        onOpenCreateListModal={openCreateListModal}
+        onOpenRenameListModal={openRenameListModal}
+        onOpenJoinListModal={openJoinListModal}
+        onDeleteList={deleteList}
+        isListNameModalOpen={isListNameModalOpen}
+        listNameMode={listNameMode}
+        listNameInput={listNameInput}
+        listNameError={listNameError}
+        onChangeListName={setListNameInput}
+        onCloseListNameModal={closeListNameModal}
+        onSubmitListName={submitListName}
+        onOpenSettings={goToSettings}
+        hidden={true}
+      />
+    </>
   );
 };
 

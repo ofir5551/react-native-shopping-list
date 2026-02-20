@@ -13,6 +13,8 @@ export type ShoppingList = {
   updatedAt: number;
   items: ShoppingItem[];
   recents: string[];
+  ownerId?: string;
+  shareCode?: string;
 };
 
 export type AppRoute =

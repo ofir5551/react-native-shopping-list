@@ -13,15 +13,17 @@ type ListsScreenProps = {
   onOpenList: (listId: string) => void;
   onOpenCreateListModal: () => void;
   onOpenRenameListModal: (listId: string) => void;
+  onOpenJoinListModal: () => void;
   onDeleteList: (listId: string) => void;
   isListNameModalOpen: boolean;
-  listNameMode: 'create' | 'rename';
+  listNameMode: 'create' | 'rename' | 'join' | 'share';
   listNameInput: string;
   listNameError: string;
   onChangeListName: (value: string) => void;
   onCloseListNameModal: () => void;
   onSubmitListName: () => void;
   onOpenSettings: () => void;
+  hidden?: boolean;
 };
 
 const getItemsLabel = (count: number) => (count === 1 ? '1 item' : `${count} items`);
@@ -31,6 +33,7 @@ export const ListsScreen = ({
   onOpenList,
   onOpenCreateListModal,
   onOpenRenameListModal,
+  onOpenJoinListModal,
   onDeleteList,
   isListNameModalOpen,
   listNameMode,
@@ -40,6 +43,7 @@ export const ListsScreen = ({
   onCloseListNameModal,
   onSubmitListName,
   onOpenSettings,
+  hidden,
 }: ListsScreenProps) => {
   const styles = useAppStyles();
 
@@ -54,13 +58,34 @@ export const ListsScreen = ({
     ]);
   };
 
+  if (hidden) return (
+    <ListNameModal
+      visible={isListNameModalOpen}
+      mode={listNameMode}
+      value={listNameInput}
+      error={listNameError}
+      onChange={onChangeListName}
+      onSubmit={onSubmitListName}
+      onClose={onCloseListNameModal}
+    />
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
         title="Lists"
         subtitle="Choose a list or create a new one"
         onOpenSettings={onOpenSettings}
-      />
+      >
+        <Pressable
+          style={styles.iconButton}
+          onPress={onOpenJoinListModal}
+          accessibilityRole="button"
+          accessibilityLabel="Join a shared list"
+        >
+          <Ionicons name="link-outline" size={20} color="#4a4a4a" />
+        </Pressable>
+      </Header>
 
       {lists.length === 0 ? (
         <View style={styles.listsEmptyState}>

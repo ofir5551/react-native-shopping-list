@@ -8,6 +8,7 @@ export interface StorageProvider {
   loadLists(): Promise<ShoppingList[]>;
   saveLists(lists: ShoppingList[]): Promise<void>;
   subscribe?(onChange: (lists: ShoppingList[]) => void): () => void;
+  joinList?(listId: string): Promise<void>;
 }
 
 const LISTS_KEY = '@shopping_lists';
@@ -32,6 +33,7 @@ const isShoppingList = (value: unknown): value is ShoppingList => {
     typeof candidate.name === 'string' &&
     typeof candidate.createdAt === 'number' &&
     typeof candidate.updatedAt === 'number' &&
+    (candidate.ownerId === undefined || typeof candidate.ownerId === 'string') &&
     Array.isArray(candidate.items) &&
     candidate.items.every(isShoppingItem) &&
     Array.isArray(candidate.recents) &&

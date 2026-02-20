@@ -11,6 +11,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
 import { getTagColor } from '../utils/recents';
 import { SelectedRecentItem } from '../types';
+import { SmartSuggestionsModal } from './SmartSuggestionsModal';
 
 type OverlayModalProps = {
   visible: boolean;
@@ -21,6 +22,8 @@ type OverlayModalProps = {
   selectedRecent: SelectedRecentItem[];
   onToggleRecent: (name: string) => void;
   onUpdateRecentQuantity: (name: string, delta: number) => void;
+  handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
+  handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
   onAddSelected: () => void;
   onClose: () => void;
 };
@@ -61,6 +64,8 @@ export const OverlayModal = ({
   selectedRecent,
   onToggleRecent,
   onUpdateRecentQuantity,
+  handleAddMultipleSelected,
+  handleQuickAddMultiple,
   onAddSelected,
   onClose,
 }: OverlayModalProps) => {
@@ -75,6 +80,15 @@ export const OverlayModal = ({
     savedSets: false,
   });
 
+  const [suggestPrompt, setSuggestPrompt] = useState('');
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+
+  const handleOpenSuggestions = () => {
+    if (suggestPrompt.trim()) {
+      setIsSuggestModalOpen(true);
+    }
+  };
+
   const handleAdd = () => {
     onAddInput();
     inputRef.current?.focus();
@@ -82,7 +96,9 @@ export const OverlayModal = ({
 
   const toggleSection = (section: OverlaySectionKey) => {
     setExpandedSections((previous) => ({
-      ...previous,
+      recents: false,
+      smartSuggestion: false,
+      savedSets: false,
       [section]: !previous[section],
     }));
   };
@@ -239,9 +255,30 @@ export const OverlayModal = ({
                 isExpanded={expandedSections.smartSuggestion}
                 onToggle={() => toggleSection('smartSuggestion')}
               >
-                <Text style={styles.overlayPlaceholderText}>
-                  Smart suggestions will appear here soon.
+                <Text style={{ fontSize: 14, color: '#666', marginBottom: 12 }}>
+                  Type a prompt (e.g., "birthday party for 10 kids") to generate suggested items.
                 </Text>
+                <View style={{ flexDirection: 'row', gap: 8, height: 44 }}>
+                  <TextInput
+                    placeholder="Enter prompt..."
+                    value={suggestPrompt}
+                    onChangeText={setSuggestPrompt}
+                    onSubmitEditing={handleOpenSuggestions}
+                    blurOnSubmit={false}
+                    returnKeyType="go"
+                    style={[styles.input, { flex: 1 }]}
+                    placeholderTextColor="#8b8b8b"
+                  />
+                  <Pressable
+                    style={[styles.addButton, { backgroundColor: suggestPrompt.trim() ? '#007AFF' : '#ccc' }]}
+                    onPress={handleOpenSuggestions}
+                    disabled={!suggestPrompt.trim()}
+                    accessibilityRole="button"
+                    accessibilityLabel="Generate suggestions"
+                  >
+                    <Ionicons name="sparkles" size={20} color="#ffffff" />
+                  </Pressable>
+                </View>
               </OverlaySection>
 
               <OverlaySection
@@ -270,6 +307,22 @@ export const OverlayModal = ({
           </Pressable>
         </View>
       </View>
+
+      <SmartSuggestionsModal
+        visible={isSuggestModalOpen}
+        prompt={suggestPrompt.trim()}
+        onClose={() => setIsSuggestModalOpen(false)}
+        onAddSelected={(items) => {
+          handleAddMultipleSelected(items);
+          setIsSuggestModalOpen(false);
+          setSuggestPrompt('');
+        }}
+        onQuickAdd={(items) => {
+          handleQuickAddMultiple(items);
+          setIsSuggestModalOpen(false);
+          setSuggestPrompt('');
+        }}
+      />
     </Modal>
   );
 };

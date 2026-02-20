@@ -7,7 +7,7 @@ import { useSync } from '../context/SyncContext';
 import { AppRoute, SelectedRecentItem, ShoppingItem, ShoppingList } from '../types';
 import { MAX_RECENTS, sanitizeRecents } from '../utils/recents';
 
-type ListNameModalMode = 'create' | 'rename';
+type ListNameModalMode = 'create' | 'rename' | 'join' | 'share';
 
 export type ShoppingListsAppState = {
   isHydrated: boolean;
@@ -46,10 +46,14 @@ export type ShoppingListsAppState = {
   listNameError: string;
   openCreateListModal: () => void;
   openRenameListModal: (listId: string) => void;
+  openJoinListModal: () => void;
+  openShareListModal: (listId: string) => void;
   closeListNameModal: () => void;
   submitListName: () => void;
   deleteList: (listId: string) => void;
   goToSettings: () => void;
+  handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
+  handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
 };
 
 const DEFAULT_ROUTE: AppRoute = { name: 'lists' };
@@ -213,14 +217,56 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setIsListNameModalOpen(true);
   };
 
-  const submitListName = () => {
+  const openJoinListModal = () => {
+    setListNameMode('join');
+    setEditingListId(null);
+    setListNameInput('');
+    setListNameError('');
+    setIsListNameModalOpen(true);
+  };
+
+  const openShareListModal = (listId: string) => {
+    const list = lists.find((item) => item.id === listId);
+    setListNameMode('share');
+    setEditingListId(listId);
+    setListNameInput(list?.shareCode ?? listId); // Show shareCode, fallback to id
+    setListNameError('');
+    setIsListNameModalOpen(true);
+  };
+
+  const submitListName = async () => {
+    const trimmed = listNameInput.trim();
+
+    if (listNameMode === 'share') {
+      closeListNameModal();
+      return;
+    }
+
+    if (listNameMode === 'join') {
+      if (!trimmed) {
+        setListNameError('Share ID is required.');
+        return;
+      }
+      try {
+        if (!storageProvider.joinList) {
+          throw new Error('Cloud sync is required to join a list.');
+        }
+        await storageProvider.joinList(trimmed);
+        const updatedLists = await storageProvider.loadLists();
+        setLists(updatedLists);
+        closeListNameModal();
+      } catch (err: any) {
+        setListNameError(err.message || 'Failed to join list');
+      }
+      return;
+    }
+
     const error = validateListName(listNameInput, editingListId);
     if (error) {
       setListNameError(error);
       return;
     }
 
-    const trimmed = listNameInput.trim();
     const timestamp = Date.now();
 
     if (listNameMode === 'create') {
@@ -370,6 +416,59 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     closeOverlay();
   };
 
+  const handleAddMultipleSelected = (items: { name: string; quantity: number }[]) => {
+    setSelectedRecent((current) => {
+      const newSelected = [...current];
+      items.forEach((item) => {
+        const existing = newSelected.find((s) => normalizeName(s.name) === normalizeName(item.name));
+        if (existing) {
+          existing.quantity += item.quantity;
+        } else {
+          newSelected.push(item);
+        }
+      });
+      return newSelected;
+    });
+  };
+
+  const handleQuickAddMultiple = (items: { name: string; quantity: number }[]) => {
+    if (!currentList || items.length === 0) return;
+    const timestamp = Date.now();
+
+    updateListById(currentList.id, (list) => {
+      let currentItems = [...list.items];
+      const newItems: ShoppingItem[] = [];
+
+      items.forEach((itemToAdd, index) => {
+        const existingActiveIndex = currentItems.findIndex(
+          (item) => !item.purchased && normalizeName(item.name) === normalizeName(itemToAdd.name)
+        );
+
+        if (existingActiveIndex !== -1) {
+          currentItems[existingActiveIndex] = {
+            ...currentItems[existingActiveIndex],
+            quantity: currentItems[existingActiveIndex].quantity + itemToAdd.quantity,
+          };
+        } else {
+          newItems.push({
+            id: `${timestamp}-${index}-qa`,
+            name: itemToAdd.name,
+            purchased: false,
+            createdAt: timestamp + index,
+            quantity: itemToAdd.quantity,
+          });
+        }
+      });
+
+      return {
+        ...list,
+        items: [...newItems, ...currentItems],
+      };
+    });
+
+    closeOverlay();
+  };
+
   const handleToggleRecent = (name: string) => {
     setSelectedRecent((current) =>
       current.some((item) => item.name === name)
@@ -487,9 +586,13 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     listNameError,
     openCreateListModal,
     openRenameListModal,
+    openJoinListModal,
+    openShareListModal,
     closeListNameModal,
     submitListName,
     deleteList,
     goToSettings,
+    handleAddMultipleSelected,
+    handleQuickAddMultiple,
   };
 };

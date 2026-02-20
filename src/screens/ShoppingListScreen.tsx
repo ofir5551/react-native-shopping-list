@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Alert, Pressable, SafeAreaView, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { EmptyState } from '../components/EmptyState';
 import { Fab } from '../components/Fab';
 import { Header } from '../components/Header';
@@ -10,6 +11,7 @@ import { useAppStyles } from '../styles/appStyles';
 import { ShoppingItem, SelectedRecentItem } from '../types';
 
 type ShoppingListScreenProps = {
+  listId: string;
   listName: string;
   hasItems: boolean;
   activeItems: ShoppingItem[];
@@ -27,6 +29,8 @@ type ShoppingListScreenProps = {
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
   handleUpdateRecentQuantity: (name: string, delta: number) => void;
+  handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
+  handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
   handleClearRecents: () => void;
   handleToggle: (id: string) => void;
   handleDelete: (id: string) => void;
@@ -34,9 +38,11 @@ type ShoppingListScreenProps = {
   handleIncrementQuantity: (id: string) => void;
   handleDecrementQuantity: (id: string) => void;
   onBack: () => void;
+  onShareList: () => void;
 };
 
 export const ShoppingListScreen = ({
+  listId,
   listName,
   hasItems,
   activeItems,
@@ -54,6 +60,8 @@ export const ShoppingListScreen = ({
   handleAddSelected,
   handleToggleRecent,
   handleUpdateRecentQuantity,
+  handleAddMultipleSelected,
+  handleQuickAddMultiple,
   handleClearRecents,
   handleToggle,
   handleDelete,
@@ -61,6 +69,7 @@ export const ShoppingListScreen = ({
   handleIncrementQuantity,
   handleDecrementQuantity,
   onBack,
+  onShareList,
 }: ShoppingListScreenProps) => {
   const styles = useAppStyles();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -93,7 +102,16 @@ export const ShoppingListScreen = ({
         subtitle="Simple, fast, and focused"
         onBack={onBack}
         onOpenSettings={() => setIsSettingsOpen((current) => !current)}
-      />
+      >
+        <Pressable
+          style={styles.iconButton}
+          onPress={onShareList}
+          accessibilityRole="button"
+          accessibilityLabel="Copy Share ID"
+        >
+          <Ionicons name="share-social-outline" size={20} color="#4a4a4a" />
+        </Pressable>
+      </Header>
       {isSettingsOpen ? (
         <>
           <Pressable
@@ -160,6 +178,8 @@ export const ShoppingListScreen = ({
         selectedRecent={selectedRecent}
         onToggleRecent={handleToggleRecent}
         onUpdateRecentQuantity={handleUpdateRecentQuantity}
+        handleAddMultipleSelected={handleAddMultipleSelected}
+        handleQuickAddMultiple={handleQuickAddMultiple}
         onAddSelected={handleAddSelected}
         onClose={closeOverlay}
       />
