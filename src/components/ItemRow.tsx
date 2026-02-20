@@ -41,7 +41,7 @@ export const ItemRow = ({ item, onToggle, onDelete, onIncrement, onDecrement }: 
           <Pressable style={styles.quantityButton} onPress={() => onDecrement(item.id)}>
             <Feather name="minus" size={14} color="#666" />
           </Pressable>
-          <Text style={styles.quantityText}>{item.quantity ?? 1}</Text>
+          <Text style={styles.quantityText}>{item.quantity}</Text>
           <Pressable style={styles.quantityButton} onPress={() => onIncrement(item.id)}>
             <Feather name="plus" size={14} color="#666" />
           </Pressable>

@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppRoute, ShoppingItem, ShoppingList } from './types';
 import { sanitizeRecents } from './utils/recents';
 
-const LISTS_KEY = '@shopping_lists_v2';
-const ROUTE_KEY = '@shopping_route_v1';
+const LISTS_KEY = '@shopping_lists';
+const ROUTE_KEY = '@shopping_route';
 
 const isShoppingItem = (value: unknown): value is ShoppingItem => {
   if (!value || typeof value !== 'object') return false;
