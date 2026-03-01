@@ -2,6 +2,7 @@
   "expo": {
     "name": "shopping-list",
     "slug": "shopping-list",
+    "scheme": "shopping-list",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -31,6 +32,9 @@
       "eas": {
         "projectId": "952fe7b5-aac0-4e6b-be36-2b4e3c4011e3"
       }
-    }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }

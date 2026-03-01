@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Image,
     SafeAreaView,
     ScrollView,
     Switch,
@@ -70,12 +71,19 @@ export const SettingsScreen = ({ onBack }: SettingsScreenProps) => {
                     <Text style={styles.settingsSectionTitle}>Account</Text>
                     {user ? (
                         <View style={styles.authPlaceholder}>
-                            <Ionicons
-                                name="person-circle"
-                                size={64}
-                                color={theme.colors.primary}
-                                style={{ marginBottom: 16 }}
-                            />
+                            {user.user_metadata?.avatar_url ? (
+                                <Image
+                                    source={{ uri: user.user_metadata.avatar_url }}
+                                    style={{ width: 64, height: 64, borderRadius: 32, marginBottom: 16 }}
+                                />
+                            ) : (
+                                <Ionicons
+                                    name="person-circle"
+                                    size={64}
+                                    color={theme.colors.primary}
+                                    style={{ marginBottom: 16 }}
+                                />
+                            )}
                             <Text style={[styles.settingsLabel, { marginBottom: 8 }]}>
                                 Logged in
                             </Text>
