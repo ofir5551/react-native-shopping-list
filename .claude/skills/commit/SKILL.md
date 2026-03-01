@@ -24,8 +24,6 @@ description: Stage relevant changes, write a high-quality conventional commit me
    ```
    git commit -m "$(cat <<'EOF'
    type(scope): description
-
-   Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
    EOF
    )"
    git push
