@@ -6,6 +6,7 @@ import { ListsScreen } from './ListsScreen';
 import { ShoppingListScreen } from './ShoppingListScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { useAppStyles } from '../styles/appStyles';
+import { OfflineBanner } from '../components/OfflineBanner';
 
 export const HomeScreen = () => {
   const styles = useAppStyles();
@@ -84,34 +85,43 @@ export const HomeScreen = () => {
   }
 
   if (route.name === 'settings') {
-    return <SettingsScreen onBack={goToLists} />;
+    return (
+      <>
+        <OfflineBanner />
+        <SettingsScreen onBack={goToLists} />
+      </>
+    );
   }
 
   if (route.name === 'lists' || !currentList) {
     return (
-      <ListsScreen
-        lists={lists}
-        currentUserId={currentUserId}
-        onOpenList={openList}
-        onOpenCreateListModal={openCreateListModal}
-        onOpenRenameListModal={openRenameListModal}
-        onOpenJoinListModal={openJoinListModal}
-        onDeleteList={deleteList}
-        onLeaveList={leaveList}
-        isListNameModalOpen={isListNameModalOpen}
-        listNameMode={listNameMode}
-        listNameInput={listNameInput}
-        listNameError={listNameError}
-        onChangeListName={setListNameInput}
-        onCloseListNameModal={closeListNameModal}
-        onSubmitListName={submitListName}
-        onOpenSettings={goToSettings}
-      />
+      <>
+        <OfflineBanner />
+        <ListsScreen
+          lists={lists}
+          currentUserId={currentUserId}
+          onOpenList={openList}
+          onOpenCreateListModal={openCreateListModal}
+          onOpenRenameListModal={openRenameListModal}
+          onOpenJoinListModal={openJoinListModal}
+          onDeleteList={deleteList}
+          onLeaveList={leaveList}
+          isListNameModalOpen={isListNameModalOpen}
+          listNameMode={listNameMode}
+          listNameInput={listNameInput}
+          listNameError={listNameError}
+          onChangeListName={setListNameInput}
+          onCloseListNameModal={closeListNameModal}
+          onSubmitListName={submitListName}
+          onOpenSettings={goToSettings}
+        />
+      </>
     );
   }
 
   return (
     <>
+      <OfflineBanner />
       <ShoppingListScreen
         listId={currentList.id}
         listName={currentList.name}
