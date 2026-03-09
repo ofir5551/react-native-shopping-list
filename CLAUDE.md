@@ -59,6 +59,7 @@ Key directories:
 - Use `showToast()` from `ToastContext` for user feedback
 - `StorageProvider` interface: `loadLists`, `saveLists`, optional `subscribe`, `joinList`, `leaveList`, `deleteList`
 - New components belong in `src/components/`; new screens belong in `src/screens/`
+- If you ever create utility scripts to execute commands - make sure to cleanup after and never commit them.
 
 ## Manual Test Checklist
 

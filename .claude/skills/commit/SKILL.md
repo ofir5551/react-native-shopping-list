@@ -18,7 +18,7 @@ description: Stage relevant changes, write a high-quality conventional commit me
    - Format: `type(scope): short imperative description` (≤ 72 chars)
    - Types: `feat`, `fix`, `refactor`, `style`, `chore`, `docs`
    - Scope examples: `storage`, `sharing`, `ui`, `auth`, `supabase`
-   - Body (optional): explain *why*, not *what*
+   - Body: 1-2 short sentences per major change, covering only what matters. No bullet lists, no padding, no "also" chains. If everything fits in the subject line, skip the body.
 
 4. **Commit and push**:
    ```
