@@ -3,7 +3,9 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, BackHandler, SafeAreaView, View } from 'react-native';
 import { useShoppingListsApp } from '../hooks/useShoppingListsApp';
 import { ListsScreen } from './ListsScreen';
+import { LoginScreen } from './LoginScreen';
 import { ShoppingListScreen } from './ShoppingListScreen';
+import { SignUpScreen } from './SignUpScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { useAppStyles } from '../styles/appStyles';
 
@@ -17,6 +19,8 @@ export const HomeScreen = () => {
     openList,
     goToLists,
     goToSettings,
+    goToLogin,
+    goToSignup,
     isListNameModalOpen,
     listNameMode,
     listNameInput,
@@ -83,8 +87,16 @@ export const HomeScreen = () => {
     );
   }
 
+  if (route.name === 'login') {
+    return <LoginScreen onBack={goToSettings} onGoToSignup={goToSignup} onLoginSuccess={goToLists} />;
+  }
+
+  if (route.name === 'signup') {
+    return <SignUpScreen onBack={goToSettings} onGoToLogin={goToLogin} onSignUpSuccess={goToSettings} onLoginSuccess={goToLists} />;
+  }
+
   if (route.name === 'settings') {
-    return <SettingsScreen onBack={goToLists} />;
+    return <SettingsScreen onBack={goToLists} onSignIn={goToLogin} />;
   }
 
   if (route.name === 'lists' || !currentList) {

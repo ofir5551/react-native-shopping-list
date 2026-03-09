@@ -56,6 +56,8 @@ export type ShoppingListsAppState = {
   leaveList: (listId: string) => void;
   currentUserId: string | undefined;
   goToSettings: () => void;
+  goToLogin: () => void;
+  goToSignup: () => void;
   handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
 };
@@ -104,12 +106,13 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       const hasRouteList =
         storedRoute?.name === 'list' &&
         storedLists.some((list) => list.id === storedRoute.listId);
+      const isSettingsRoute = storedRoute?.name === 'settings';
 
-      if (hasRouteList) {
+      if (hasRouteList || isSettingsRoute) {
         setRoute(storedRoute as AppRoute);
       } else {
         setRoute(DEFAULT_ROUTE);
-        if (storedRoute?.name === 'list') {
+        if (storedRoute?.name === 'list' || storedRoute?.name === 'login' || storedRoute?.name === 'signup') {
           saveRoute(DEFAULT_ROUTE);
         }
       }
@@ -365,6 +368,14 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
 
   const goToSettings = () => {
     setRoute({ name: 'settings' });
+  };
+
+  const goToLogin = () => {
+    setRoute({ name: 'login' });
+  };
+
+  const goToSignup = () => {
+    setRoute({ name: 'signup' });
   };
 
   const closeOverlay = () => {
@@ -646,6 +657,8 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     leaveList,
     currentUserId,
     goToSettings,
+    goToLogin,
+    goToSignup,
     handleAddMultipleSelected,
     handleQuickAddMultiple,
   };

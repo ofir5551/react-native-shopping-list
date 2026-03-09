@@ -20,7 +20,9 @@ export type ShoppingList = {
 export type AppRoute =
   | { name: 'lists' }
   | { name: 'list'; listId: string }
-  | { name: 'settings' };
+  | { name: 'settings' }
+  | { name: 'login' }
+  | { name: 'signup' };
 
 export type SelectedRecentItem = {
   name: string;

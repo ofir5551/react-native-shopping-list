@@ -13,22 +13,26 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { AuthModal } from '../components/AuthModal';
 import { supabase } from '../supabase';
 
 type SettingsScreenProps = {
     onBack: () => void;
+    onSignIn: () => void;
 };
 
-export const SettingsScreen = ({ onBack }: SettingsScreenProps) => {
+export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
     const styles = useAppStyles();
     const { theme, isDark, setThemeType } = useTheme();
     const { user } = useAuth();
-    const [isAuthModalVisible, setAuthModalVisible] = React.useState(false);
 
     const toggleTheme = (value: boolean) => {
         setThemeType(value ? 'dark' : 'light');
     };
+
+    const displayName =
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.display_name ||
+        user?.email?.split('@')[0];
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
@@ -84,8 +88,8 @@ export const SettingsScreen = ({ onBack }: SettingsScreenProps) => {
                                     style={{ marginBottom: 16 }}
                                 />
                             )}
-                            <Text style={[styles.settingsLabel, { marginBottom: 8 }]}>
-                                Logged in
+                            <Text style={[styles.settingsLabel, { marginBottom: 4 }]}>
+                                Hi, {displayName}!
                             </Text>
                             <Text style={[styles.settingsValue, { textAlign: 'center', marginBottom: 20 }]}>
                                 {user.email}
@@ -117,7 +121,7 @@ export const SettingsScreen = ({ onBack }: SettingsScreenProps) => {
                                 Local Storage Only. Sign in to sync your lists to the cloud.
                             </Text>
 
-                            <TouchableOpacity style={styles.authButton} onPress={() => setAuthModalVisible(true)}>
+                            <TouchableOpacity style={styles.authButton} onPress={onSignIn}>
                                 <Text style={styles.authButtonText}>Sign In / Create Account</Text>
                             </TouchableOpacity>
                         </View>
@@ -142,7 +146,6 @@ export const SettingsScreen = ({ onBack }: SettingsScreenProps) => {
             </ScrollView>
 
             <StatusBar style={isDark ? 'light' : 'dark'} />
-            <AuthModal visible={isAuthModalVisible} onClose={() => setAuthModalVisible(false)} />
         </SafeAreaView>
     );
 };
