@@ -69,7 +69,7 @@ const normalizeName = (value: string) => value.trim().toLowerCase();
 const createId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const useShoppingListsApp = (): ShoppingListsAppState => {
-  const { storageProvider, isInitializing } = useSync();
+  const { storageProvider, isInitializing, joinList: joinListOnServer, leaveList: leaveListOnServer, deleteListFromServer } = useSync();
   const { user } = useAuth();
   const { showToast } = useToast();
   const currentUserId = user?.id;
@@ -279,10 +279,9 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
         return;
       }
       try {
-        if (!storageProvider.joinList) {
-          throw new Error('Cloud sync is required to join a list.');
-        }
-        await storageProvider.joinList(trimmed);
+        await joinListOnServer(trimmed);
+        // SyncEngine merges the joined list into local storage and triggers onRemoteUpdate
+        // Read updated lists from local
         const updatedLists = await storageProvider.loadLists();
         setLists(updatedLists);
         closeListNameModal();
@@ -338,7 +337,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const deleteList = (listId: string) => {
     // Remove from the prevListMap so *we* don't trigger the "deleted by owner" toast
     prevListMapRef.current.delete(listId);
-    storageProvider.deleteList?.(listId);
+    deleteListFromServer(listId);  // fire-and-forget, SyncEngine handles offline queuing
     setLists((current) => current.filter((list) => list.id !== listId));
     if (route.name === 'list' && route.listId === listId) {
       setRoute(DEFAULT_ROUTE);
@@ -352,9 +351,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     try {
       // Remove from prevListMap so we don't trigger the "deleted by owner" toast
       prevListMapRef.current.delete(listId);
-      if (storageProvider.leaveList) {
-        await storageProvider.leaveList(listId);
-      }
+      await leaveListOnServer(listId);
       setLists((current) => current.filter((list) => list.id !== listId));
       if (route.name === 'list' && route.listId === listId) {
         setRoute(DEFAULT_ROUTE);
