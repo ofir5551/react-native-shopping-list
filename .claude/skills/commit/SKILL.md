@@ -15,10 +15,10 @@ description: Stage relevant changes, write a high-quality conventional commit me
 2. **Stage** only relevant files. Avoid `.env`, secrets, or build artifacts.
 
 3. **Write the commit message**:
-   - Format: `type(scope): short imperative description` (≤ 72 chars)
+   - Format: `type(scope): short imperative description`
+   - **Maximum 20 words total** (subject + body combined). No body unless essential.
    - Types: `feat`, `fix`, `refactor`, `style`, `chore`, `docs`
    - Scope examples: `storage`, `sharing`, `ui`, `auth`, `supabase`
-   - Body: 1-2 short sentences per major change, covering only what matters. No bullet lists, no padding, no "also" chains. If everything fits in the subject line, skip the body.
 
 4. **Commit and push**:
    ```
