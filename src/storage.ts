@@ -15,7 +15,7 @@ export interface StorageProvider {
 
 const LISTS_KEY = '@shopping_lists';
 
-const isShoppingItem = (value: unknown): value is ShoppingItem => {
+export const isShoppingItem = (value: unknown): value is ShoppingItem => {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as Partial<ShoppingItem>;
   return (
@@ -27,7 +27,7 @@ const isShoppingItem = (value: unknown): value is ShoppingItem => {
   );
 };
 
-const isShoppingList = (value: unknown): value is ShoppingList => {
+export const isShoppingList = (value: unknown): value is ShoppingList => {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as Partial<ShoppingList>;
   return (
@@ -73,7 +73,7 @@ export const LocalStorageProvider: StorageProvider = {
   },
 };
 
-const parseRoute = (raw: string | null): AppRoute | null => {
+export const parseRoute = (raw: string | null): AppRoute | null => {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw);

@@ -7,6 +7,7 @@ Expo + React Native + TypeScript shopping list app with Supabase cloud sync and 
 - `npm start` — start Expo dev server (all platforms)
 - `npm run web` — start web only (fastest for testing)
 - `npm run android` / `npm run ios` — start on device/emulator
+- `npm test` — run Jest test suite (always run after implementing a feature)
 
 ## Tech Stack
 
@@ -83,6 +84,14 @@ Auth:    writes → LocalStorage → SyncEngine → Supabase (async, with retry)
 - Non-owner actions: leave list (removes from their view, not Supabase)
 - No migration needed on sign-in — SyncEngine's initial merge handles local + server data naturally
 - `SyncContext` exposes `joinList`, `leaveList`, `deleteListFromServer` — hook delegates through these, not `storageProvider`
+
+## Testing
+
+- **Run `npm test` at the end of every feature implementation** — all tests must pass before committing.
+- Test files are co-located with source: `src/**/*.test.ts` / `*.test.tsx`
+- Uses `jest-expo` preset with `@testing-library/react-native` for component tests
+- AsyncStorage is mocked globally in `jest.setup.js`; Supabase and expo modules are mocked per-test
+- If you add or change business logic (sync, storage, validation), add or update the relevant tests
 
 ## Patterns
 
