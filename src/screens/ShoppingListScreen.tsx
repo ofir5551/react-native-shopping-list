@@ -8,7 +8,7 @@ import { Header } from '../components/Header';
 import { OverlayModal } from '../components/OverlayModal';
 import { ShoppingList } from '../components/ShoppingList';
 import { useAppStyles } from '../styles/appStyles';
-import { ShoppingItem, SelectedRecentItem } from '../types';
+import { SavedSet, SavedSetItem, ShoppingItem, SelectedRecentItem } from '../types';
 
 type ShoppingListScreenProps = {
   listId: string;
@@ -32,6 +32,10 @@ type ShoppingListScreenProps = {
   handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
   handleClearRecents: () => void;
+  savedSets: SavedSet[];
+  onCreateSavedSet: (name: string, items: SavedSetItem[]) => void;
+  onUpdateSavedSet: (setId: string, items: SavedSetItem[]) => void;
+  onDeleteSavedSet: (setId: string) => void;
   handleToggle: (id: string) => void;
   handleDelete: (id: string) => void;
   handleClearAll: () => void;
@@ -63,6 +67,10 @@ export const ShoppingListScreen = ({
   handleAddMultipleSelected,
   handleQuickAddMultiple,
   handleClearRecents,
+  savedSets,
+  onCreateSavedSet,
+  onUpdateSavedSet,
+  onDeleteSavedSet,
   handleToggle,
   handleDelete,
   handleClearAll,
@@ -182,6 +190,10 @@ export const ShoppingListScreen = ({
         handleQuickAddMultiple={handleQuickAddMultiple}
         onAddSelected={handleAddSelected}
         onClose={closeOverlay}
+        savedSets={savedSets}
+        onCreateSavedSet={onCreateSavedSet}
+        onUpdateSavedSet={onUpdateSavedSet}
+        onDeleteSavedSet={onDeleteSavedSet}
       />
 
       <StatusBar style="dark" />

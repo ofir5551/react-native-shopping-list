@@ -71,7 +71,7 @@ Auth:    writes → LocalStorage → SyncEngine → Supabase (async, with retry)
 ## Storage Invariants (do not break)
 
 - **Never persist before hydration**: check `isHydrated` before saving
-- **Storage keys are frozen**: `@shopping_lists` (lists), `@shopping_route` (current route), `@sync_dirty_ids`, `@sync_pending_deletes`
+- **Storage keys are frozen**: `@shopping_lists` (lists), `@shopping_route` (current route), `@sync_dirty_ids`, `@sync_pending_deletes`, `@shopping_saved_sets` (saved sets)
 - **Recents rules**: dedupe names, newest first, max 12 entries (`MAX_RECENTS`)
 - **Lists sorted**: by `updatedAt` descending in UI; items by `createdAt` descending
 - **Realtime guard**: `isFromRealtimeRef` prevents save loops on realtime updates

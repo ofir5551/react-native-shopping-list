@@ -29,3 +29,6 @@ export type SelectedRecentItem = {
   quantity: number;
 };
 
+export type SavedSetItem = { name: string; quantity: number };
+export type SavedSet = { id: string; name: string; items: SavedSetItem[]; createdAt: number };
+

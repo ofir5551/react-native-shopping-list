@@ -54,6 +54,10 @@ export const HomeScreen = () => {
     handleAddMultipleSelected,
     handleQuickAddMultiple,
     handleClearRecents,
+    savedSets,
+    createSavedSet,
+    updateSavedSet,
+    deleteSavedSet,
     handleToggle,
     handleDelete,
     handleClearAll,
@@ -146,6 +150,10 @@ export const HomeScreen = () => {
         handleAddMultipleSelected={handleAddMultipleSelected}
         handleQuickAddMultiple={handleQuickAddMultiple}
         handleClearRecents={handleClearRecents}
+        savedSets={savedSets}
+        onCreateSavedSet={createSavedSet}
+        onUpdateSavedSet={updateSavedSet}
+        onDeleteSavedSet={deleteSavedSet}
         handleToggle={handleToggle}
         handleDelete={handleDelete}
         handleClearAll={handleClearAll}

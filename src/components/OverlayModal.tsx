@@ -8,10 +8,12 @@ import {
   View,
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { Alert } from 'react-native';
 import { useAppStyles } from '../styles/appStyles';
 import { getTagColor } from '../utils/recents';
-import { SelectedRecentItem } from '../types';
+import { SavedSet, SavedSetItem, SelectedRecentItem } from '../types';
 import { SmartSuggestionsModal } from './SmartSuggestionsModal';
+import { SavedSetModal } from './SavedSetModal';
 
 type OverlayModalProps = {
   visible: boolean;
@@ -26,6 +28,10 @@ type OverlayModalProps = {
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
   onAddSelected: () => void;
   onClose: () => void;
+  savedSets: SavedSet[];
+  onCreateSavedSet: (name: string, items: SavedSetItem[]) => void;
+  onUpdateSavedSet: (setId: string, items: SavedSetItem[]) => void;
+  onDeleteSavedSet: (setId: string) => void;
 };
 
 type OverlaySectionKey = 'recents' | 'smartSuggestion' | 'savedSets';
@@ -68,6 +74,10 @@ export const OverlayModal = ({
   handleQuickAddMultiple,
   onAddSelected,
   onClose,
+  savedSets,
+  onCreateSavedSet,
+  onUpdateSavedSet,
+  onDeleteSavedSet,
 }: OverlayModalProps) => {
   const styles = useAppStyles();
   const inputRef = useRef<TextInput | null>(null);
@@ -82,6 +92,10 @@ export const OverlayModal = ({
 
   const [suggestPrompt, setSuggestPrompt] = useState('');
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+  const [isSaveSetPromptOpen, setIsSaveSetPromptOpen] = useState(false);
+  const [saveSetName, setSaveSetName] = useState('');
+  const [activeSavedSet, setActiveSavedSet] = useState<SavedSet | null>(null);
+  const [isSavedSetModalOpen, setIsSavedSetModalOpen] = useState(false);
 
   const handleOpenSuggestions = () => {
     if (suggestPrompt.trim()) {
@@ -165,14 +179,27 @@ export const OverlayModal = ({
                   Selected ({selectedRecent.length})
                 </Text>
                 {selectedRecent.length > 0 ? (
-                  <Pressable
-                    onPress={clearSelected}
-                    style={styles.selectedClearButton}
-                    accessibilityRole="button"
-                    accessibilityLabel="Clear selected items"
-                  >
-                    <Ionicons name="close-circle-outline" size={18} color="#4a4a4a" />
-                  </Pressable>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Pressable
+                      onPress={() => {
+                        setSaveSetName('');
+                        setIsSaveSetPromptOpen(true);
+                      }}
+                      style={{ paddingHorizontal: 8, paddingVertical: 4, backgroundColor: '#f2f2f7', borderRadius: 6 }}
+                      accessibilityRole="button"
+                      accessibilityLabel="Save selected items as a set"
+                    >
+                      <Text style={{ fontSize: 12, color: '#007AFF', fontWeight: '600' }}>Save as set...</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={clearSelected}
+                      style={styles.selectedClearButton}
+                      accessibilityRole="button"
+                      accessibilityLabel="Clear selected items"
+                    >
+                      <Ionicons name="close-circle-outline" size={18} color="#4a4a4a" />
+                    </Pressable>
+                  </View>
                 ) : null}
               </View>
               {selectedRecent.length === 0 ? (
@@ -286,9 +313,52 @@ export const OverlayModal = ({
                 isExpanded={expandedSections.savedSets}
                 onToggle={() => toggleSection('savedSets')}
               >
-                <Text style={styles.overlayPlaceholderText}>
-                  Saved sets will appear here soon.
-                </Text>
+                {savedSets.length === 0 ? (
+                  <Text style={styles.overlayPlaceholderText}>
+                    No saved sets yet. Select items and tap "Save as set" to create one.
+                  </Text>
+                ) : (
+                  savedSets.map((set) => (
+                    <Pressable
+                      key={set.id}
+                      onPress={() => {
+                        setActiveSavedSet(set);
+                        setIsSavedSetModalOpen(true);
+                      }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 10,
+                        paddingHorizontal: 4,
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#f0f0f0',
+                      }}
+                    >
+                      <Ionicons name="albums-outline" size={20} color="#007AFF" style={{ marginRight: 10 }} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 15, color: '#333', fontWeight: '500' }}>{set.name}</Text>
+                        <Text style={{ fontSize: 12, color: '#8b8b8b' }}>{set.items.length} items</Text>
+                      </View>
+                      <Pressable
+                        onPress={() => {
+                          Alert.alert(
+                            'Delete set?',
+                            `Remove "${set.name}"? This cannot be undone.`,
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              { text: 'Delete', style: 'destructive', onPress: () => onDeleteSavedSet(set.id) },
+                            ]
+                          );
+                        }}
+                        style={{ padding: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Delete set ${set.name}`}
+                      >
+                        <Ionicons name="trash-outline" size={18} color="#ff3b30" />
+                      </Pressable>
+                    </Pressable>
+                  ))
+                )}
               </OverlaySection>
             </ScrollView>
           </View>
@@ -323,6 +393,79 @@ export const OverlayModal = ({
           setSuggestPrompt('');
         }}
       />
+
+      <SavedSetModal
+        visible={isSavedSetModalOpen}
+        savedSet={activeSavedSet}
+        onClose={() => setIsSavedSetModalOpen(false)}
+        onAddSelected={(items) => {
+          handleAddMultipleSelected(items);
+          setIsSavedSetModalOpen(false);
+        }}
+        onQuickAdd={(items) => {
+          handleQuickAddMultiple(items);
+          setIsSavedSetModalOpen(false);
+        }}
+        onUpdateSet={(setId, items) => {
+          onUpdateSavedSet(setId, items);
+          setIsSavedSetModalOpen(false);
+        }}
+      />
+
+      <Modal
+        transparent
+        visible={isSaveSetPromptOpen}
+        animationType="fade"
+        onRequestClose={() => setIsSaveSetPromptOpen(false)}
+      >
+        <View style={styles.modalContainer}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setIsSaveSetPromptOpen(false)} />
+          <View style={[styles.modalPanel, { maxHeight: 220 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Save as set</Text>
+              <Pressable onPress={() => setIsSaveSetPromptOpen(false)} style={styles.modalCloseButton}>
+                <Ionicons name="close" size={18} color="#4a4a4a" />
+              </Pressable>
+            </View>
+            <View style={{ paddingHorizontal: 16, paddingBottom: 16, gap: 12 }}>
+              <TextInput
+                placeholder="Set name..."
+                value={saveSetName}
+                onChangeText={setSaveSetName}
+                onSubmitEditing={() => {
+                  const trimmed = saveSetName.trim();
+                  if (trimmed && selectedRecent.length > 0) {
+                    onCreateSavedSet(trimmed, selectedRecent.map(({ name, quantity }) => ({ name, quantity })));
+                    setIsSaveSetPromptOpen(false);
+                  }
+                }}
+                autoFocus
+                returnKeyType="done"
+                style={styles.input}
+                placeholderTextColor="#8b8b8b"
+              />
+              <Pressable
+                style={{
+                  padding: 14,
+                  borderRadius: 12,
+                  backgroundColor: saveSetName.trim() ? '#007AFF' : '#b0d1ff',
+                  alignItems: 'center',
+                }}
+                disabled={!saveSetName.trim()}
+                onPress={() => {
+                  const trimmed = saveSetName.trim();
+                  if (trimmed && selectedRecent.length > 0) {
+                    onCreateSavedSet(trimmed, selectedRecent.map(({ name, quantity }) => ({ name, quantity })));
+                    setIsSaveSetPromptOpen(false);
+                  }
+                }}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff' }}>Save</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 };

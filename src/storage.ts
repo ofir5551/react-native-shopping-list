@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppRoute, ShoppingItem, ShoppingList } from './types';
+import { AppRoute, SavedSet, SavedSetItem, ShoppingItem, ShoppingList } from './types';
 import { sanitizeRecents } from './utils/recents';
 
 const ROUTE_KEY = '@shopping_route';
@@ -14,6 +14,7 @@ export interface StorageProvider {
 }
 
 const LISTS_KEY = '@shopping_lists';
+const SAVED_SETS_KEY = '@shopping_saved_sets';
 
 export const isShoppingItem = (value: unknown): value is ShoppingItem => {
   if (!value || typeof value !== 'object') return false;
@@ -72,6 +73,44 @@ export const LocalStorageProvider: StorageProvider = {
     }
   },
 };
+
+const isSavedSetItem = (value: unknown): value is SavedSetItem => {
+  if (!value || typeof value !== 'object') return false;
+  const c = value as Partial<SavedSetItem>;
+  return typeof c.name === 'string' && typeof c.quantity === 'number';
+};
+
+export const isSavedSet = (value: unknown): value is SavedSet => {
+  if (!value || typeof value !== 'object') return false;
+  const c = value as Partial<SavedSet>;
+  return (
+    typeof c.id === 'string' &&
+    typeof c.name === 'string' &&
+    typeof c.createdAt === 'number' &&
+    Array.isArray(c.items) &&
+    c.items.every(isSavedSetItem)
+  );
+};
+
+export async function loadSavedSets(): Promise<SavedSet[]> {
+  try {
+    const raw = await AsyncStorage.getItem(SAVED_SETS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isSavedSet);
+  } catch {
+    return [];
+  }
+}
+
+export async function saveSavedSets(sets: SavedSet[]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(SAVED_SETS_KEY, JSON.stringify(sets));
+  } catch {
+    // Ignore write errors for prototype reliability
+  }
+}
 
 export const parseRoute = (raw: string | null): AppRoute | null => {
   if (!raw) return null;

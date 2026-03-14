@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   loadRoute,
+  loadSavedSets,
   saveRoute,
+  saveSavedSets,
 } from '../storage';
 import { useSync } from '../context/SyncContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { AppRoute, SelectedRecentItem, ShoppingItem, ShoppingList } from '../types';
+import { AppRoute, SavedSet, SavedSetItem, SelectedRecentItem, ShoppingItem, ShoppingList } from '../types';
 import { MAX_RECENTS, sanitizeRecents } from '../utils/recents';
 
 type ListNameModalMode = 'create' | 'rename' | 'join' | 'share';
@@ -60,6 +62,10 @@ export type ShoppingListsAppState = {
   goToSignup: () => void;
   handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
+  savedSets: SavedSet[];
+  createSavedSet: (name: string, items: SavedSetItem[]) => void;
+  updateSavedSet: (setId: string, items: SavedSetItem[]) => void;
+  deleteSavedSet: (setId: string) => void;
 };
 
 const DEFAULT_ROUTE: AppRoute = { name: 'lists' };
@@ -87,6 +93,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const [listNameInput, setListNameInput] = useState('');
   const [listNameError, setListNameError] = useState('');
+  const [savedSets, setSavedSets] = useState<SavedSet[]>([]);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -94,13 +101,15 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     const hydrate = async () => {
       if (isInitializing) return;
 
-      const [storedLists, storedRoute] = await Promise.all([
+      const [storedLists, storedRoute, storedSavedSets] = await Promise.all([
         storageProvider.loadLists(),
         loadRoute(),
+        loadSavedSets(),
       ]);
       if (!mounted) return;
 
       setLists(storedLists);
+      setSavedSets(storedSavedSets);
       prevListMapRef.current = new Map(storedLists.map((l) => [l.id, l.name]));
 
       const hasRouteList =
@@ -159,6 +168,11 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     if (!isHydrated) return;
     saveRoute(route);
   }, [route, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    saveSavedSets(savedSets);
+  }, [savedSets, isHydrated]);
 
   useEffect(() => {
     if (!isHydrated || route.name !== 'list') return;
@@ -610,6 +624,29 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     }
   };
 
+  const createSavedSet = (name: string, items: SavedSetItem[]) => {
+    const newSet: SavedSet = {
+      id: createId(),
+      name,
+      items,
+      createdAt: Date.now(),
+    };
+    setSavedSets((current) => [newSet, ...current]);
+    showToast(`Saved set "${name}" created.`);
+  };
+
+  const updateSavedSet = (setId: string, items: SavedSetItem[]) => {
+    setSavedSets((current) =>
+      current.map((s) => (s.id === setId ? { ...s, items } : s))
+    );
+    showToast('Set updated.');
+  };
+
+  const deleteSavedSet = (setId: string) => {
+    setSavedSets((current) => current.filter((s) => s.id !== setId));
+    showToast('Set deleted.');
+  };
+
   return {
     isHydrated,
     route,
@@ -658,5 +695,9 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     goToSignup,
     handleAddMultipleSelected,
     handleQuickAddMultiple,
+    savedSets,
+    createSavedSet,
+    updateSavedSet,
+    deleteSavedSet,
   };
 };
