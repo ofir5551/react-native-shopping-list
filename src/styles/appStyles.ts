@@ -94,7 +94,7 @@ export const useAppStyles = () => {
         elevation: 2,
       },
       modalInputRow: {
-        marginBottom: 20,
+        marginTop: 12,
       },
       input: {
         flex: 1,

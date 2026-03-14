@@ -94,6 +94,7 @@ export const OverlayModal = ({
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
   const [isSaveSetPromptOpen, setIsSaveSetPromptOpen] = useState(false);
   const [saveSetName, setSaveSetName] = useState('');
+  const saveSetInputRef = useRef<TextInput | null>(null);
   const [activeSavedSet, setActiveSavedSet] = useState<SavedSet | null>(null);
   const [isSavedSetModalOpen, setIsSavedSetModalOpen] = useState(false);
 
@@ -134,6 +135,7 @@ export const OverlayModal = ({
       visible={visible}
       animationType="slide"
       onRequestClose={onClose}
+      onShow={() => setTimeout(() => inputRef.current?.focus(), 100)}
     >
       <View style={styles.modalContainer}>
         <Pressable style={styles.modalBackdrop} onPress={onClose} />
@@ -151,100 +153,6 @@ export const OverlayModal = ({
           </View>
 
           <View style={styles.modalContent}>
-            <View style={[styles.inputRow, styles.modalInputRow]}>
-              <TextInput
-                ref={inputRef}
-                placeholder="Type an item..."
-                value={overlayInput}
-                onChangeText={onChangeInput}
-                onSubmitEditing={handleAdd}
-                blurOnSubmit={false}
-                returnKeyType="done"
-                style={styles.input}
-                placeholderTextColor="#8b8b8b"
-              />
-              <Pressable
-                style={styles.addButton}
-                onPress={handleAdd}
-                accessibilityRole="button"
-                accessibilityLabel="Add typed item"
-              >
-                <Ionicons name="add" size={20} color="#ffffff" />
-              </Pressable>
-            </View>
-
-            <View style={styles.selectedTray}>
-              <View style={styles.selectedTrayHeader}>
-                <Text style={styles.selectedTrayTitle}>
-                  Selected ({selectedRecent.length})
-                </Text>
-                {selectedRecent.length > 0 ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Pressable
-                      onPress={() => {
-                        setSaveSetName('');
-                        setIsSaveSetPromptOpen(true);
-                      }}
-                      style={{ paddingHorizontal: 8, paddingVertical: 4, backgroundColor: '#f2f2f7', borderRadius: 6 }}
-                      accessibilityRole="button"
-                      accessibilityLabel="Save selected items as a set"
-                    >
-                      <Text style={{ fontSize: 12, color: '#007AFF', fontWeight: '600' }}>Save as set...</Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={clearSelected}
-                      style={styles.selectedClearButton}
-                      accessibilityRole="button"
-                      accessibilityLabel="Clear selected items"
-                    >
-                      <Ionicons name="close-circle-outline" size={18} color="#4a4a4a" />
-                    </Pressable>
-                  </View>
-                ) : null}
-              </View>
-              {selectedRecent.length === 0 ? (
-                <Text style={styles.selectedEmptyText}>
-                  Pick items from Recents to build your selection.
-                </Text>
-              ) : (
-                <View style={styles.tagsWrap}>
-                  {selectedRecent.map((item) => {
-                    const color = getTagColor(item.name);
-                    return (
-                      <View
-                        key={item.name}
-                        style={[
-                          styles.tag,
-                          styles.selectedTag,
-                          {
-                            backgroundColor: color,
-                            borderColor: color,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            paddingVertical: 4,
-                            paddingHorizontal: 8,
-                          },
-                        ]}
-                      >
-                        <Pressable style={styles.quantityButton} onPress={() => onUpdateRecentQuantity(item.name, -1)}>
-                          <Feather name="minus" size={14} color="#fff" />
-                        </Pressable>
-                        <Text style={[styles.tagText, styles.tagTextSelected, { marginHorizontal: 8 }]}>
-                          {item.quantity}x {item.name}
-                        </Text>
-                        <Pressable style={styles.quantityButton} onPress={() => onUpdateRecentQuantity(item.name, 1)}>
-                          <Feather name="plus" size={14} color="#fff" />
-                        </Pressable>
-                        <Pressable style={{ marginLeft: 6, padding: 4 }} onPress={() => onToggleRecent(item.name)}>
-                          <Feather name="x" size={14} color="#fff" />
-                        </Pressable>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-            </View>
-
             <ScrollView
               style={styles.overlaySectionsScroll}
               contentContainerStyle={styles.overlaySectionsContent}
@@ -361,6 +269,100 @@ export const OverlayModal = ({
                 )}
               </OverlaySection>
             </ScrollView>
+
+            <View style={styles.selectedTray}>
+              <View style={styles.selectedTrayHeader}>
+                <Text style={styles.selectedTrayTitle}>
+                  Selected ({selectedRecent.length})
+                </Text>
+                {selectedRecent.length > 0 ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Pressable
+                      onPress={() => {
+                        setSaveSetName('');
+                        setIsSaveSetPromptOpen(true);
+                      }}
+                      style={{ paddingHorizontal: 8, paddingVertical: 4, backgroundColor: '#f2f2f7', borderRadius: 6 }}
+                      accessibilityRole="button"
+                      accessibilityLabel="Save selected items as a set"
+                    >
+                      <Text style={{ fontSize: 12, color: '#007AFF', fontWeight: '600' }}>Save as set...</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={clearSelected}
+                      style={styles.selectedClearButton}
+                      accessibilityRole="button"
+                      accessibilityLabel="Clear selected items"
+                    >
+                      <Ionicons name="close-circle-outline" size={18} color="#4a4a4a" />
+                    </Pressable>
+                  </View>
+                ) : null}
+              </View>
+              {selectedRecent.length === 0 ? (
+                <Text style={styles.selectedEmptyText}>
+                  Pick items from Recents to build your selection.
+                </Text>
+              ) : (
+                <View style={styles.tagsWrap}>
+                  {selectedRecent.map((item) => {
+                    const color = getTagColor(item.name);
+                    return (
+                      <View
+                        key={item.name}
+                        style={[
+                          styles.tag,
+                          styles.selectedTag,
+                          {
+                            backgroundColor: color,
+                            borderColor: color,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingVertical: 4,
+                            paddingHorizontal: 8,
+                          },
+                        ]}
+                      >
+                        <Pressable style={styles.quantityButton} onPress={() => onUpdateRecentQuantity(item.name, -1)}>
+                          <Feather name="minus" size={14} color="#fff" />
+                        </Pressable>
+                        <Text style={[styles.tagText, styles.tagTextSelected, { marginHorizontal: 8 }]}>
+                          {item.quantity}x {item.name}
+                        </Text>
+                        <Pressable style={styles.quantityButton} onPress={() => onUpdateRecentQuantity(item.name, 1)}>
+                          <Feather name="plus" size={14} color="#fff" />
+                        </Pressable>
+                        <Pressable style={{ marginLeft: 6, padding: 4 }} onPress={() => onToggleRecent(item.name)}>
+                          <Feather name="x" size={14} color="#fff" />
+                        </Pressable>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+
+            <View style={[styles.inputRow, styles.modalInputRow]}>
+              <TextInput
+                ref={inputRef}
+                placeholder="Type an item..."
+                value={overlayInput}
+                onChangeText={onChangeInput}
+                onSubmitEditing={handleAdd}
+                blurOnSubmit={false}
+                returnKeyType="done"
+                style={styles.input}
+                placeholderTextColor="#8b8b8b"
+              />
+              <Pressable
+                style={styles.addButton}
+                onPress={handleAdd}
+                accessibilityRole="button"
+                accessibilityLabel="Add typed item"
+              >
+                <Ionicons name="add" size={20} color="#ffffff" />
+              </Pressable>
+            </View>
           </View>
 
           <Pressable
@@ -417,6 +419,7 @@ export const OverlayModal = ({
         visible={isSaveSetPromptOpen}
         animationType="fade"
         onRequestClose={() => setIsSaveSetPromptOpen(false)}
+        onShow={() => setTimeout(() => saveSetInputRef.current?.focus(), 100)}
       >
         <View style={styles.modalContainer}>
           <Pressable style={styles.modalBackdrop} onPress={() => setIsSaveSetPromptOpen(false)} />
@@ -429,6 +432,7 @@ export const OverlayModal = ({
             </View>
             <View style={{ paddingHorizontal: 16, paddingBottom: 16, gap: 12 }}>
               <TextInput
+                ref={saveSetInputRef}
                 placeholder="Set name..."
                 value={saveSetName}
                 onChangeText={setSaveSetName}
@@ -439,9 +443,17 @@ export const OverlayModal = ({
                     setIsSaveSetPromptOpen(false);
                   }
                 }}
-                autoFocus
                 returnKeyType="done"
-                style={styles.input}
+                style={{
+                  fontSize: 16,
+                  color: '#333',
+                  borderWidth: 1,
+                  borderColor: '#d1d1d6',
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  height: 48,
+                  backgroundColor: '#f9f9f9',
+                }}
                 placeholderTextColor="#8b8b8b"
               />
               <Pressable
