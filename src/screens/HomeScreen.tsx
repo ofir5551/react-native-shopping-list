@@ -53,6 +53,7 @@ export const HomeScreen = () => {
     handleUpdateRecentQuantity,
     handleAddMultipleSelected,
     handleQuickAddMultiple,
+    overlayToast,
     handleClearRecents,
     savedSets,
     createSavedSet,
@@ -149,6 +150,7 @@ export const HomeScreen = () => {
         handleUpdateRecentQuantity={handleUpdateRecentQuantity}
         handleAddMultipleSelected={handleAddMultipleSelected}
         handleQuickAddMultiple={handleQuickAddMultiple}
+        overlayToast={overlayToast}
         handleClearRecents={handleClearRecents}
         savedSets={savedSets}
         onCreateSavedSet={createSavedSet}

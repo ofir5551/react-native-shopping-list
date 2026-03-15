@@ -31,6 +31,7 @@ type ShoppingListScreenProps = {
   handleUpdateRecentQuantity: (name: string, delta: number) => void;
   handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
+  overlayToast: { message: string; key: number } | null;
   handleClearRecents: () => void;
   savedSets: SavedSet[];
   onCreateSavedSet: (name: string, items: SavedSetItem[]) => void;
@@ -66,6 +67,7 @@ export const ShoppingListScreen = ({
   handleUpdateRecentQuantity,
   handleAddMultipleSelected,
   handleQuickAddMultiple,
+  overlayToast,
   handleClearRecents,
   savedSets,
   onCreateSavedSet,
@@ -190,6 +192,7 @@ export const ShoppingListScreen = ({
         handleQuickAddMultiple={handleQuickAddMultiple}
         onAddSelected={handleAddSelected}
         onClose={closeOverlay}
+        overlayToast={overlayToast}
         savedSets={savedSets}
         onCreateSavedSet={onCreateSavedSet}
         onUpdateSavedSet={onUpdateSavedSet}

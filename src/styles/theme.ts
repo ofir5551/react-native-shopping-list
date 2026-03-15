@@ -36,7 +36,7 @@ export const lightTheme: Theme = {
     primary: '#1f7a5a',
     primaryText: '#ffffff',
     text: '#1f1f1f',
-    textSecondary: '#6b6b6b',
+    textSecondary: '#595959',
     border: '#e6d8ca',
     danger: '#9a3d3d',
     dangerSurface: '#ffebeb',

@@ -268,6 +268,10 @@ export const useAppStyles = () => {
         paddingVertical: 2,
       },
       quantityButton: {
+        minWidth: 44,
+        minHeight: 44,
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
         paddingHorizontal: 8,
         paddingVertical: 4,
       },
@@ -327,9 +331,11 @@ export const useAppStyles = () => {
         flex: 1,
       },
       selectedTray: {
-        backgroundColor: theme.colors.surfaceHighlight,
+        backgroundColor: theme.colors.surface,
         borderWidth: 1,
         borderColor: theme.colors.border,
+        borderLeftWidth: 4,
+        borderLeftColor: theme.colors.primary,
         borderRadius: 14,
         paddingHorizontal: 14,
         paddingVertical: 12,
@@ -373,8 +379,10 @@ export const useAppStyles = () => {
         color: theme.colors.text,
       },
       modalCloseButton: {
-        paddingHorizontal: 10,
-        paddingVertical: 6,
+        minWidth: 44,
+        minHeight: 44,
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
         borderRadius: 10,
         backgroundColor: theme.colors.surfaceHighlight,
       },
@@ -451,7 +459,7 @@ export const useAppStyles = () => {
         fontWeight: '600',
       },
       tagTextSelected: {
-        color: '#ffffff',
+        color: theme.colors.primaryText,
       },
       addSelectedButton: {
         marginTop: 12,

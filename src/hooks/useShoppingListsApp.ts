@@ -86,6 +86,11 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const prevListMapRef = useRef<Map<string, string>>(new Map());
   const isFromRealtimeRef = useRef(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [overlayToast, setOverlayToastState] = useState<{ message: string; key: number } | null>(null);
+
+  const setOverlayToast = (msg: string) => {
+    setOverlayToastState({ message: msg, key: Date.now() });
+  };
   const [overlayInput, setOverlayInput] = useState('');
   const [selectedRecent, setSelectedRecent] = useState<SelectedRecentItem[]>([]);
   const [isListNameModalOpen, setIsListNameModalOpen] = useState(false);
@@ -413,14 +418,16 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     );
 
     if (existingActiveItem) {
+      const newQuantity = existingActiveItem.quantity + 1;
       updateListById(currentList.id, (list) => ({
         ...list,
         items: list.items.map((item) =>
           item.id === existingActiveItem.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: newQuantity }
             : item
         ),
       }));
+      setOverlayToast(`"${existingActiveItem.name}" already in list — quantity updated to ${newQuantity}`);
       setOverlayInput('');
       return;
     }
@@ -436,8 +443,10 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
             : item
         )
       );
+      setOverlayToast(`"${name}" — quantity increased`);
     } else {
       setSelectedRecent((current) => [...current, { name, quantity: 1 }]);
+      setOverlayToast(`"${name}" added`);
     }
 
     updateListById(currentList.id, (list) => ({
@@ -695,6 +704,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     goToSignup,
     handleAddMultipleSelected,
     handleQuickAddMultiple,
+    overlayToast,
     savedSets,
     createSavedSet,
     updateSavedSet,

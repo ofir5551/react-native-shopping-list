@@ -7,7 +7,9 @@ import {
   View,
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useAppStyles } from '../styles/appStyles';
+import { useTheme } from '../context/ThemeContext';
 import { SavedSet, SavedSetItem } from '../types';
 
 type SetItem = SavedSetItem & { selected: boolean };
@@ -21,6 +23,12 @@ type SavedSetModalProps = {
   onUpdateSet: (setId: string, items: SavedSetItem[]) => void;
 };
 
+const triggerHaptic = () => {
+  try {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  } catch {}
+};
+
 export const SavedSetModal = ({
   visible,
   savedSet,
@@ -30,6 +38,7 @@ export const SavedSetModal = ({
   onUpdateSet,
 }: SavedSetModalProps) => {
   const styles = useAppStyles();
+  const { theme } = useTheme();
   const [items, setItems] = useState<SetItem[]>([]);
 
   useEffect(() => {
@@ -41,6 +50,7 @@ export const SavedSetModal = ({
   }, [visible, savedSet]);
 
   const handleToggleSelect = (index: number) => {
+    triggerHaptic();
     setItems((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], selected: !next[index].selected };
@@ -49,6 +59,7 @@ export const SavedSetModal = ({
   };
 
   const handleUpdateQuantity = (index: number, delta: number) => {
+    triggerHaptic();
     setItems((prev) => {
       const next = [...prev];
       const newQty = next[index].quantity + delta;
@@ -77,39 +88,41 @@ export const SavedSetModal = ({
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{savedSet?.name ?? 'Saved Set'}</Text>
             <Pressable onPress={onClose} style={styles.modalCloseButton}>
-              <Ionicons name="close" size={18} color="#4a4a4a" />
+              <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
             </Pressable>
           </View>
 
           <ScrollView style={{ flex: 1, paddingHorizontal: 16 }}>
             {items.length === 0 ? (
-              <Text style={{ textAlign: 'center', color: '#8b8b8b', marginTop: 20 }}>
+              <Text style={{ textAlign: 'center', color: theme.colors.textSecondary, marginTop: 20 }}>
                 This set has no items.
               </Text>
             ) : (
               items.map((item, index) => (
-                <View
+                <Pressable
                   key={index}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
+                  style={({ pressed }) => ({
+                    flexDirection: 'row' as const,
+                    alignItems: 'center' as const,
                     paddingVertical: 12,
                     borderBottomWidth: 1,
-                    borderBottomColor: '#f0f0f0',
-                  }}
+                    borderBottomColor: theme.colors.border,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                  onPress={() => handleToggleSelect(index)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${item.selected ? 'Deselect' : 'Select'} ${item.name}`}
+                  android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
                 >
-                  <Pressable
-                    style={{ paddingRight: 12 }}
-                    onPress={() => handleToggleSelect(index)}
-                  >
+                  <View style={{ paddingRight: 12 }}>
                     <Ionicons
                       name={item.selected ? 'checkmark-circle' : 'ellipse-outline'}
                       size={24}
-                      color={item.selected ? '#007AFF' : '#d1d1d6'}
+                      color={item.selected ? theme.colors.primary : theme.colors.border}
                     />
-                  </Pressable>
+                  </View>
 
-                  <Text style={{ flex: 1, fontSize: 16, color: '#333' }}>
+                  <Text style={{ flex: 1, fontSize: 16, color: theme.colors.text }}>
                     {item.name}
                   </Text>
 
@@ -117,99 +130,118 @@ export const SavedSetModal = ({
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      backgroundColor: '#f2f2f7',
+                      backgroundColor: theme.colors.surfaceHighlight,
                       borderRadius: 8,
                       overflow: 'hidden',
                     }}
                   >
                     <Pressable
-                      style={{ padding: 8, paddingHorizontal: 12 }}
+                      style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                       onPress={() => handleUpdateQuantity(index, -1)}
+                      accessibilityLabel={`Decrease quantity for ${item.name}`}
                     >
-                      <Feather name="minus" size={16} color="#007AFF" />
+                      <Feather name="minus" size={16} color={theme.colors.primary} />
                     </Pressable>
                     <Text
                       style={{
                         fontWeight: '600',
                         minWidth: 20,
                         textAlign: 'center',
-                        color: '#333',
+                        color: theme.colors.text,
                       }}
                     >
                       {item.quantity}
                     </Text>
                     <Pressable
-                      style={{ padding: 8, paddingHorizontal: 12 }}
+                      style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                       onPress={() => handleUpdateQuantity(index, 1)}
+                      accessibilityLabel={`Increase quantity for ${item.name}`}
                     >
-                      <Feather name="plus" size={16} color="#007AFF" />
+                      <Feather name="plus" size={16} color={theme.colors.primary} />
                     </Pressable>
                   </View>
-                </View>
+                </Pressable>
               ))
             )}
           </ScrollView>
 
-          <View style={{ padding: 16, borderTopWidth: 1, borderColor: '#f0f0f0', gap: 8 }}>
+          <View style={{ padding: 16, borderTopWidth: 1, borderColor: theme.colors.border, gap: 8 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable
-                style={{
+                style={({ pressed }) => ({
                   flex: 1,
                   padding: 14,
                   borderRadius: 12,
-                  backgroundColor: '#f2f2f7',
-                  alignItems: 'center',
-                }}
+                  backgroundColor: theme.colors.surfaceHighlight,
+                  alignItems: 'center' as const,
+                  opacity: pressed ? 0.7 : 1,
+                })}
                 onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ff3b30' }}>Cancel</Text>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.danger }}>Cancel</Text>
               </Pressable>
 
               <Pressable
-                style={{
+                style={({ pressed }) => ({
                   flex: 1,
                   padding: 14,
                   borderRadius: 12,
-                  backgroundColor: selectedCount === 0 ? '#b0d1ff' : '#007AFF',
-                  alignItems: 'center',
-                }}
+                  backgroundColor: theme.colors.surfaceHighlight,
+                  borderWidth: 1,
+                  borderColor: selectedCount === 0 ? theme.colors.border : theme.colors.primary,
+                  alignItems: 'center' as const,
+                  opacity: pressed ? 0.7 : 1,
+                })}
                 disabled={selectedCount === 0}
                 onPress={() => onAddSelected(getSelectedItems())}
+                accessibilityRole="button"
+                accessibilityLabel="Add selected items to selection"
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff' }}>Add</Text>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: selectedCount === 0 ? theme.colors.textSecondary : theme.colors.primary }}>
+                  Add to Selection
+                </Text>
               </Pressable>
             </View>
 
             <Pressable
-              style={{
+              style={({ pressed }) => ({
                 padding: 14,
                 borderRadius: 12,
-                backgroundColor: selectedCount === 0 ? '#e5e5ea' : '#34C759',
-                alignItems: 'center',
-              }}
+                backgroundColor: selectedCount === 0 ? theme.colors.surfaceHighlight : theme.colors.primary,
+                alignItems: 'center' as const,
+                opacity: pressed ? 0.7 : 1,
+              })}
               disabled={selectedCount === 0}
-              onPress={() => onQuickAdd(getSelectedItems())}
+              onPress={() => {
+                triggerHaptic();
+                onQuickAdd(getSelectedItems());
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`Add ${selectedCount} items to list`}
             >
               <Text
                 style={{
                   fontSize: 16,
                   fontWeight: '600',
-                  color: selectedCount === 0 ? '#a1a1aa' : '#ffffff',
+                  color: selectedCount === 0 ? theme.colors.textSecondary : theme.colors.primaryText,
                 }}
               >
-                Quick Add ({selectedCount})
+                Add {selectedCount} Items to List
               </Text>
             </Pressable>
 
             <Pressable
-              style={{
+              style={({ pressed }) => ({
                 padding: 14,
                 borderRadius: 12,
-                backgroundColor: '#f2f2f7',
-                alignItems: 'center',
+                backgroundColor: theme.colors.surfaceHighlight,
+                alignItems: 'center' as const,
                 borderWidth: 1,
-                borderColor: '#007AFF',
-              }}
+                borderColor: theme.colors.primary,
+                opacity: pressed ? 0.7 : 1,
+              })}
               onPress={() => {
                 if (savedSet) {
                   onUpdateSet(
@@ -218,8 +250,10 @@ export const SavedSetModal = ({
                   );
                 }
               }}
+              accessibilityRole="button"
+              accessibilityLabel="Update this saved set"
             >
-              <Text style={{ fontSize: 16, fontWeight: '600', color: '#007AFF' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.primary }}>
                 Update Set
               </Text>
             </Pressable>
