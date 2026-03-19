@@ -12,7 +12,9 @@
       "Bash(git log *)",
       "Bash(git add *)",
       "Bash(git pull *)",
-      "Bash(npx supabase *)"
+      "Bash(npx supabase *)",
+      "Bash(eas whoami)",
+      "Bash(eas build *)"
     ],
     "deny": [
       "Read(.env)",

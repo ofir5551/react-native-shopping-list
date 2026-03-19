@@ -22,12 +22,10 @@ description: Stage relevant changes, write a high-quality conventional commit me
 
 4. **Commit and push**:
    ```
-   git commit -m "$(cat <<'EOF'
-   type(scope): description
-   EOF
-   )"
+   git commit -m "type(scope): description"
    git push
    ```
+   - **Never** add `Co-Authored-By` or any trailer lines to the commit message.
 
 5. **Report**:
    - Commit hash and branch

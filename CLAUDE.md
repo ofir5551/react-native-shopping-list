@@ -123,3 +123,4 @@ When validating changes, cover these flows:
 - `/feature` — implement or refactor app features while preserving invariants
 - `/commit` — stage, commit with a good message, and push
 - `/supabase` — work on Supabase migrations, RLS policies, or edge functions
+- `/build-android` — build a standalone Android APK via EAS and return the download link
