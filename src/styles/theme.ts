@@ -12,6 +12,13 @@ export type Theme = {
     dangerSurface: string;
     inputBackground: string;
     backdrop: string;
+    syncActive: string;
+  };
+  fonts: {
+    regular: string;
+    medium: string;
+    semibold: string;
+    bold: string;
   };
   spacing: {
     xs: number;
@@ -28,6 +35,13 @@ export type Theme = {
   };
 };
 
+const fonts = {
+  regular: 'DMSans_400Regular',
+  medium: 'DMSans_500Medium',
+  semibold: 'DMSans_600SemiBold',
+  bold: 'DMSans_700Bold',
+};
+
 export const lightTheme: Theme = {
   colors: {
     background: '#f7f4f0',
@@ -42,7 +56,9 @@ export const lightTheme: Theme = {
     dangerSurface: '#ffebeb',
     inputBackground: '#ffffff',
     backdrop: 'rgba(0, 0, 0, 0.35)',
+    syncActive: '#2e7d32',
   },
+  fonts,
   spacing: {
     xs: 4,
     sm: 8,
@@ -63,7 +79,7 @@ export const darkTheme: Theme = {
     background: '#121212',
     surface: '#1e1e1e',
     surfaceHighlight: '#2c2c2c',
-    primary: '#2d8a6a', // Slightly lighter for dark mode contrast
+    primary: '#2d8a6a',
     primaryText: '#ffffff',
     text: '#e0e0e0',
     textSecondary: '#a0a0a0',
@@ -72,7 +88,9 @@ export const darkTheme: Theme = {
     dangerSurface: '#3e2a2a',
     inputBackground: '#2c2c2c',
     backdrop: 'rgba(0, 0, 0, 0.6)',
+    syncActive: '#66bb6a',
   },
+  fonts,
   spacing: {
     xs: 4,
     sm: 8,

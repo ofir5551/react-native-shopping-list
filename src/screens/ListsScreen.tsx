@@ -6,6 +6,7 @@ import { Fab } from '../components/Fab';
 import { ListNameModal } from '../components/ListNameModal';
 import { Header } from '../components/Header';
 import { useAppStyles } from '../styles/appStyles';
+import { useTheme } from '../context/ThemeContext';
 import { ShoppingList } from '../types';
 
 type ListsScreenProps = {
@@ -43,6 +44,7 @@ type ListCardProps = {
 
 const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpenRenameListModal, onDeleteList, onLeaveList }: ListCardProps) {
   const styles = useAppStyles();
+  const { theme } = useTheme();
   const completedCount = item.items.filter((entry) => entry.purchased).length;
   const isOwner = !item.ownerId || item.ownerId === currentUserId;
   const isShared = !!item.ownerId && item.ownerId !== currentUserId;
@@ -91,7 +93,7 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
             accessibilityRole="button"
             accessibilityLabel={`Rename ${item.name}`}
           >
-            <Ionicons name="create-outline" size={18} color="#4a4a4a" />
+            <Ionicons name="create-outline" size={18} color={theme.colors.textSecondary} />
           </Pressable>
         )}
         {isOwner ? (
@@ -101,7 +103,7 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
             accessibilityRole="button"
             accessibilityLabel={`Delete ${item.name}`}
           >
-            <Ionicons name="trash-outline" size={18} color="#9a3d3d" />
+            <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
           </Pressable>
         ) : (
           <Pressable
@@ -110,7 +112,7 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
             accessibilityRole="button"
             accessibilityLabel={`Exit ${item.name}`}
           >
-            <Ionicons name="exit-outline" size={18} color="#b07020" />
+            <Ionicons name="exit-outline" size={18} color={theme.colors.textSecondary} />
           </Pressable>
         )}
       </View>
@@ -138,6 +140,7 @@ export const ListsScreen = ({
   hidden,
 }: ListsScreenProps) => {
   const styles = useAppStyles();
+  const { theme } = useTheme();
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingList>) => (
     <ListCard
@@ -175,7 +178,7 @@ export const ListsScreen = ({
           accessibilityRole="button"
           accessibilityLabel="Join a shared list"
         >
-          <Ionicons name="link-outline" size={20} color="#4a4a4a" />
+          <Ionicons name="link-outline" size={20} color={theme.colors.textSecondary} />
         </Pressable>
       </Header>
 

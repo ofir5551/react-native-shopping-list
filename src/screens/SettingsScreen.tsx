@@ -108,7 +108,7 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                             <Text style={[styles.settingsValue, { textAlign: 'center', marginBottom: 20 }]}>
                                 {user.email}
                             </Text>
-                            <Text style={[styles.settingsValue, { textAlign: 'center', color: '#4caf50', marginBottom: 20 }]}>
+                            <Text style={[styles.settingsValue, { textAlign: 'center', color: theme.colors.syncActive, marginBottom: 20 }]}>
                                 Cloud Sync Active
                             </Text>
                             <Pressable style={styles.authButtonSecondary} onPress={handleSignOut}>

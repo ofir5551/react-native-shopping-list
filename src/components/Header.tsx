@@ -46,7 +46,7 @@ export const Header = ({
         <View style={styles.headerActions}>
           {onOpenSettings ? (
             <Pressable style={styles.iconButton} onPress={onOpenSettings}>
-              <Ionicons name="settings-outline" size={20} color="#4a4a4a" />
+              <Ionicons name="settings-outline" size={20} color={theme.colors.textSecondary} />
             </Pressable>
           ) : null}
           {children}

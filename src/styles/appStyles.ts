@@ -34,14 +34,15 @@ export const useAppStyles = () => {
         alignItems: 'center',
       },
       title: {
-        fontSize: 32,
-        fontWeight: '700',
+        fontSize: 28,
+        fontFamily: theme.fonts.bold,
         color: theme.colors.text,
         flexShrink: 1,
       },
       subtitle: {
         marginTop: 4,
         fontSize: 14,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.textSecondary,
       },
       clearButton: {
@@ -51,8 +52,8 @@ export const useAppStyles = () => {
         backgroundColor: theme.colors.surfaceHighlight,
       },
       clearButtonText: {
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.danger,
-        fontWeight: '600',
       },
       secondaryButton: {
         paddingHorizontal: 10,
@@ -62,8 +63,8 @@ export const useAppStyles = () => {
         marginRight: 10,
       },
       secondaryButtonText: {
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.textSecondary,
-        fontWeight: '600',
       },
       iconButton: {
         width: 34,
@@ -95,6 +96,7 @@ export const useAppStyles = () => {
       input: {
         flex: 1,
         fontSize: 16,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.text,
         paddingVertical: 8,
       },
@@ -105,8 +107,8 @@ export const useAppStyles = () => {
         borderRadius: 12,
       },
       addButtonText: {
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.primaryText,
-        fontWeight: '600',
       },
       emptyState: {
         marginTop: 24,
@@ -114,12 +116,13 @@ export const useAppStyles = () => {
       },
       emptyTitle: {
         fontSize: 18,
-        fontWeight: '600',
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
       },
       emptySubtitle: {
         marginTop: 8,
         fontSize: 14,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.textSecondary,
         textAlign: 'center',
       },
@@ -149,7 +152,7 @@ export const useAppStyles = () => {
       },
       listCardTitle: {
         fontSize: 18,
-        fontWeight: '700',
+        fontFamily: theme.fonts.bold,
         color: theme.colors.text,
       },
       listCardTitleRow: {
@@ -161,7 +164,8 @@ export const useAppStyles = () => {
       },
       listCardMeta: {
         marginTop: 4,
-        fontSize: 13,
+        fontSize: 14,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.textSecondary,
       },
       listCardActions: {
@@ -190,8 +194,8 @@ export const useAppStyles = () => {
         marginBottom: 4,
       },
       completedTitle: {
-        fontSize: 15,
-        fontWeight: '600',
+        fontSize: 14,
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.textSecondary,
       },
       completedChevron: {
@@ -228,13 +232,14 @@ export const useAppStyles = () => {
       checkmark: {
         color: '#ffffff',
         fontSize: 13,
-        fontWeight: '700',
+        fontFamily: theme.fonts.bold,
       },
       itemTextWrap: {
         flex: 1,
       },
       itemText: {
-        fontSize: 15,
+        fontSize: 16,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.text,
       },
       itemTextPurchased: {
@@ -264,8 +269,8 @@ export const useAppStyles = () => {
         paddingVertical: 2,
       },
       quantityText: {
-        fontSize: 13,
-        fontWeight: '600',
+        fontSize: 12,
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
         minWidth: 18,
         textAlign: 'center',
@@ -315,8 +320,8 @@ export const useAppStyles = () => {
         paddingBottom: 20,
       },
       modalTitle: {
-        fontSize: 20,
-        fontWeight: '700',
+        fontSize: 18,
+        fontFamily: theme.fonts.bold,
         color: theme.colors.text,
       },
       modalCloseButton: {
@@ -328,16 +333,18 @@ export const useAppStyles = () => {
         backgroundColor: theme.colors.surfaceHighlight,
       },
       modalCloseText: {
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
-        fontWeight: '600',
       },
       recentsEmpty: {
         fontSize: 14,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.textSecondary,
         marginTop: 2,
       },
       overlayPlaceholderText: {
         fontSize: 14,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.textSecondary,
       },
       settingsPopoverBackdrop: {
@@ -365,8 +372,8 @@ export const useAppStyles = () => {
         paddingVertical: 11,
       },
       settingsPopoverButtonText: {
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
-        fontWeight: '600',
       },
       settingsPopoverDangerText: {
         color: theme.colors.danger,
@@ -396,8 +403,8 @@ export const useAppStyles = () => {
         borderColor: theme.colors.border,
       },
       nameModalTitle: {
-        fontSize: 20,
-        fontWeight: '700',
+        fontSize: 18,
+        fontFamily: theme.fonts.bold,
         color: theme.colors.text,
         marginBottom: 12,
       },
@@ -409,11 +416,13 @@ export const useAppStyles = () => {
         paddingHorizontal: 12,
         paddingVertical: 10,
         fontSize: 16,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.text,
       },
       nameModalError: {
         marginTop: 8,
-        fontSize: 13,
+        fontSize: 12,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.danger,
       },
       nameModalActions: {
@@ -429,8 +438,8 @@ export const useAppStyles = () => {
         marginRight: 8,
       },
       nameModalCancelText: {
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
-        fontWeight: '600',
       },
       nameModalSubmitButton: {
         paddingHorizontal: 12,
@@ -439,8 +448,8 @@ export const useAppStyles = () => {
         backgroundColor: theme.colors.primary,
       },
       nameModalSubmitText: {
+        fontFamily: theme.fonts.bold,
         color: theme.colors.primaryText,
-        fontWeight: '700',
       },
       // Settings Screen specific styles
       settingsSection: {
@@ -465,22 +474,23 @@ export const useAppStyles = () => {
       },
       settingsLabel: {
         fontSize: 16,
-        fontWeight: '500',
+        fontFamily: theme.fonts.medium,
         color: theme.colors.text,
       },
       settingsValue: {
         fontSize: 16,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.textSecondary,
       },
       settingsSectionTitle: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: 12,
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.textSecondary,
         paddingTop: 10,
         paddingHorizontal: 16,
         marginBottom: 4,
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        letterSpacing: 0.8,
       },
       authPlaceholder: {
         padding: 20,
@@ -507,12 +517,12 @@ export const useAppStyles = () => {
         marginVertical: 8,
       },
       authButtonText: {
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.primaryText,
-        fontWeight: '600',
       },
       authButtonTextSecondary: {
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
-        fontWeight: '600',
       },
       // Pill FAB styles
       fabPill: {
@@ -541,7 +551,7 @@ export const useAppStyles = () => {
       fabPillLeftText: {
         color: theme.colors.primaryText,
         fontSize: 16,
-        fontWeight: '700',
+        fontFamily: theme.fonts.bold,
         marginLeft: 6,
       },
       fabDivider: {
@@ -592,7 +602,7 @@ export const useAppStyles = () => {
       },
       tabBarText: {
         fontSize: 14,
-        fontWeight: '600',
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.textSecondary,
       },
       tabBarTextActive: {
@@ -623,8 +633,8 @@ export const useAppStyles = () => {
         gap: 10,
       },
       caretPopoverItemText: {
-        fontSize: 15,
-        fontWeight: '600',
+        fontSize: 16,
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
       },
       caretPopoverItemDisabled: {
@@ -648,16 +658,17 @@ export const useAppStyles = () => {
       itemListRowName: {
         flex: 1,
         fontSize: 16,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.text,
       },
       itemListRowNameSelected: {
         color: theme.colors.primary,
-        fontWeight: '600',
+        fontFamily: theme.fonts.semibold,
       },
       itemListRowQuantity: {
         fontSize: 14,
+        fontFamily: theme.fonts.bold,
         color: theme.colors.primary,
-        fontWeight: '700',
         marginRight: 4,
       },
       itemListRowRemoveBtn: {
@@ -687,6 +698,7 @@ export const useAppStyles = () => {
       overlaySearchInput: {
         flex: 1,
         fontSize: 16,
+        fontFamily: theme.fonts.regular,
         color: theme.colors.text,
         paddingVertical: 4,
       },
@@ -707,9 +719,9 @@ export const useAppStyles = () => {
         marginBottom: 4,
       },
       saveAsSetLinkText: {
-        fontSize: 13,
+        fontSize: 14,
+        fontFamily: theme.fonts.semibold,
         color: theme.colors.primary,
-        fontWeight: '600',
       },
     });
   }, [theme]);
