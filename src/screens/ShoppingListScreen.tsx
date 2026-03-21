@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
   Modal,
@@ -37,6 +37,7 @@ type ShoppingListScreenProps = {
   setOverlayInput: (value: string) => void;
   suggestions: string[];
   selectedRecent: SelectedRecentItem[];
+  hasOverlayChanges: boolean;
   handleOverlayAdd: () => void;
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
@@ -73,6 +74,7 @@ export const ShoppingListScreen = ({
   setOverlayInput,
   suggestions,
   selectedRecent,
+  hasOverlayChanges,
   handleOverlayAdd,
   handleAddSelected,
   handleToggleRecent,
@@ -97,6 +99,13 @@ export const ShoppingListScreen = ({
   const { theme } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCaretOpen, setIsCaretOpen] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', (e) => setKeyboardHeight(e.endCoordinates.height));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   // AI Suggestions state
   const [suggestPrompt, setSuggestPrompt] = useState('');
@@ -271,11 +280,14 @@ export const ShoppingListScreen = ({
       )}
 
       {/* FAB (rendered after overlay so it appears on top) */}
-      <Fab
-        mode={isOverlayOpen ? 'confirm' : 'add'}
-        onPress={handleFabPress}
-        onCaretPress={() => setIsCaretOpen((c) => !c)}
-      />
+      {(!isOverlayOpen || hasOverlayChanges) && (
+        <Fab
+          mode={isOverlayOpen ? 'confirm' : 'add'}
+          onPress={handleFabPress}
+          onCaretPress={() => setIsCaretOpen((c) => !c)}
+          style={isOverlayOpen && keyboardHeight > 0 ? { bottom: 28 + keyboardHeight } : undefined}
+        />
+      )}
 
       {/* AI Suggest prompt modal */}
       <Modal

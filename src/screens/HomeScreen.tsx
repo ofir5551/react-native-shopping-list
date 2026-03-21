@@ -49,6 +49,7 @@ export const HomeScreen = () => {
     setOverlayInput,
     suggestions,
     selectedRecent,
+    hasOverlayChanges,
     handleOverlayAdd,
     handleAddSelected,
     handleToggleRecent,
@@ -151,6 +152,7 @@ export const HomeScreen = () => {
         setOverlayInput={setOverlayInput}
         suggestions={suggestions}
         selectedRecent={selectedRecent}
+        hasOverlayChanges={hasOverlayChanges}
         handleOverlayAdd={handleOverlayAdd}
         handleAddSelected={handleAddSelected}
         handleToggleRecent={handleToggleRecent}

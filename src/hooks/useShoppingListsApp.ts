@@ -514,6 +514,15 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     });
   };
 
+  const hasOverlayChanges = useMemo(() => {
+    if (!isOverlayOpen) return false;
+    const selectedNames = new Set(selectedRecent.map((s) => normalizeName(s.name)));
+    const hasNew = selectedRecent.some((item) => !preExistingNamesRef.current.has(normalizeName(item.name)));
+    let hasRemoved = false;
+    preExistingNamesRef.current.forEach((name) => { if (!selectedNames.has(name)) hasRemoved = true; });
+    return hasNew || hasRemoved;
+  }, [isOverlayOpen, selectedRecent]);
+
   const handleAddSelected = () => {
     if (!currentList) return;
 
@@ -723,6 +732,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setOverlayInput,
     suggestions,
     selectedRecent,
+    hasOverlayChanges,
     handleOverlayAdd,
     handleAddSelected,
     handleToggleRecent,
