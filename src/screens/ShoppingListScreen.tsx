@@ -1,7 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useRef, useState } from 'react';
 import {
-  Alert,
   Keyboard,
   Modal,
   Pressable,
@@ -108,6 +107,9 @@ export const ShoppingListScreen = ({
   const [activeSavedSet, setActiveSavedSet] = useState<SavedSet | null>(null);
   const [isSavedSetModalOpen, setIsSavedSetModalOpen] = useState(false);
 
+  // Confirm dialog state
+  const [confirmModal, setConfirmModal] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
+
   // Save as set state
   const [isSaveSetPromptOpen, setIsSaveSetPromptOpen] = useState(false);
   const [saveSetName, setSaveSetName] = useState('');
@@ -123,23 +125,20 @@ export const ShoppingListScreen = ({
 
   const handleClearRecentsPress = () => {
     setIsSettingsOpen(false);
-    Alert.alert(
-      'Clear recents?',
-      'This will remove all recent items from this list.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: handleClearRecents,
-        },
-      ]
-    );
+    setConfirmModal({
+      title: 'Clear recents?',
+      message: 'This will remove all recent items from this list.',
+      onConfirm: handleClearRecents,
+    });
   };
 
   const handleClearAllPress = () => {
     setIsSettingsOpen(false);
-    handleClearAll();
+    setConfirmModal({
+      title: 'Clear all items?',
+      message: 'This will permanently remove all items from this list.',
+      onConfirm: handleClearAll,
+    });
   };
 
   const handleFabPress = () => {
@@ -480,6 +479,53 @@ export const ShoppingListScreen = ({
                 onPress={submitSaveAsSet}
               >
                 <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.primaryText }}>Save</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Confirm dialog */}
+      <Modal
+        transparent
+        visible={!!confirmModal}
+        animationType="fade"
+        onRequestClose={() => setConfirmModal(null)}
+      >
+        <View style={styles.modalContainer}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setConfirmModal(null)} />
+          <View style={[styles.modalPanel, { height: 'auto' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{confirmModal?.title}</Text>
+            </View>
+            <Text style={{ fontSize: 14, color: theme.colors.textSecondary, paddingBottom: 16 }}>
+              {confirmModal?.message}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Pressable
+                style={({ pressed }) => ({
+                  flex: 1, padding: 14, borderRadius: 12,
+                  backgroundColor: theme.colors.surfaceHighlight,
+                  alignItems: 'center' as const,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+                onPress={() => setConfirmModal(null)}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.text }}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => ({
+                  flex: 1, padding: 14, borderRadius: 12,
+                  backgroundColor: theme.colors.danger,
+                  alignItems: 'center' as const,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+                onPress={() => {
+                  confirmModal?.onConfirm();
+                  setConfirmModal(null);
+                }}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>Clear</Text>
               </Pressable>
             </View>
           </View>

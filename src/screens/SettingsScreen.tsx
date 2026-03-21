@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Image,
+    Modal,
     SafeAreaView,
     ScrollView,
     Switch,
@@ -26,6 +27,7 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
     const { theme, isDark, setThemeType } = useTheme();
     const { preferences, setPreference } = usePreferences();
     const { user } = useAuth();
+    const [isToSOpen, setIsToSOpen] = useState(false);
 
     const toggleTheme = (value: boolean) => {
         setThemeType(value ? 'dark' : 'light');
@@ -146,18 +148,49 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                         <Text style={styles.settingsLabel}>Version</Text>
                         <Text style={styles.settingsValue}>1.0.0</Text>
                     </View>
-                    <View style={[styles.settingsRow, styles.settingsRowLast]}>
+                    <Pressable
+                        style={[styles.settingsRow, styles.settingsRowLast]}
+                        onPress={() => setIsToSOpen(true)}
+                    >
                         <Text style={styles.settingsLabel}>Terms of Service</Text>
                         <Ionicons
                             name="chevron-forward"
                             size={20}
                             color={theme.colors.textSecondary}
                         />
-                    </View>
+                    </Pressable>
                 </View>
             </ScrollView>
 
             <StatusBar style={isDark ? 'light' : 'dark'} />
+
+            <Modal
+                transparent
+                visible={isToSOpen}
+                animationType="fade"
+                onRequestClose={() => setIsToSOpen(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <Pressable style={styles.modalBackdrop} onPress={() => setIsToSOpen(false)} />
+                    <View style={[styles.modalPanel, { maxHeight: '75%' }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Terms of Service</Text>
+                            <Pressable onPress={() => setIsToSOpen(false)} style={styles.modalCloseButton}>
+                                <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
+                            </Pressable>
+                        </View>
+                        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 16 }}>
+                            <Text style={{ fontSize: 14, color: theme.colors.text, lineHeight: 22 }}>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.{'\n\n'}
+                                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.{'\n\n'}
+                                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.{'\n\n'}
+                                Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est qui dolorem ipsum quia dolor sit amet.{'\n\n'}
+                                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+                            </Text>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
