@@ -233,7 +233,7 @@ export const useAppStyles = () => {
         backgroundColor: theme.colors.primary,
       },
       checkmark: {
-        color: '#ffffff',
+        color: theme.colors.primaryText,
         fontSize: 13,
         fontFamily: theme.fonts.bold,
       },
@@ -252,7 +252,7 @@ export const useAppStyles = () => {
       deleteButton: {
         paddingVertical: 4,
         paddingHorizontal: 4,
-        opacity: 0.4,
+        opacity: 0.6,
       },
       quantityWrap: {
         flexDirection: 'row',
@@ -272,7 +272,7 @@ export const useAppStyles = () => {
         paddingVertical: 2,
       },
       quantityText: {
-        fontSize: 12,
+        fontSize: 14,
         fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
         minWidth: 18,

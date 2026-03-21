@@ -185,7 +185,7 @@ export const ShoppingListScreen = ({
           accessibilityRole="button"
           accessibilityLabel="Copy Share ID"
         >
-          <Ionicons name="share-social-outline" size={20} color="#4a4a4a" />
+          <Ionicons name="share-social-outline" size={20} color={theme.colors.textSecondary} />
         </Pressable>
       </Header>
 
@@ -293,7 +293,7 @@ export const ShoppingListScreen = ({
               </Pressable>
             </View>
             <View style={{ paddingHorizontal: 0, paddingBottom: 16, gap: 12 }}>
-              <Text style={{ fontSize: 14, color: theme.colors.textSecondary }}>
+              <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>
                 Type a prompt (e.g., "birthday party for 10 kids") to generate suggested items.
               </Text>
               <View style={{ flexDirection: 'row', gap: 8, height: 44 }}>
@@ -384,19 +384,17 @@ export const ShoppingListScreen = ({
                 >
                   <Ionicons name="albums-outline" size={20} color={theme.colors.primary} style={{ marginRight: 10 }} />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 15, color: theme.colors.text, fontWeight: '500' }}>{set.name}</Text>
-                    <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>{set.items.length} items</Text>
+                    <Text style={{ fontSize: 15, fontFamily: theme.fonts.medium, color: theme.colors.text }}>{set.name}</Text>
+                    <Text style={{ fontSize: 12, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>{set.items.length} items</Text>
                   </View>
                   <Pressable
                     onPress={() => {
-                      Alert.alert(
-                        'Delete set?',
-                        `Remove "${set.name}"? This cannot be undone.`,
-                        [
-                          { text: 'Cancel', style: 'cancel' },
-                          { text: 'Delete', style: 'destructive', onPress: () => onDeleteSavedSet(set.id) },
-                        ]
-                      );
+                      setIsSavedSetsListOpen(false);
+                      setConfirmModal({
+                        title: 'Delete set?',
+                        message: `Remove "${set.name}"? This cannot be undone.`,
+                        onConfirm: () => onDeleteSavedSet(set.id),
+                      });
                     }}
                     style={{ padding: 10, minWidth: 44, minHeight: 44, alignItems: 'center' as const, justifyContent: 'center' as const }}
                     accessibilityRole="button"
@@ -457,6 +455,7 @@ export const ShoppingListScreen = ({
                 returnKeyType="done"
                 style={{
                   fontSize: 16,
+                  fontFamily: theme.fonts.regular,
                   color: theme.colors.text,
                   borderWidth: 1,
                   borderColor: theme.colors.border,
@@ -478,7 +477,7 @@ export const ShoppingListScreen = ({
                 disabled={!saveSetName.trim()}
                 onPress={submitSaveAsSet}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.primaryText }}>Save</Text>
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>Save</Text>
               </Pressable>
             </View>
           </View>
@@ -498,7 +497,7 @@ export const ShoppingListScreen = ({
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{confirmModal?.title}</Text>
             </View>
-            <Text style={{ fontSize: 14, color: theme.colors.textSecondary, paddingBottom: 16 }}>
+            <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary, paddingBottom: 16 }}>
               {confirmModal?.message}
             </Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -511,7 +510,7 @@ export const ShoppingListScreen = ({
                 })}
                 onPress={() => setConfirmModal(null)}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.text }}>Cancel</Text>
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.text }}>Cancel</Text>
               </Pressable>
               <Pressable
                 style={({ pressed }) => ({
@@ -525,7 +524,7 @@ export const ShoppingListScreen = ({
                   setConfirmModal(null);
                 }}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>Clear</Text>
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>Clear</Text>
               </Pressable>
             </View>
           </View>

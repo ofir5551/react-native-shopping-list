@@ -77,7 +77,7 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
               <Ionicons
                 name="people-outline"
                 size={16}
-                color="#7c7c7c"
+                color={theme.colors.textSecondary}
                 style={styles.listCardSharedIcon}
               />
             )}

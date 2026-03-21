@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useAppStyles } from '../styles/appStyles';
+import { useTheme } from '../context/ThemeContext';
 
 type ListNameModalProps = {
   visible: boolean;
@@ -23,6 +24,7 @@ export const ListNameModal = ({
   onClose,
 }: ListNameModalProps) => {
   const styles = useAppStyles();
+  const { theme } = useTheme();
   const inputRef = useRef<TextInput | null>(null);
   const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -65,8 +67,8 @@ export const ListNameModal = ({
           </Text>
 
           {mode === 'share' ? (
-            <View style={[styles.nameModalInput, { backgroundColor: '#f5f5f5', justifyContent: 'center' }]}>
-              <Text style={{ color: '#333', textAlign: 'center', userSelect: 'all' }}>{value}</Text>
+            <View style={[styles.nameModalInput, { backgroundColor: theme.colors.surfaceHighlight, justifyContent: 'center' }]}>
+              <Text style={{ color: theme.colors.text, textAlign: 'center', userSelect: 'all' }}>{value}</Text>
             </View>
           ) : (
             <TextInput
@@ -78,7 +80,7 @@ export const ListNameModal = ({
               onSubmitEditing={onSubmit}
               returnKeyType="done"
               style={styles.nameModalInput}
-              placeholderTextColor="#8b8b8b"
+              placeholderTextColor={theme.colors.textSecondary}
             />
           )}
 

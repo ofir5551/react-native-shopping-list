@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { ShoppingItem } from '../types';
 import { useAppStyles } from '../styles/appStyles';
+import { useTheme } from '../context/ThemeContext';
 
 type ItemRowProps = {
   item: ShoppingItem;
@@ -17,6 +18,7 @@ const CHECK_ANIM_DURATION = 300;
 
 export const ItemRow = memo(function ItemRow({ item, onToggle, onDelete, onIncrement, onDecrement }: ItemRowProps) {
   const styles = useAppStyles();
+  const { theme } = useTheme();
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const isAnimating = useRef(false);
   const [checkedVisual, setCheckedVisual] = useState(false);
@@ -74,11 +76,11 @@ export const ItemRow = memo(function ItemRow({ item, onToggle, onDelete, onIncre
         {!item.purchased && (
           <View style={styles.quantityWrap}>
             <Pressable style={styles.quantityButton} onPress={handleDecrement}>
-              <Feather name="minus" size={14} color="#666" />
+              <Feather name="minus" size={14} color={theme.colors.textSecondary} />
             </Pressable>
             <Text style={styles.quantityText}>{item.quantity}</Text>
             <Pressable style={styles.quantityButton} onPress={handleIncrement}>
-              <Feather name="plus" size={14} color="#666" />
+              <Feather name="plus" size={14} color={theme.colors.textSecondary} />
             </Pressable>
           </View>
         )}
@@ -90,7 +92,7 @@ export const ItemRow = memo(function ItemRow({ item, onToggle, onDelete, onIncre
         )}
 
         <Pressable style={styles.deleteButton} onPress={handleDelete}>
-          <Feather name="trash-2" size={16} color="#9a3d3d" />
+          <Feather name="trash-2" size={16} color={theme.colors.danger} />
         </Pressable>
       </Animated.View>
     </Pressable>

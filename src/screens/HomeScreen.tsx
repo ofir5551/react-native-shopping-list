@@ -8,9 +8,11 @@ import { ShoppingListScreen } from './ShoppingListScreen';
 import { SignUpScreen } from './SignUpScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { useAppStyles } from '../styles/appStyles';
+import { useTheme } from '../context/ThemeContext';
 
 export const HomeScreen = () => {
   const styles = useAppStyles();
+  const { theme } = useTheme();
   const {
     isHydrated,
     route,
@@ -89,7 +91,7 @@ export const HomeScreen = () => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color="#1f7a5a" />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
         <StatusBar style="dark" />
       </SafeAreaView>
