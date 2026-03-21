@@ -82,7 +82,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [route, setRoute] = useState<AppRoute>(DEFAULT_ROUTE);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [showCompleted, setShowCompleted] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(false);
   const prevListMapRef = useRef<Map<string, string>>(new Map());
   const isFromRealtimeRef = useRef(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);

@@ -177,7 +177,7 @@ export const useAppStyles = () => {
         marginLeft: 8,
       },
       completedSection: {
-        marginTop: 0,
+        marginTop: 8,
       },
       completedHeader: {
         flexDirection: 'row',
