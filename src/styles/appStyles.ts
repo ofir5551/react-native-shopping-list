@@ -16,7 +16,7 @@ export const useAppStyles = () => {
       },
       header: {
         paddingTop: theme.spacing.sm,
-        paddingBottom: theme.spacing.sm,
+        paddingBottom: theme.spacing.md,
       },
       headerRow: {
         flexDirection: 'row',
@@ -132,14 +132,14 @@ export const useAppStyles = () => {
         paddingHorizontal: 16,
       },
       list: {
-        paddingTop: 8,
+        paddingTop: 12,
         paddingBottom: 140,
       },
       listCard: {
         backgroundColor: theme.colors.surface,
         borderRadius: 16,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
         marginBottom: 8,
         shadowColor: '#000',
         shadowOpacity: 0.06,
@@ -147,8 +147,12 @@ export const useAppStyles = () => {
         shadowOffset: { width: 0, height: 2 },
         elevation: 1,
       },
+      listCardRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
       listCardMain: {
-        marginBottom: 6,
+        flex: 1,
       },
       listCardTitle: {
         fontSize: 18,
@@ -171,11 +175,10 @@ export const useAppStyles = () => {
       listCardActions: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'flex-end',
       },
       listCardActionButton: {
         paddingHorizontal: 10,
-        paddingVertical: 6,
+        paddingVertical: 8,
         borderRadius: 10,
         backgroundColor: theme.colors.surfaceHighlight,
         marginLeft: 8,
@@ -208,7 +211,7 @@ export const useAppStyles = () => {
         backgroundColor: theme.colors.surface,
         borderRadius: 12,
         paddingHorizontal: 10,
-        paddingVertical: 6,
+        paddingVertical: 10,
         marginBottom: 4,
         shadowColor: '#000',
         shadowOpacity: 0.04,
@@ -476,6 +479,8 @@ export const useAppStyles = () => {
         fontSize: 16,
         fontFamily: theme.fonts.medium,
         color: theme.colors.text,
+        flex: 1,
+        paddingRight: 12,
       },
       settingsValue: {
         fontSize: 16,

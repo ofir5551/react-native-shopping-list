@@ -66,55 +66,57 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
 
   return (
     <View style={styles.listCard}>
-      <Pressable
-        style={styles.listCardMain}
-        onPress={handleOpen}
-      >
-        <View style={styles.listCardTitleRow}>
-          <Text style={styles.listCardTitle}>{item.name}</Text>
-          {isShared && (
-            <Ionicons
-              name="people-outline"
-              size={16}
-              color="#7c7c7c"
-              style={styles.listCardSharedIcon}
-            />
+      <View style={styles.listCardRow}>
+        <Pressable
+          style={styles.listCardMain}
+          onPress={handleOpen}
+        >
+          <View style={styles.listCardTitleRow}>
+            <Text style={styles.listCardTitle}>{item.name}</Text>
+            {isShared && (
+              <Ionicons
+                name="people-outline"
+                size={16}
+                color="#7c7c7c"
+                style={styles.listCardSharedIcon}
+              />
+            )}
+          </View>
+          <Text style={styles.listCardMeta}>
+            {getItemsLabel(item.items.length)} • {completedCount} completed
+          </Text>
+        </Pressable>
+        <View style={styles.listCardActions}>
+          {isOwner && (
+            <Pressable
+              style={styles.listCardActionButton}
+              onPress={handleRename}
+              accessibilityRole="button"
+              accessibilityLabel={`Rename ${item.name}`}
+            >
+              <Ionicons name="create-outline" size={18} color={theme.colors.textSecondary} />
+            </Pressable>
+          )}
+          {isOwner ? (
+            <Pressable
+              style={styles.listCardActionButton}
+              onPress={handleDelete}
+              accessibilityRole="button"
+              accessibilityLabel={`Delete ${item.name}`}
+            >
+              <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
+            </Pressable>
+          ) : (
+            <Pressable
+              style={styles.listCardActionButton}
+              onPress={handleLeave}
+              accessibilityRole="button"
+              accessibilityLabel={`Exit ${item.name}`}
+            >
+              <Ionicons name="exit-outline" size={18} color={theme.colors.textSecondary} />
+            </Pressable>
           )}
         </View>
-        <Text style={styles.listCardMeta}>
-          {getItemsLabel(item.items.length)} • {completedCount} completed
-        </Text>
-      </Pressable>
-      <View style={styles.listCardActions}>
-        {isOwner && (
-          <Pressable
-            style={styles.listCardActionButton}
-            onPress={handleRename}
-            accessibilityRole="button"
-            accessibilityLabel={`Rename ${item.name}`}
-          >
-            <Ionicons name="create-outline" size={18} color={theme.colors.textSecondary} />
-          </Pressable>
-        )}
-        {isOwner ? (
-          <Pressable
-            style={styles.listCardActionButton}
-            onPress={handleDelete}
-            accessibilityRole="button"
-            accessibilityLabel={`Delete ${item.name}`}
-          >
-            <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
-          </Pressable>
-        ) : (
-          <Pressable
-            style={styles.listCardActionButton}
-            onPress={handleLeave}
-            accessibilityRole="button"
-            accessibilityLabel={`Exit ${item.name}`}
-          >
-            <Ionicons name="exit-outline" size={18} color={theme.colors.textSecondary} />
-          </Pressable>
-        )}
       </View>
     </View>
   );
