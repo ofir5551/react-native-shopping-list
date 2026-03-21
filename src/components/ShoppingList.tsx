@@ -31,6 +31,7 @@ export const ShoppingList = ({
     <FlatList
       data={activeItems}
       keyExtractor={(item) => item.id}
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.list}
       ListFooterComponent={
         completedItems.length > 0 ? (

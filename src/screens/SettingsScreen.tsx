@@ -44,12 +44,12 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                 <View style={styles.headerRow}>
                     <View style={styles.headerLeft}>
                         <TouchableOpacity
-                            style={[styles.iconButton, { marginRight: 12 }]}
+                            style={[styles.overlayBackBtn, { marginRight: 12 }]}
                             onPress={onBack}
                             accessibilityRole="button"
                             accessibilityLabel="Go back"
                         >
-                            <Ionicons name="arrow-back" size={20} color={theme.colors.text} />
+                            <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
                         </TouchableOpacity>
                         <Text style={styles.title}>Settings</Text>
                     </View>

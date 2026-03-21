@@ -3,6 +3,7 @@ import {
   BackHandler,
   LayoutAnimation,
   Pressable,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -171,7 +172,7 @@ export const OverlayModal = ({
   if (!visible) return null;
 
   return (
-    <View style={styles.overlayFullScreen}>
+    <SafeAreaView style={styles.overlayFullScreen}>
         <View style={styles.overlayTopRow}>
           <Pressable
             onPress={onClose}
@@ -271,6 +272,6 @@ export const OverlayModal = ({
           </ScrollView>
         </View>
 
-      </View>
+      </SafeAreaView>
   );
 };

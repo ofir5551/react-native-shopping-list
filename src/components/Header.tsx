@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
+import { useTheme } from '../context/ThemeContext';
 
 type HeaderProps = {
   title: string;
@@ -19,6 +20,7 @@ export const Header = ({
   children,
 }: HeaderProps) => {
   const styles = useAppStyles();
+  const { theme } = useTheme();
 
   return (
     <View style={styles.header}>
@@ -26,12 +28,12 @@ export const Header = ({
         <View style={styles.headerLeft}>
           {onBack ? (
             <Pressable
-              style={styles.iconButton}
+              style={styles.overlayBackBtn}
               onPress={onBack}
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
-              <Ionicons name="chevron-back" size={20} color="#4a4a4a" />
+              <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
             </Pressable>
           ) : null}
           <View>

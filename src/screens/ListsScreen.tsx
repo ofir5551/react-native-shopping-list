@@ -113,6 +113,7 @@ export const ListsScreen = ({
         <FlatList
           data={lists}
           keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => {
             const completedCount = item.items.filter((entry) => entry.purchased).length;
