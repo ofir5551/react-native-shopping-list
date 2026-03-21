@@ -178,16 +178,8 @@ export const ShoppingListScreen = ({
         subtitle="Simple, fast, and focused"
         onBack={onBack}
         onOpenSettings={() => setIsSettingsOpen((current) => !current)}
-      >
-        <Pressable
-          style={styles.iconButton}
-          onPress={onShareList}
-          accessibilityRole="button"
-          accessibilityLabel="Copy Share ID"
-        >
-          <Ionicons name="share-social-outline" size={20} color={theme.colors.textSecondary} />
-        </Pressable>
-      </Header>
+        settingsIcon="options"
+      />
 
       {/* Settings popover */}
       {isSettingsOpen ? (
@@ -197,6 +189,13 @@ export const ShoppingListScreen = ({
             onPress={() => setIsSettingsOpen(false)}
           />
           <View style={styles.settingsPopover}>
+            <Pressable
+              style={styles.settingsPopoverButton}
+              onPress={() => { setIsSettingsOpen(false); onShareList(); }}
+            >
+              <Text style={styles.settingsPopoverButtonText}>Share list</Text>
+            </Pressable>
+            <View style={styles.settingsPopoverDivider} />
             <Pressable
               style={styles.settingsPopoverButton}
               onPress={handleClearRecentsPress}

@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback } from 'react';
 import { Alert, FlatList, ListRenderItemInfo, Pressable, SafeAreaView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Fab } from '../components/Fab';
 import { ListNameModal } from '../components/ListNameModal';
 import { Header } from '../components/Header';
@@ -49,7 +50,10 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
   const isOwner = !item.ownerId || item.ownerId === currentUserId;
   const isShared = !!item.ownerId && item.ownerId !== currentUserId;
 
-  const handleOpen = useCallback(() => onOpenList(item.id), [item.id, onOpenList]);
+  const handleOpen = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onOpenList(item.id);
+  }, [item.id, onOpenList]);
   const handleRename = useCallback(() => onOpenRenameListModal(item.id), [item.id, onOpenRenameListModal]);
   const handleDelete = useCallback(() => {
     Alert.alert('Delete list?', `Delete "${item.name}" permanently? This will remove the list for all shared users.`, [

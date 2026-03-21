@@ -44,19 +44,19 @@ const fonts = {
 
 export const lightTheme: Theme = {
   colors: {
-    background: '#f7f4f0',
-    surface: '#ffffff',
-    surfaceHighlight: '#f0e6df',
-    primary: '#1f7a5a',
+    background: '#f3ede4',      // richer, deeper cream
+    surface: '#fdfaf6',         // warm white (was pure #fff)
+    surfaceHighlight: '#e8ddd0', // more pronounced warm highlight
+    primary: '#196b4e',         // deeper forest green — more authority
     primaryText: '#ffffff',
-    text: '#1f1f1f',
-    textSecondary: '#595959',
-    border: '#e6d8ca',
-    danger: '#9a3d3d',
-    dangerSurface: '#ffebeb',
-    inputBackground: '#ffffff',
-    backdrop: 'rgba(0, 0, 0, 0.35)',
-    syncActive: '#2e7d32',
+    text: '#1a1612',            // warm near-black (was neutral #1f1f1f)
+    textSecondary: '#6e5e50',   // warm brown-gray — character over neutral gray
+    border: '#cfc0ad',          // visible, warm border (was barely-there #e6d8ca)
+    danger: '#8a3232',
+    dangerSurface: '#fce8e8',
+    inputBackground: '#fdfaf6',
+    backdrop: 'rgba(26, 22, 18, 0.4)',
+    syncActive: '#196b4e',
   },
   fonts,
   spacing: {
@@ -76,19 +76,19 @@ export const lightTheme: Theme = {
 
 export const darkTheme: Theme = {
   colors: {
-    background: '#121212',
-    surface: '#1e1e1e',
-    surfaceHighlight: '#2c2c2c',
-    primary: '#2d8a6a',
+    background: '#16130e',      // warm dark — brown-black, not tech gray
+    surface: '#201d17',         // warm dark surface
+    surfaceHighlight: '#2b271f', // warm dark highlight
+    primary: '#2a9470',         // brighter green for dark legibility
     primaryText: '#ffffff',
-    text: '#e0e0e0',
-    textSecondary: '#a0a0a0',
-    border: '#333333',
-    danger: '#cf6679',
-    dangerSurface: '#3e2a2a',
-    inputBackground: '#2c2c2c',
-    backdrop: 'rgba(0, 0, 0, 0.6)',
-    syncActive: '#66bb6a',
+    text: '#eae4da',            // warm near-white (was cold #e0e0e0)
+    textSecondary: '#9e8f7c',   // warm mid-tone (was neutral #a0a0a0)
+    border: '#3b3529',          // warm dark border
+    danger: '#d46f7a',
+    dangerSurface: '#3d2525',
+    inputBackground: '#2b271f',
+    backdrop: 'rgba(0, 0, 0, 0.65)',
+    syncActive: '#2a9470',
   },
   fonts,
   spacing: {

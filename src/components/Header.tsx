@@ -9,6 +9,7 @@ type HeaderProps = {
   subtitle?: string;
   onBack?: () => void;
   onOpenSettings?: () => void;
+  settingsIcon?: 'settings' | 'options';
   children?: React.ReactNode;
 };
 
@@ -17,6 +18,7 @@ export const Header = ({
   subtitle,
   onBack,
   onOpenSettings,
+  settingsIcon = 'settings',
   children,
 }: HeaderProps) => {
   const styles = useAppStyles();
@@ -44,12 +46,12 @@ export const Header = ({
           </View>
         </View>
         <View style={styles.headerActions}>
+          {children}
           {onOpenSettings ? (
             <Pressable style={styles.iconButton} onPress={onOpenSettings}>
-              <Ionicons name="settings-outline" size={20} color={theme.colors.textSecondary} />
+              <Ionicons name={settingsIcon === 'options' ? 'ellipsis-vertical' : 'settings-outline'} size={20} color={theme.colors.textSecondary} />
             </Pressable>
           ) : null}
-          {children}
         </View>
       </View>
     </View>
