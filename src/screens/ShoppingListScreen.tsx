@@ -35,12 +35,13 @@ type ShoppingListScreenProps = {
   closeOverlay: () => void;
   overlayInput: string;
   setOverlayInput: (value: string) => void;
-  recentItems: string[];
+  suggestions: string[];
   selectedRecent: SelectedRecentItem[];
   handleOverlayAdd: () => void;
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
   handleUpdateRecentQuantity: (name: string, delta: number) => void;
+  handleDismissSuggestion: (name: string) => void;
   handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
   handleClearRecents: () => void;
@@ -70,12 +71,13 @@ export const ShoppingListScreen = ({
   closeOverlay,
   overlayInput,
   setOverlayInput,
-  recentItems,
+  suggestions,
   selectedRecent,
   handleOverlayAdd,
   handleAddSelected,
   handleToggleRecent,
   handleUpdateRecentQuantity,
+  handleDismissSuggestion,
   handleAddMultipleSelected,
   handleQuickAddMultiple,
   handleClearRecents,
@@ -250,10 +252,11 @@ export const ShoppingListScreen = ({
         overlayInput={overlayInput}
         onChangeInput={setOverlayInput}
         onAddInput={handleOverlayAdd}
-        recentItems={recentItems}
+        suggestions={suggestions}
         selectedRecent={selectedRecent}
         onToggleRecent={handleToggleRecent}
         onUpdateRecentQuantity={handleUpdateRecentQuantity}
+        onDismissSuggestion={handleDismissSuggestion}
         onClose={closeOverlay}
         onSaveAsSet={handleOpenSaveAsSet}
       />

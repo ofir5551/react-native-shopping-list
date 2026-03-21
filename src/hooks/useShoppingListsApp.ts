@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { AppRoute, SavedSet, SavedSetItem, SelectedRecentItem, ShoppingItem, ShoppingList } from '../types';
 import { MAX_RECENTS, sanitizeRecents } from '../utils/recents';
+import { POPULAR_ITEMS } from '../data/popularItems';
 
 type ListNameModalMode = 'create' | 'rename' | 'join' | 'share';
 
@@ -28,12 +29,13 @@ export type ShoppingListsAppState = {
   closeOverlay: () => void;
   overlayInput: string;
   setOverlayInput: (value: string) => void;
-  recentItems: string[];
+  suggestions: string[];
   selectedRecent: SelectedRecentItem[];
   handleOverlayAdd: () => void;
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
   handleUpdateRecentQuantity: (name: string, delta: number) => void;
+  handleDismissSuggestion: (name: string) => void;
   handleClearRecents: () => void;
   handleToggle: (id: string) => void;
   handleDelete: (id: string) => void;
@@ -208,7 +210,15 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     [lists]
   );
 
-  const recentItems = currentList?.recents ?? [];
+  const suggestions = useMemo(() => {
+    const recents = currentList?.recents ?? [];
+    const dismissed = new Set(currentList?.dismissedSuggestions ?? []);
+    const recentsSet = new Set(recents.map((r) => r.toLowerCase()));
+    const popularFiller = POPULAR_ITEMS.filter(
+      (item) => !recentsSet.has(item.toLowerCase()) && !dismissed.has(item)
+    );
+    return [...recents, ...popularFiller].filter((item) => !dismissed.has(item));
+  }, [currentList?.recents, currentList?.dismissedSuggestions]);
   const hasItems = (currentList?.items.length ?? 0) > 0;
 
   const updateListById = (
@@ -425,6 +435,13 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
             : item
         ),
       }));
+      setSelectedRecent((current) =>
+        current.map((item) =>
+          normalizeName(item.name) === normalizeName(name)
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
       setOverlayInput('');
       return;
     }
@@ -451,6 +468,9 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
           0,
           MAX_RECENTS
         )
+      ),
+      dismissedSuggestions: (list.dismissedSuggestions ?? []).filter(
+        (d) => d.toLowerCase() !== name.toLowerCase()
       ),
     }));
     setOverlayInput('');
@@ -598,6 +618,15 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setSelectedRecent([]);
   };
 
+  const handleDismissSuggestion = (name: string) => {
+    if (!currentList) return;
+    updateListById(currentList.id, (list) => ({
+      ...list,
+      recents: list.recents.filter((r) => r.toLowerCase() !== name.toLowerCase()),
+      dismissedSuggestions: [...(list.dismissedSuggestions ?? []), name],
+    }));
+  };
+
   const handleToggle = (id: string) => {
     if (!currentList) return;
     updateListById(currentList.id, (list) => ({
@@ -692,12 +721,13 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     closeOverlay,
     overlayInput,
     setOverlayInput,
-    recentItems,
+    suggestions,
     selectedRecent,
     handleOverlayAdd,
     handleAddSelected,
     handleToggleRecent,
     handleUpdateRecentQuantity,
+    handleDismissSuggestion,
     handleClearRecents,
     handleToggle,
     handleDelete,

@@ -47,12 +47,13 @@ export const HomeScreen = () => {
     closeOverlay,
     overlayInput,
     setOverlayInput,
-    recentItems,
+    suggestions,
     selectedRecent,
     handleOverlayAdd,
     handleAddSelected,
     handleToggleRecent,
     handleUpdateRecentQuantity,
+    handleDismissSuggestion,
     handleAddMultipleSelected,
     handleQuickAddMultiple,
     handleClearRecents,
@@ -148,12 +149,13 @@ export const HomeScreen = () => {
         closeOverlay={closeOverlay}
         overlayInput={overlayInput}
         setOverlayInput={setOverlayInput}
-        recentItems={recentItems}
+        suggestions={suggestions}
         selectedRecent={selectedRecent}
         handleOverlayAdd={handleOverlayAdd}
         handleAddSelected={handleAddSelected}
         handleToggleRecent={handleToggleRecent}
         handleUpdateRecentQuantity={handleUpdateRecentQuantity}
+        handleDismissSuggestion={handleDismissSuggestion}
         handleAddMultipleSelected={handleAddMultipleSelected}
         handleQuickAddMultiple={handleQuickAddMultiple}
         handleClearRecents={handleClearRecents}

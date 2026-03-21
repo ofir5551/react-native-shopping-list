@@ -15,22 +15,22 @@ import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { SelectedRecentItem } from '../types';
-import { POPULAR_ITEMS } from '../data/popularItems';
 
 type OverlayModalProps = {
   visible: boolean;
   overlayInput: string;
   onChangeInput: (value: string) => void;
   onAddInput: () => void;
-  recentItems: string[];
+  suggestions: string[];
   selectedRecent: SelectedRecentItem[];
   onToggleRecent: (name: string) => void;
   onUpdateRecentQuantity: (name: string, delta: number) => void;
+  onDismissSuggestion: (name: string) => void;
   onClose: () => void;
   onSaveAsSet?: () => void;
 };
 
-type TabKey = 'popular' | 'catalog' | 'recents';
+type TabKey = 'suggestions' | 'catalog';
 
 const triggerHaptic = () => {
   try {
@@ -39,9 +39,8 @@ const triggerHaptic = () => {
 };
 
 const TABS: { key: TabKey; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'popular', label: 'Popular', icon: 'sparkles' },
+  { key: 'suggestions', label: 'Suggestions', icon: 'sparkles' },
   { key: 'catalog', label: 'Catalog', icon: 'grid-outline' },
-  { key: 'recents', label: 'Recents', icon: 'time-outline' },
 ];
 
 export const OverlayModal = ({
@@ -49,10 +48,11 @@ export const OverlayModal = ({
   overlayInput,
   onChangeInput,
   onAddInput,
-  recentItems,
+  suggestions,
   selectedRecent,
   onToggleRecent,
   onUpdateRecentQuantity,
+  onDismissSuggestion,
   onClose,
   onSaveAsSet,
 }: OverlayModalProps) => {
@@ -60,7 +60,7 @@ export const OverlayModal = ({
   const { theme } = useTheme();
   const { preferences } = usePreferences();
   const inputRef = useRef<TextInput | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>('popular');
+  const [activeTab, setActiveTab] = useState<TabKey>('suggestions');
 
   useEffect(() => {
     if (!visible) return;
@@ -102,6 +102,13 @@ export const OverlayModal = ({
         key={name}
         style={({ pressed }) => [styles.itemListRow, selected && styles.itemListRowSelected, pressed && { opacity: 0.7 }]}
         onPress={() => handleItemPress(name)}
+        onLongPress={() => {
+          if (!selected) {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            triggerHaptic();
+            onDismissSuggestion(name);
+          }
+        }}
         accessibilityRole="button"
         accessibilityLabel={selected ? `Add more ${name}` : `Add ${name}`}
         android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
@@ -144,9 +151,12 @@ export const OverlayModal = ({
     );
   };
 
-  const renderPopularTab = () => (
-    <View>{POPULAR_ITEMS.map((item) => renderItemRow(item))}</View>
-  );
+  const renderSuggestionsTab = () => {
+    if (suggestions.length === 0) {
+      return <Text style={styles.recentsEmpty}>No suggestions yet. Add items to get started.</Text>;
+    }
+    return <View>{suggestions.map((item) => renderItemRow(item))}</View>;
+  };
 
   const renderCatalogTab = () => (
     <View style={{ alignItems: 'center', paddingVertical: 40 }}>
@@ -159,17 +169,6 @@ export const OverlayModal = ({
       </Text>
     </View>
   );
-
-  const renderRecentsTab = () => {
-    if (recentItems.length === 0) {
-      return (
-        <Text style={styles.recentsEmpty}>No recent items yet.</Text>
-      );
-    }
-    return (
-      <View>{recentItems.map((item) => renderItemRow(item))}</View>
-    );
-  };
 
   if (!visible) return null;
 
@@ -268,9 +267,8 @@ export const OverlayModal = ({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {activeTab === 'popular' && renderPopularTab()}
+          {activeTab === 'suggestions' && renderSuggestionsTab()}
           {activeTab === 'catalog' && renderCatalogTab()}
-          {activeTab === 'recents' && renderRecentsTab()}
         </ScrollView>
       </View>
 

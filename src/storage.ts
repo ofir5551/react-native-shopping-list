@@ -47,6 +47,7 @@ export const isShoppingList = (value: unknown): value is ShoppingList => {
 const normalizeList = (list: ShoppingList): ShoppingList => ({
   ...list,
   recents: sanitizeRecents(list.recents),
+  dismissedSuggestions: Array.isArray(list.dismissedSuggestions) ? list.dismissedSuggestions : [],
 });
 
 export const LocalStorageProvider: StorageProvider = {
