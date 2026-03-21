@@ -86,13 +86,9 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const prevListMapRef = useRef<Map<string, string>>(new Map());
   const isFromRealtimeRef = useRef(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-  const [overlayToast, setOverlayToastState] = useState<{ message: string; key: number } | null>(null);
-
-  const setOverlayToast = (msg: string) => {
-    setOverlayToastState({ message: msg, key: Date.now() });
-  };
   const [overlayInput, setOverlayInput] = useState('');
   const [selectedRecent, setSelectedRecent] = useState<SelectedRecentItem[]>([]);
+  const preExistingNamesRef = useRef<Set<string>>(new Set());
   const [isListNameModalOpen, setIsListNameModalOpen] = useState(false);
   const [listNameMode, setListNameMode] = useState<ListNameModalMode>('create');
   const [editingListId, setEditingListId] = useState<string | null>(null);
@@ -404,7 +400,9 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     if (!currentList) return;
     setIsOverlayOpen(true);
     setOverlayInput('');
-    setSelectedRecent([]);
+    const currentActive = currentList.items.filter((item) => !item.purchased);
+    preExistingNamesRef.current = new Set(currentActive.map((item) => normalizeName(item.name)));
+    setSelectedRecent(currentActive.map((item) => ({ name: item.name, quantity: item.quantity })));
   };
 
   const handleOverlayAdd = () => {
@@ -427,7 +425,6 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
             : item
         ),
       }));
-      setOverlayToast(`"${existingActiveItem.name}" already in list — quantity updated to ${newQuantity}`);
       setOverlayInput('');
       return;
     }
@@ -443,10 +440,8 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
             : item
         )
       );
-      setOverlayToast(`"${name}" — quantity increased`);
     } else {
       setSelectedRecent((current) => [...current, { name, quantity: 1 }]);
-      setOverlayToast(`"${name}" added`);
     }
 
     updateListById(currentList.id, (list) => ({
@@ -461,24 +456,79 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setOverlayInput('');
   };
 
-  const handleAddSelected = () => {
-    if (!currentList || selectedRecent.length === 0) return;
+  const mergeItemsIntoList = (
+    listId: string,
+    itemsToMerge: { name: string; quantity: number }[],
+    quantityMode: 'set' | 'add',
+    idSuffix = '',
+  ) => {
     const timestamp = Date.now();
-
-    updateListById(currentList.id, (list) => {
-      let currentItems = [...list.items];
+    updateListById(listId, (list) => {
+      const currentItems = [...list.items];
       const newItems: ShoppingItem[] = [];
 
-      selectedRecent.forEach((selected, index) => {
+      itemsToMerge.forEach((toMerge, index) => {
         const existingActiveIndex = currentItems.findIndex(
-          (item) => !item.purchased && normalizeName(item.name) === normalizeName(selected.name)
+          (item) => !item.purchased && normalizeName(item.name) === normalizeName(toMerge.name)
         );
 
         if (existingActiveIndex !== -1) {
           currentItems[existingActiveIndex] = {
             ...currentItems[existingActiveIndex],
-            quantity: currentItems[existingActiveIndex].quantity + selected.quantity,
+            quantity: quantityMode === 'set'
+              ? toMerge.quantity
+              : currentItems[existingActiveIndex].quantity + toMerge.quantity,
           };
+        } else {
+          newItems.push({
+            id: `${timestamp}-${index}${idSuffix}`,
+            name: toMerge.name,
+            purchased: false,
+            createdAt: timestamp + index,
+            quantity: toMerge.quantity,
+          });
+        }
+      });
+
+      return { ...list, items: [...newItems, ...currentItems] };
+    });
+  };
+
+  const handleAddSelected = () => {
+    if (!currentList) return;
+
+    const selectedNames = new Set(selectedRecent.map((s) => normalizeName(s.name)));
+
+    // Items that were active when overlay opened but are no longer selected
+    const removedNames = new Set<string>();
+    preExistingNamesRef.current.forEach((name) => {
+      if (!selectedNames.has(name)) removedNames.add(name);
+    });
+
+    const newCount = selectedRecent.filter(
+      (item) => !preExistingNamesRef.current.has(normalizeName(item.name))
+    ).length;
+    const removedCount = removedNames.size;
+
+    if (selectedRecent.length === 0 && removedCount === 0) {
+      closeOverlay();
+      return;
+    }
+
+    updateListById(currentList.id, (list) => {
+      const timestamp = Date.now();
+      const currentItems = list.items.filter(
+        (item) => item.purchased || !removedNames.has(normalizeName(item.name))
+      );
+      const updatedItems = [...currentItems];
+      const newItems: ShoppingItem[] = [];
+
+      selectedRecent.forEach((selected, index) => {
+        const existingIndex = updatedItems.findIndex(
+          (item) => !item.purchased && normalizeName(item.name) === normalizeName(selected.name)
+        );
+        if (existingIndex !== -1) {
+          updatedItems[existingIndex] = { ...updatedItems[existingIndex], quantity: selected.quantity };
         } else {
           newItems.push({
             id: `${timestamp}-${index}`,
@@ -490,13 +540,15 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
         }
       });
 
-      return {
-        ...list,
-        items: [...newItems, ...currentItems],
-      };
+      return { ...list, items: [...newItems, ...updatedItems] };
     });
 
     closeOverlay();
+
+    const parts: string[] = [];
+    if (newCount > 0) parts.push(`Items added to the list: ${newCount}`);
+    if (removedCount > 0) parts.push(`Items removed from the list: ${removedCount}`);
+    if (parts.length > 0) showToast(parts.join('\n'));
   };
 
   const handleAddMultipleSelected = (items: { name: string; quantity: number }[]) => {
@@ -516,39 +568,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
 
   const handleQuickAddMultiple = (items: { name: string; quantity: number }[]) => {
     if (!currentList || items.length === 0) return;
-    const timestamp = Date.now();
-
-    updateListById(currentList.id, (list) => {
-      let currentItems = [...list.items];
-      const newItems: ShoppingItem[] = [];
-
-      items.forEach((itemToAdd, index) => {
-        const existingActiveIndex = currentItems.findIndex(
-          (item) => !item.purchased && normalizeName(item.name) === normalizeName(itemToAdd.name)
-        );
-
-        if (existingActiveIndex !== -1) {
-          currentItems[existingActiveIndex] = {
-            ...currentItems[existingActiveIndex],
-            quantity: currentItems[existingActiveIndex].quantity + itemToAdd.quantity,
-          };
-        } else {
-          newItems.push({
-            id: `${timestamp}-${index}-qa`,
-            name: itemToAdd.name,
-            purchased: false,
-            createdAt: timestamp + index,
-            quantity: itemToAdd.quantity,
-          });
-        }
-      });
-
-      return {
-        ...list,
-        items: [...newItems, ...currentItems],
-      };
-    });
-
+    mergeItemsIntoList(currentList.id, items, 'add', '-qa');
     closeOverlay();
   };
 
@@ -704,7 +724,6 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     goToSignup,
     handleAddMultipleSelected,
     handleQuickAddMultiple,
-    overlayToast,
     savedSets,
     createSavedSet,
     updateSavedSet,

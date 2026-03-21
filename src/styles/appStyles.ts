@@ -1,7 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useMemo } from 'react';
-import { Theme } from './theme';
 
 export const useAppStyles = () => {
   const { theme } = useTheme();
@@ -93,9 +92,6 @@ export const useAppStyles = () => {
         shadowOffset: { width: 0, height: 4 },
         elevation: 2,
       },
-      modalInputRow: {
-        marginTop: 12,
-      },
       input: {
         flex: 1,
         fontSize: 16,
@@ -179,14 +175,6 @@ export const useAppStyles = () => {
         borderRadius: 10,
         backgroundColor: theme.colors.surfaceHighlight,
         marginLeft: 8,
-      },
-      listCardActionText: {
-        color: theme.colors.textSecondary,
-        fontWeight: '600',
-      },
-      listCardDeleteText: {
-        color: theme.colors.danger,
-        fontWeight: '600',
       },
       completedSection: {
         marginTop: 4,
@@ -282,28 +270,6 @@ export const useAppStyles = () => {
         minWidth: 20,
         textAlign: 'center',
       },
-      fab: {
-        position: 'absolute',
-        right: 20,
-        bottom: 28,
-        width: 58,
-        height: 58,
-        borderRadius: 29,
-        backgroundColor: theme.colors.primary,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOpacity: 0.18,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 6,
-      },
-      fabIcon: {
-        fontSize: 32,
-        color: theme.colors.primaryText,
-        fontWeight: '600',
-        marginTop: -2,
-      },
       modalContainer: {
         flex: 1,
         justifyContent: 'flex-end',
@@ -321,6 +287,18 @@ export const useAppStyles = () => {
         paddingTop: 18,
         paddingBottom: 20,
       },
+      overlayFullScreen: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: theme.colors.background,
+        paddingHorizontal: 20,
+        paddingTop: 18,
+        paddingBottom: 20,
+        zIndex: 10,
+      },
       modalHeader: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -329,43 +307,6 @@ export const useAppStyles = () => {
       },
       modalContent: {
         flex: 1,
-      },
-      selectedTray: {
-        backgroundColor: theme.colors.surface,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        borderLeftWidth: 4,
-        borderLeftColor: theme.colors.primary,
-        borderRadius: 14,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        marginBottom: 12,
-      },
-      selectedTrayHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 10,
-      },
-      selectedTrayTitle: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: theme.colors.text,
-      },
-      selectedClearButton: {
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 8,
-        backgroundColor: theme.colors.surfaceHighlight,
-      },
-      selectedClearText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: theme.colors.textSecondary,
-      },
-      selectedEmptyText: {
-        fontSize: 13,
-        color: theme.colors.textSecondary,
       },
       overlaySectionsScroll: {
         flex: 1,
@@ -390,91 +331,14 @@ export const useAppStyles = () => {
         color: theme.colors.text,
         fontWeight: '600',
       },
-      overlaySection: {
-        backgroundColor: theme.colors.surfaceHighlight,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        borderRadius: 14,
-        marginBottom: 10,
-        overflow: 'hidden',
-      },
-      overlaySectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-      },
-      overlaySectionTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: theme.colors.text,
-      },
-      overlaySectionChevron: {
-        fontSize: 20,
-        fontWeight: '500',
-        color: theme.colors.text,
-        lineHeight: 20,
-      },
-      overlaySectionBody: {
-        borderTopWidth: 1,
-        borderTopColor: theme.colors.border,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-      },
-      recentsHint: {
-        fontSize: 12,
-        color: theme.colors.textSecondary,
-        marginBottom: 10,
-      },
       recentsEmpty: {
         fontSize: 14,
         color: theme.colors.textSecondary,
         marginTop: 2,
       },
-      tagsWrap: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-      },
       overlayPlaceholderText: {
         fontSize: 14,
         color: theme.colors.textSecondary,
-      },
-      tag: {
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 999,
-        backgroundColor: theme.colors.surface,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        marginRight: 10,
-        marginBottom: 10,
-      },
-      selectedTag: {
-        marginBottom: 8,
-      },
-      tagText: {
-        fontSize: 14,
-        color: theme.colors.text,
-        fontWeight: '600',
-      },
-      tagTextSelected: {
-        color: theme.colors.primaryText,
-      },
-      addSelectedButton: {
-        marginTop: 12,
-        backgroundColor: theme.colors.primary,
-        borderRadius: 16,
-        paddingVertical: 14,
-        alignItems: 'center',
-      },
-      addSelectedButtonDisabled: {
-        backgroundColor: theme.colors.surfaceHighlight, // or a disabled color
-      },
-      addSelectedButtonText: {
-        color: theme.colors.primaryText,
-        fontSize: 16,
-        fontWeight: '700',
       },
       settingsPopoverBackdrop: {
         ...StyleSheet.absoluteFillObject,
@@ -647,6 +511,203 @@ export const useAppStyles = () => {
       },
       authButtonTextSecondary: {
         color: theme.colors.text,
+        fontWeight: '600',
+      },
+      // Pill FAB styles
+      fabPill: {
+        position: 'absolute',
+        right: 20,
+        bottom: 28,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.primary,
+        borderRadius: 28,
+        shadowColor: '#000',
+        shadowOpacity: 0.18,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 6,
+        overflow: 'hidden',
+        zIndex: 20,
+      },
+      fabPillLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 14,
+        paddingLeft: 18,
+        paddingRight: 12,
+      },
+      fabPillLeftText: {
+        color: theme.colors.primaryText,
+        fontSize: 16,
+        fontWeight: '700',
+        marginLeft: 6,
+      },
+      fabDivider: {
+        width: 1,
+        height: 28,
+        backgroundColor: `${theme.colors.primaryText}40`,
+      },
+      fabPillRight: {
+        paddingVertical: 14,
+        paddingHorizontal: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      fabConfirm: {
+        position: 'absolute',
+        right: 20,
+        bottom: 28,
+        width: 58,
+        height: 58,
+        borderRadius: 29,
+        backgroundColor: theme.colors.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOpacity: 0.18,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 6,
+        zIndex: 20,
+      },
+
+      // Tab bar styles
+      tabBar: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.border,
+        marginBottom: 12,
+      },
+      tabBarItem: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 10,
+        borderBottomWidth: 2,
+        borderBottomColor: 'transparent',
+      },
+      tabBarItemActive: {
+        borderBottomColor: theme.colors.primary,
+      },
+      tabBarText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: theme.colors.textSecondary,
+      },
+      tabBarTextActive: {
+        color: theme.colors.primary,
+      },
+      // Caret popover styles
+      caretPopover: {
+        position: 'absolute',
+        right: 20,
+        bottom: 90,
+        minWidth: 200,
+        borderRadius: 12,
+        backgroundColor: theme.colors.surface,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        zIndex: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.12,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 8,
+      },
+      caretPopoverItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        gap: 10,
+      },
+      caretPopoverItemText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: theme.colors.text,
+      },
+      caretPopoverItemDisabled: {
+        opacity: 0.4,
+      },
+      // Item list row styles (inside overlay modal)
+      itemListRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 4,
+        height: 50,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.border,
+      },
+      itemListRowSelected: {
+        backgroundColor: `${theme.colors.primary}0A`,
+      },
+      itemListRowAddBtn: {
+        marginRight: 4,
+      },
+      itemListRowName: {
+        flex: 1,
+        fontSize: 16,
+        color: theme.colors.text,
+      },
+      itemListRowNameSelected: {
+        color: theme.colors.primary,
+        fontWeight: '600',
+      },
+      itemListRowQuantity: {
+        fontSize: 14,
+        color: theme.colors.primary,
+        fontWeight: '700',
+        marginRight: 4,
+      },
+      itemListRowRemoveBtn: {
+        minWidth: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      // Overlay top row (back + search + icons)
+      overlayTopRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+      },
+      overlayBackBtn: {
+        padding: 4,
+      },
+      overlaySearchBar: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.surfaceHighlight,
+        borderRadius: 24,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+      },
+      overlaySearchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: theme.colors.text,
+        paddingVertical: 4,
+      },
+      overlayActionIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: theme.colors.surfaceHighlight,
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: 0.5,
+      },
+      // Save as set link
+      saveAsSetLink: {
+        alignSelf: 'flex-end',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        marginBottom: 8,
+      },
+      saveAsSetLinkText: {
+        fontSize: 13,
+        color: theme.colors.primary,
         fontWeight: '600',
       },
     });

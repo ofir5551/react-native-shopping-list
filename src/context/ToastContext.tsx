@@ -21,7 +21,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             Animated.timing(opacity, { toValue: 1, duration: 250, useNativeDriver: true }).start();
             timerRef.current = setTimeout(() => {
                 Animated.timing(opacity, { toValue: 0, duration: 400, useNativeDriver: true }).start();
-            }, 3500);
+            }, 2000);
         },
         [opacity]
     );

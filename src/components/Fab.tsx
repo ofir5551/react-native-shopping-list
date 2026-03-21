@@ -1,16 +1,52 @@
 import React from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
+import { useTheme } from '../context/ThemeContext';
 
 type FabProps = {
+  mode: 'add' | 'confirm';
   onPress: () => void;
+  onCaretPress?: () => void;
 };
 
-export const Fab = ({ onPress }: FabProps) => {
+export const Fab = ({ mode, onPress, onCaretPress }: FabProps) => {
   const styles = useAppStyles();
+  const { theme } = useTheme();
+
+  if (mode === 'confirm' || !onCaretPress) {
+    return (
+      <Pressable
+        style={({ pressed }) => [styles.fabConfirm, pressed && { opacity: 0.85 }]}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={mode === 'confirm' ? 'Save selected items to list' : 'Create new list'}
+      >
+        <Ionicons name={mode === 'confirm' ? 'checkmark' : 'add'} size={28} color={theme.colors.primaryText} />
+      </Pressable>
+    );
+  }
+
   return (
-    <Pressable style={styles.fab} onPress={onPress}>
-      <Text style={styles.fabIcon}>+</Text>
-    </Pressable>
+    <View style={styles.fabPill}>
+      <Pressable
+        style={({ pressed }) => [styles.fabPillLeft, pressed && { opacity: 0.85 }]}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel="Add items"
+      >
+        <Ionicons name="add" size={20} color={theme.colors.primaryText} />
+        <Text style={styles.fabPillLeftText}>Add</Text>
+      </Pressable>
+      <View style={styles.fabDivider} />
+      <Pressable
+        style={({ pressed }) => [styles.fabPillRight, pressed && { opacity: 0.85 }]}
+        onPress={onCaretPress}
+        accessibilityRole="button"
+        accessibilityLabel="More add options"
+      >
+        <Ionicons name="chevron-up" size={18} color={theme.colors.primaryText} />
+      </Pressable>
+    </View>
   );
 };

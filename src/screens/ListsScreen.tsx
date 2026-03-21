@@ -176,7 +176,7 @@ export const ListsScreen = ({
         />
       )}
 
-      <Fab onPress={onOpenCreateListModal} />
+      <Fab mode="add" onPress={onOpenCreateListModal} />
 
       <ListNameModal
         visible={isListNameModalOpen}

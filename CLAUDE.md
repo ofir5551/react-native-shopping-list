@@ -73,6 +73,7 @@ Online-only operations (throw if offline — caught by existing try/catch in hoo
 - Use `showToast()` from `ToastContext` for user feedback
 - New components → `src/components/`; new screens → `src/screens/`
 - Utility scripts: clean up after use, never commit
+- **Always remove redundant or unused code** — dead functions, unreachable branches, obsolete props, unused imports, and leftover variables must be deleted, not commented out
 
 ## Testing
 

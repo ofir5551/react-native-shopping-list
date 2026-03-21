@@ -53,7 +53,6 @@ export const HomeScreen = () => {
     handleUpdateRecentQuantity,
     handleAddMultipleSelected,
     handleQuickAddMultiple,
-    overlayToast,
     handleClearRecents,
     savedSets,
     createSavedSet,
@@ -71,6 +70,11 @@ export const HomeScreen = () => {
       'hardwareBackPress',
       () => {
         if (route.name === 'list') {
+          if (isOverlayOpen) return false;
+          goToLists();
+          return true;
+        }
+        if (route.name === 'settings') {
           goToLists();
           return true;
         }
@@ -79,7 +83,7 @@ export const HomeScreen = () => {
     );
 
     return () => subscription.remove();
-  }, [route.name, goToLists]);
+  }, [route.name, isOverlayOpen, goToLists]);
 
   if (!isHydrated) {
     return (
@@ -150,7 +154,6 @@ export const HomeScreen = () => {
         handleUpdateRecentQuantity={handleUpdateRecentQuantity}
         handleAddMultipleSelected={handleAddMultipleSelected}
         handleQuickAddMultiple={handleQuickAddMultiple}
-        overlayToast={overlayToast}
         handleClearRecents={handleClearRecents}
         savedSets={savedSets}
         onCreateSavedSet={createSavedSet}
