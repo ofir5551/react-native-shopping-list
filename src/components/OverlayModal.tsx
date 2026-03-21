@@ -173,105 +173,105 @@ export const OverlayModal = ({
 
   return (
     <SafeAreaView style={styles.overlayFullScreen}>
-        <View style={styles.overlayTopRow}>
-          <Pressable
-            onPress={onClose}
-            style={({ pressed }) => [styles.overlayBackBtn, pressed && { opacity: 0.6 }]}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
-          </Pressable>
+      <View style={styles.overlayTopRow}>
+        <Pressable
+          onPress={onClose}
+          style={({ pressed }) => [styles.overlayBackBtn, pressed && { opacity: 0.6 }]}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
+        </Pressable>
 
-          {/* Search input */}
-          <View style={styles.overlaySearchBar}>
-            <Ionicons name="search" size={18} color={theme.colors.textSecondary} style={{ marginRight: 8 }} />
-            <TextInput
-              ref={inputRef}
-              placeholder="Add new item"
-              value={overlayInput}
-              onChangeText={onChangeInput}
-              onSubmitEditing={handleAdd}
-              blurOnSubmit={false}
-              returnKeyType="send"
-              style={styles.overlaySearchInput}
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-            {overlayInput.trim().length > 0 && (
-              <Pressable
-                style={styles.addButton}
-                onPress={handleAdd}
-                accessibilityRole="button"
-                accessibilityLabel="Add typed item"
-              >
-                <Text style={styles.addButtonText}>Add</Text>
-              </Pressable>
-            )}
-          </View>
-
-          {/* Mic + Camera placeholders */}
-          <Pressable style={styles.overlayActionIcon} disabled>
-            <Ionicons name="mic-outline" size={22} color={theme.colors.textSecondary} />
-          </Pressable>
-          <Pressable style={styles.overlayActionIcon} disabled>
-            <Ionicons name="camera-outline" size={22} color={theme.colors.textSecondary} />
-          </Pressable>
-        </View>
-
-        <View style={styles.modalContent}>
-
-          {/* Save as set link */}
-          {selectedRecent.length > 0 && onSaveAsSet && (
+        {/* Search input */}
+        <View style={styles.overlaySearchBar}>
+          <Ionicons name="search" size={18} color={theme.colors.textSecondary} style={{ marginRight: 8 }} />
+          <TextInput
+            ref={inputRef}
+            placeholder="Add new item"
+            value={overlayInput}
+            onChangeText={onChangeInput}
+            onSubmitEditing={handleAdd}
+            blurOnSubmit={false}
+            returnKeyType="send"
+            style={styles.overlaySearchInput}
+            placeholderTextColor={theme.colors.textSecondary}
+          />
+          {overlayInput.trim().length > 0 && (
             <Pressable
-              style={({ pressed }) => [styles.saveAsSetLink, pressed && { opacity: 0.7 }]}
-              onPress={onSaveAsSet}
+              style={styles.addButton}
+              onPress={handleAdd}
               accessibilityRole="button"
-              accessibilityLabel="Save selected items as a set"
+              accessibilityLabel="Add typed item"
             >
-              <Text style={styles.saveAsSetLinkText}>Save as set...</Text>
+              <Text style={styles.addButtonText}>Add</Text>
             </Pressable>
           )}
-
-          {/* Tab bar */}
-          <View style={styles.tabBar}>
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.key;
-              return (
-                <Pressable
-                  key={tab.key}
-                  style={[styles.tabBarItem, isActive && styles.tabBarItemActive]}
-                  onPress={() => setActiveTab(tab.key)}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: isActive }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Ionicons
-                      name={tab.icon}
-                      size={16}
-                      color={isActive ? theme.colors.primary : theme.colors.textSecondary}
-                    />
-                    <Text style={[styles.tabBarText, isActive && styles.tabBarTextActive]}>
-                      {tab.label}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {/* Tab content */}
-          <ScrollView
-            style={styles.overlaySectionsScroll}
-            contentContainerStyle={styles.overlaySectionsContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {activeTab === 'popular' && renderPopularTab()}
-            {activeTab === 'catalog' && renderCatalogTab()}
-            {activeTab === 'recents' && renderRecentsTab()}
-          </ScrollView>
         </View>
 
-      </SafeAreaView>
+        {/* Mic + Camera placeholders */}
+        <Pressable style={styles.overlayActionIcon} disabled>
+          <Ionicons name="mic-outline" size={22} color={theme.colors.textSecondary} />
+        </Pressable>
+        <Pressable style={styles.overlayActionIcon} disabled>
+          <Ionicons name="camera-outline" size={22} color={theme.colors.textSecondary} />
+        </Pressable>
+      </View>
+
+      <View style={styles.modalContent}>
+
+        {/* Save as set link */}
+        {selectedRecent.length > 0 && onSaveAsSet && (
+          <Pressable
+            style={({ pressed }) => [styles.saveAsSetLink, pressed && { opacity: 0.7 }]}
+            onPress={onSaveAsSet}
+            accessibilityRole="button"
+            accessibilityLabel="Save selected items as a set"
+          >
+            <Text style={styles.saveAsSetLinkText}>Save as set...</Text>
+          </Pressable>
+        )}
+
+        {/* Tab bar */}
+        <View style={styles.tabBar}>
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <Pressable
+                key={tab.key}
+                style={[styles.tabBarItem, isActive && styles.tabBarItemActive]}
+                onPress={() => setActiveTab(tab.key)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons
+                    name={tab.icon}
+                    size={16}
+                    color={isActive ? theme.colors.primary : theme.colors.textSecondary}
+                  />
+                  <Text style={[styles.tabBarText, isActive && styles.tabBarTextActive]}>
+                    {tab.label}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Tab content */}
+        <ScrollView
+          style={styles.overlaySectionsScroll}
+          contentContainerStyle={styles.overlaySectionsContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {activeTab === 'popular' && renderPopularTab()}
+          {activeTab === 'catalog' && renderCatalogTab()}
+          {activeTab === 'recents' && renderRecentsTab()}
+        </ScrollView>
+      </View>
+
+    </SafeAreaView>
   );
 };
