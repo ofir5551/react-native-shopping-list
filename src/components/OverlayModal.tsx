@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { usePreferences } from '../context/PreferencesContext';
 import { SelectedRecentItem } from '../types';
 import { POPULAR_ITEMS } from '../data/popularItems';
 
@@ -57,6 +58,7 @@ export const OverlayModal = ({
 }: OverlayModalProps) => {
   const styles = useAppStyles();
   const { theme } = useTheme();
+  const { preferences } = usePreferences();
   const inputRef = useRef<TextInput | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('popular');
 
@@ -70,10 +72,10 @@ export const OverlayModal = ({
   }, [visible, onClose]);
 
   useEffect(() => {
-    if (visible) {
+    if (visible && preferences.autoFocusKeyboard) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [visible]);
+  }, [visible, preferences.autoFocusKeyboard]);
 
   const handleAdd = () => {
     onAddInput();

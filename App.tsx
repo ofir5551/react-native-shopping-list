@@ -6,6 +6,7 @@ import { ToastProvider } from './src/context/ToastContext';
 
 import { AuthProvider } from './src/context/AuthContext';
 import { SyncProvider } from './src/context/SyncContext';
+import { PreferencesProvider } from './src/context/PreferencesContext';
 
 // Complete any pending OAuth sessions on app load (required by expo-web-browser)
 WebBrowser.maybeCompleteAuthSession();
@@ -15,9 +16,11 @@ export default function App() {
         <AuthProvider>
             <SyncProvider>
                 <ThemeProvider>
-                    <ToastProvider>
-                        <HomeScreen />
-                    </ToastProvider>
+                    <PreferencesProvider>
+                        <ToastProvider>
+                            <HomeScreen />
+                        </ToastProvider>
+                    </PreferencesProvider>
                 </ThemeProvider>
             </SyncProvider>
         </AuthProvider>

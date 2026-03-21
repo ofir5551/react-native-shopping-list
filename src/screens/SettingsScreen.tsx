@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { usePreferences } from '../context/PreferencesContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
 
@@ -23,6 +24,7 @@ type SettingsScreenProps = {
 export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
     const styles = useAppStyles();
     const { theme, isDark, setThemeType } = useTheme();
+    const { preferences, setPreference } = usePreferences();
     const { user } = useAuth();
 
     const toggleTheme = (value: boolean) => {
@@ -59,13 +61,23 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
             <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
                 <View style={styles.settingsSection}>
                     <Text style={styles.settingsSectionTitle}>Appearance</Text>
-                    <View style={[styles.settingsRow, styles.settingsRowLast]}>
+                    <View style={styles.settingsRow}>
                         <Text style={styles.settingsLabel}>Dark Mode</Text>
                         <Switch
                             value={isDark}
                             onValueChange={toggleTheme}
                             trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
                             thumbColor={isDark ? theme.colors.primaryText : '#f4f3f4'}
+                            ios_backgroundColor={theme.colors.surfaceHighlight}
+                        />
+                    </View>
+                    <View style={[styles.settingsRow, styles.settingsRowLast]}>
+                        <Text style={styles.settingsLabel}>Auto-focus keyboard when adding items</Text>
+                        <Switch
+                            value={preferences.autoFocusKeyboard}
+                            onValueChange={(value) => setPreference('autoFocusKeyboard', value)}
+                            trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
+                            thumbColor={preferences.autoFocusKeyboard ? theme.colors.primaryText : '#f4f3f4'}
                             ios_backgroundColor={theme.colors.surfaceHighlight}
                         />
                     </View>
