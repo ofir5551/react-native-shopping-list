@@ -668,7 +668,8 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setSavedSets((current) =>
       current.map((s) => (s.id === setId ? { ...s, items } : s))
     );
-    showToast('Set updated.');
+    const name = savedSets.find((s) => s.id === setId)?.name;
+    showToast(name ? `"${name}" updated.` : 'Set updated.');
   };
 
   const deleteSavedSet = (setId: string) => {

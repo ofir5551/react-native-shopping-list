@@ -413,11 +413,7 @@ export const ShoppingListScreen = ({
         visible={isSavedSetModalOpen}
         savedSet={activeSavedSet}
         onClose={() => setIsSavedSetModalOpen(false)}
-        onAddSelected={(items) => {
-          handleAddMultipleSelected(items);
-          setIsSavedSetModalOpen(false);
-        }}
-        onQuickAdd={(items) => {
+        onAddAllToList={(items) => {
           handleQuickAddMultiple(items);
           setIsSavedSetModalOpen(false);
         }}
