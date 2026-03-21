@@ -1,10 +1,4 @@
-const SELECTED_TAG_COLOR = '#1f7a5a';
-
 export const MAX_RECENTS = 12;
-
-export const getTagColor = (value: string) => {
-  return SELECTED_TAG_COLOR;
-};
 
 export const sanitizeRecents = (items: string[]) => {
   const seen = new Set<string>();

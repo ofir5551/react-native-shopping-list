@@ -1,5 +1,5 @@
-import React from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 import { ShoppingItem } from '../types';
 import { useAppStyles } from '../styles/appStyles';
 import { ItemRow } from './ItemRow';
@@ -7,13 +7,14 @@ import { ItemRow } from './ItemRow';
 type CompletedSectionProps = {
   items: ShoppingItem[];
   isExpanded: boolean;
-  showCompleted?: boolean;
   onToggleExpanded: () => void;
   onToggleItem: (id: string) => void;
   onDeleteItem: (id: string) => void;
   onIncrementItem: (id: string) => void;
   onDecrementItem: (id: string) => void;
 };
+
+const keyExtractor = (item: ShoppingItem) => item.id;
 
 export const CompletedSection = ({
   items,
@@ -25,6 +26,17 @@ export const CompletedSection = ({
   onDecrementItem,
 }: CompletedSectionProps) => {
   const styles = useAppStyles();
+
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingItem>) => (
+    <ItemRow
+      item={item}
+      onToggle={onToggleItem}
+      onDelete={onDeleteItem}
+      onIncrement={onIncrementItem}
+      onDecrement={onDecrementItem}
+    />
+  ), [onToggleItem, onDeleteItem, onIncrementItem, onDecrementItem]);
+
   return (
     <View style={styles.completedSection}>
       <Pressable style={styles.completedHeader} onPress={onToggleExpanded}>
@@ -35,17 +47,9 @@ export const CompletedSection = ({
       {isExpanded && (
         <FlatList
           data={items}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
           scrollEnabled={false}
-          renderItem={({ item }) => (
-            <ItemRow
-              item={item}
-              onToggle={onToggleItem}
-              onDelete={onDeleteItem}
-              onIncrement={onIncrementItem}
-              onDecrement={onDecrementItem}
-            />
-          )}
+          renderItem={renderItem}
         />
       )}
     </View>

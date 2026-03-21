@@ -5,7 +5,7 @@ import {
     ScrollView,
     Switch,
     Text,
-    TouchableOpacity,
+    Pressable,
     View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -43,14 +43,14 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
             <View style={styles.header}>
                 <View style={styles.headerRow}>
                     <View style={styles.headerLeft}>
-                        <TouchableOpacity
+                        <Pressable
                             style={[styles.overlayBackBtn, { marginRight: 12 }]}
                             onPress={onBack}
                             accessibilityRole="button"
                             accessibilityLabel="Go back"
                         >
                             <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
-                        </TouchableOpacity>
+                        </Pressable>
                         <Text style={styles.title}>Settings</Text>
                     </View>
                 </View>
@@ -97,9 +97,9 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                             <Text style={[styles.settingsValue, { textAlign: 'center', color: '#4caf50', marginBottom: 20 }]}>
                                 Cloud Sync Active
                             </Text>
-                            <TouchableOpacity style={styles.authButtonSecondary} onPress={handleSignOut}>
+                            <Pressable style={styles.authButtonSecondary} onPress={handleSignOut}>
                                 <Text style={styles.authButtonTextSecondary}>Sign Out</Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         </View>
                     ) : (
                         <View style={styles.authPlaceholder}>
@@ -121,9 +121,9 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                                 Local Storage Only. Sign in to sync your lists to the cloud.
                             </Text>
 
-                            <TouchableOpacity style={styles.authButton} onPress={onSignIn}>
+                            <Pressable style={styles.authButton} onPress={onSignIn}>
                                 <Text style={styles.authButtonText}>Sign In / Create Account</Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         </View>
                     )}
                 </View>

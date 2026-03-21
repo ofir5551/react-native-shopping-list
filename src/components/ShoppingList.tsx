@@ -1,5 +1,5 @@
-import React from 'react';
-import { FlatList } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { FlatList, ListRenderItemInfo } from 'react-native';
 import { ShoppingItem } from '../types';
 import { useAppStyles } from '../styles/appStyles';
 import { CompletedSection } from './CompletedSection';
@@ -16,6 +16,8 @@ type ShoppingListProps = {
   onDecrementItem: (id: string) => void;
 };
 
+const keyExtractor = (item: ShoppingItem) => item.id;
+
 export const ShoppingList = ({
   activeItems,
   completedItems,
@@ -27,34 +29,39 @@ export const ShoppingList = ({
   onDecrementItem,
 }: ShoppingListProps) => {
   const styles = useAppStyles();
+
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingItem>) => (
+    <ItemRow
+      item={item}
+      onToggle={onToggleItem}
+      onDelete={onDeleteItem}
+      onIncrement={onIncrementItem}
+      onDecrement={onDecrementItem}
+    />
+  ), [onToggleItem, onDeleteItem, onIncrementItem, onDecrementItem]);
+
+  const footer = useMemo(() =>
+    completedItems.length > 0 ? (
+      <CompletedSection
+        items={completedItems}
+        isExpanded={showCompleted}
+        onToggleExpanded={onToggleCompleted}
+        onToggleItem={onToggleItem}
+        onDeleteItem={onDeleteItem}
+        onIncrementItem={onIncrementItem}
+        onDecrementItem={onDecrementItem}
+      />
+    ) : null,
+  [completedItems, showCompleted, onToggleCompleted, onToggleItem, onDeleteItem, onIncrementItem, onDecrementItem]);
+
   return (
     <FlatList
       data={activeItems}
-      keyExtractor={(item) => item.id}
+      keyExtractor={keyExtractor}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.list}
-      ListFooterComponent={
-        completedItems.length > 0 ? (
-          <CompletedSection
-            items={completedItems}
-            isExpanded={showCompleted}
-            onToggleExpanded={onToggleCompleted}
-            onToggleItem={onToggleItem}
-            onDeleteItem={onDeleteItem}
-            onIncrementItem={onIncrementItem}
-            onDecrementItem={onDecrementItem}
-          />
-        ) : null
-      }
-      renderItem={({ item }) => (
-        <ItemRow
-          item={item}
-          onToggle={onToggleItem}
-          onDelete={onDeleteItem}
-          onIncrement={onIncrementItem}
-          onDecrement={onDecrementItem}
-        />
-      )}
+      ListFooterComponent={footer}
+      renderItem={renderItem}
     />
   );
 };

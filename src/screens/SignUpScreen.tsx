@@ -7,7 +7,7 @@ import {
     ScrollView,
     Text,
     TextInput,
-    TouchableOpacity,
+    Pressable,
     View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -171,14 +171,14 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
 
             {/* Back button */}
             <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>
-                <TouchableOpacity
+                <Pressable
                     style={styles.iconButton}
                     onPress={onBack}
                     accessibilityRole="button"
                     accessibilityLabel="Go back"
                 >
                     <Ionicons name="arrow-back" size={20} color={theme.colors.text} />
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             <ScrollView
@@ -207,7 +207,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                 </View>
 
                 {/* Google hero button */}
-                <TouchableOpacity
+                <Pressable
                     style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -238,7 +238,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                             </Text>
                         </>
                     )}
-                </TouchableOpacity>
+                </Pressable>
 
                 {/* Divider */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
@@ -249,7 +249,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
 
                 {/* Continue with email button */}
                 {!emailExpanded && (
-                    <TouchableOpacity
+                    <Pressable
                         style={[styles.authButtonSecondary, { borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }]}
                         onPress={() => setEmailExpanded(true)}
                     >
@@ -257,7 +257,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                         <Text style={[styles.authButtonTextSecondary, { fontSize: 16 }]}>
                             Continue with email
                         </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 )}
 
                 {/* Email form (expanded) */}
@@ -265,7 +265,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                     <View>
                         {/* Avatar picker */}
                         <View style={{ alignItems: 'center', marginBottom: 20 }}>
-                            <TouchableOpacity onPress={pickAvatar} style={{ position: 'relative' }}>
+                            <Pressable onPress={pickAvatar} style={{ position: 'relative' }}>
                                 <View style={{
                                     width: 72,
                                     height: 72,
@@ -301,7 +301,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                                 }}>
                                     <Ionicons name="add" size={14} color="#ffffff" />
                                 </View>
-                            </TouchableOpacity>
+                            </Pressable>
                             <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 6 }}>
                                 Add photo (optional)
                             </Text>
@@ -365,13 +365,13 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                                     returnKeyType="done"
                                     onSubmitEditing={handleSignUp}
                                 />
-                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ paddingHorizontal: 8 }}>
+                                <Pressable onPress={() => setShowPassword(prev => !prev)} style={{ paddingHorizontal: 8 }}>
                                     <Ionicons
                                         name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                                         size={20}
                                         color={theme.colors.textSecondary}
                                     />
-                                </TouchableOpacity>
+                                </Pressable>
                             </View>
                             {authError?.field === 'password' && (
                                 <Text style={[styles.nameModalError, { marginTop: 4 }]}>{authError.message}</Text>
@@ -386,7 +386,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                         )}
 
                         {/* Create Account button */}
-                        <TouchableOpacity
+                        <Pressable
                             style={[styles.authButton, { borderRadius: 14, paddingVertical: 14, marginVertical: 0 }]}
                             onPress={handleSignUp}
                             disabled={isLoading || isGoogleLoading}
@@ -396,12 +396,12 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                             ) : (
                                 <Text style={[styles.authButtonText, { fontSize: 16 }]}>Create Account</Text>
                             )}
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 )}
 
                 {/* Sign in link */}
-                <TouchableOpacity
+                <Pressable
                     style={{ marginTop: 32, alignItems: 'center' }}
                     onPress={onGoToLogin}
                 >
@@ -411,7 +411,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                             Sign In
                         </Text>
                     </Text>
-                </TouchableOpacity>
+                </Pressable>
             </ScrollView>
         </SafeAreaView>
     );

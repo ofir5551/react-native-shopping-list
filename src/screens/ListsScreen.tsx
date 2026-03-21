@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { Alert, FlatList, Pressable, SafeAreaView, Text, View } from 'react-native';
+import React, { memo, useCallback } from 'react';
+import { Alert, FlatList, ListRenderItemInfo, Pressable, SafeAreaView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Fab } from '../components/Fab';
 import { ListNameModal } from '../components/ListNameModal';
@@ -30,6 +30,94 @@ type ListsScreenProps = {
 
 const getItemsLabel = (count: number) => (count === 1 ? '1 item' : `${count} items`);
 
+const keyExtractor = (item: ShoppingList) => item.id;
+
+type ListCardProps = {
+  item: ShoppingList;
+  currentUserId?: string;
+  onOpenList: (listId: string) => void;
+  onOpenRenameListModal: (listId: string) => void;
+  onDeleteList: (listId: string) => void;
+  onLeaveList: (listId: string) => void;
+};
+
+const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpenRenameListModal, onDeleteList, onLeaveList }: ListCardProps) {
+  const styles = useAppStyles();
+  const completedCount = item.items.filter((entry) => entry.purchased).length;
+  const isOwner = !item.ownerId || item.ownerId === currentUserId;
+  const isShared = !!item.ownerId && item.ownerId !== currentUserId;
+
+  const handleOpen = useCallback(() => onOpenList(item.id), [item.id, onOpenList]);
+  const handleRename = useCallback(() => onOpenRenameListModal(item.id), [item.id, onOpenRenameListModal]);
+  const handleDelete = useCallback(() => {
+    Alert.alert('Delete list?', `Delete "${item.name}" permanently? This will remove the list for all shared users.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => onDeleteList(item.id) },
+    ]);
+  }, [item.id, item.name, onDeleteList]);
+  const handleLeave = useCallback(() => {
+    Alert.alert('Exit list?', `Leave "${item.name}"? You can rejoin later with the share code.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Exit', style: 'destructive', onPress: () => onLeaveList(item.id) },
+    ]);
+  }, [item.id, item.name, onLeaveList]);
+
+  return (
+    <View style={styles.listCard}>
+      <Pressable
+        style={styles.listCardMain}
+        onPress={handleOpen}
+      >
+        <View style={styles.listCardTitleRow}>
+          <Text style={styles.listCardTitle}>{item.name}</Text>
+          {isShared && (
+            <Ionicons
+              name="people-outline"
+              size={16}
+              color="#7c7c7c"
+              style={styles.listCardSharedIcon}
+            />
+          )}
+        </View>
+        <Text style={styles.listCardMeta}>
+          {getItemsLabel(item.items.length)} • {completedCount} completed
+        </Text>
+      </Pressable>
+      <View style={styles.listCardActions}>
+        {isOwner && (
+          <Pressable
+            style={styles.listCardActionButton}
+            onPress={handleRename}
+            accessibilityRole="button"
+            accessibilityLabel={`Rename ${item.name}`}
+          >
+            <Ionicons name="create-outline" size={18} color="#4a4a4a" />
+          </Pressable>
+        )}
+        {isOwner ? (
+          <Pressable
+            style={styles.listCardActionButton}
+            onPress={handleDelete}
+            accessibilityRole="button"
+            accessibilityLabel={`Delete ${item.name}`}
+          >
+            <Ionicons name="trash-outline" size={18} color="#9a3d3d" />
+          </Pressable>
+        ) : (
+          <Pressable
+            style={styles.listCardActionButton}
+            onPress={handleLeave}
+            accessibilityRole="button"
+            accessibilityLabel={`Exit ${item.name}`}
+          >
+            <Ionicons name="exit-outline" size={18} color="#b07020" />
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+});
+
 export const ListsScreen = ({
   lists,
   currentUserId,
@@ -51,27 +139,16 @@ export const ListsScreen = ({
 }: ListsScreenProps) => {
   const styles = useAppStyles();
 
-  const handleDeleteList = (listId: string, name: string) => {
-    Alert.alert('Delete list?', `Delete "${name}" permanently? This will remove the list for all shared users.`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => onDeleteList(listId),
-      },
-    ]);
-  };
-
-  const handleLeaveList = (listId: string, name: string) => {
-    Alert.alert('Exit list?', `Leave "${name}"? You can rejoin later with the share code.`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Exit',
-        style: 'destructive',
-        onPress: () => onLeaveList(listId),
-      },
-    ]);
-  };
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingList>) => (
+    <ListCard
+      item={item}
+      currentUserId={currentUserId}
+      onOpenList={onOpenList}
+      onOpenRenameListModal={onOpenRenameListModal}
+      onDeleteList={onDeleteList}
+      onLeaveList={onLeaveList}
+    />
+  ), [currentUserId, onOpenList, onOpenRenameListModal, onDeleteList, onLeaveList]);
 
   if (hidden) return (
     <ListNameModal
@@ -112,68 +189,10 @@ export const ListsScreen = ({
       ) : (
         <FlatList
           data={lists}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
-          renderItem={({ item }) => {
-            const completedCount = item.items.filter((entry) => entry.purchased).length;
-            const isOwner = !item.ownerId || item.ownerId === currentUserId;
-            const isShared = !!item.ownerId && item.ownerId !== currentUserId;
-            return (
-              <View style={styles.listCard}>
-                <Pressable
-                  style={styles.listCardMain}
-                  onPress={() => onOpenList(item.id)}
-                >
-                  <View style={styles.listCardTitleRow}>
-                    <Text style={styles.listCardTitle}>{item.name}</Text>
-                    {isShared && (
-                      <Ionicons
-                        name="people-outline"
-                        size={16}
-                        color="#7c7c7c"
-                        style={styles.listCardSharedIcon}
-                      />
-                    )}
-                  </View>
-                  <Text style={styles.listCardMeta}>
-                    {getItemsLabel(item.items.length)} • {completedCount} completed
-                  </Text>
-                </Pressable>
-                <View style={styles.listCardActions}>
-                  {isOwner && (
-                    <Pressable
-                      style={styles.listCardActionButton}
-                      onPress={() => onOpenRenameListModal(item.id)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Rename ${item.name}`}
-                    >
-                      <Ionicons name="create-outline" size={18} color="#4a4a4a" />
-                    </Pressable>
-                  )}
-                  {isOwner ? (
-                    <Pressable
-                      style={styles.listCardActionButton}
-                      onPress={() => handleDeleteList(item.id, item.name)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Delete ${item.name}`}
-                    >
-                      <Ionicons name="trash-outline" size={18} color="#9a3d3d" />
-                    </Pressable>
-                  ) : (
-                    <Pressable
-                      style={styles.listCardActionButton}
-                      onPress={() => handleLeaveList(item.id, item.name)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Exit ${item.name}`}
-                    >
-                      <Ionicons name="exit-outline" size={18} color="#b07020" />
-                    </Pressable>
-                  )}
-                </View>
-              </View>
-            );
-          }}
+          renderItem={renderItem}
         />
       )}
 

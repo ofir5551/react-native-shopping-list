@@ -6,7 +6,7 @@ import {
     ScrollView,
     Text,
     TextInput,
-    TouchableOpacity,
+    Pressable,
     View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -120,14 +120,14 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
 
             {/* Back button */}
             <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>
-                <TouchableOpacity
+                <Pressable
                     style={styles.iconButton}
                     onPress={onBack}
                     accessibilityRole="button"
                     accessibilityLabel="Go back"
                 >
                     <Ionicons name="arrow-back" size={20} color={theme.colors.text} />
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             <ScrollView
@@ -156,7 +156,7 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
                 </View>
 
                 {/* Google hero button */}
-                <TouchableOpacity
+                <Pressable
                     style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -187,7 +187,7 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
                             </Text>
                         </>
                     )}
-                </TouchableOpacity>
+                </Pressable>
 
                 {/* Divider */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
@@ -198,7 +198,7 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
 
                 {/* Continue with email button */}
                 {!emailExpanded && (
-                    <TouchableOpacity
+                    <Pressable
                         style={[styles.authButtonSecondary, { borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }]}
                         onPress={() => setEmailExpanded(true)}
                     >
@@ -206,7 +206,7 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
                         <Text style={[styles.authButtonTextSecondary, { fontSize: 16 }]}>
                             Continue with email
                         </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 )}
 
                 {/* Email form (expanded) */}
@@ -250,13 +250,13 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
                                     returnKeyType="done"
                                     onSubmitEditing={handleSignIn}
                                 />
-                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ paddingHorizontal: 8 }}>
+                                <Pressable onPress={() => setShowPassword(prev => !prev)} style={{ paddingHorizontal: 8 }}>
                                     <Ionicons
                                         name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                                         size={20}
                                         color={theme.colors.textSecondary}
                                     />
-                                </TouchableOpacity>
+                                </Pressable>
                             </View>
                             {authError?.field === 'password' && (
                                 <Text style={[styles.nameModalError, { marginTop: 4 }]}>{authError.message}</Text>
@@ -270,11 +270,11 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
                                     Reset link sent to {email}
                                 </Text>
                             ) : (
-                                <TouchableOpacity onPress={handleForgotPassword}>
+                                <Pressable onPress={handleForgotPassword}>
                                     <Text style={{ fontSize: 13, color: theme.colors.primary, fontWeight: '500' }}>
                                         Forgot password?
                                     </Text>
-                                </TouchableOpacity>
+                                </Pressable>
                             )}
                         </View>
 
@@ -286,7 +286,7 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
                         )}
 
                         {/* Sign In button */}
-                        <TouchableOpacity
+                        <Pressable
                             style={[styles.authButton, { borderRadius: 14, paddingVertical: 14, marginVertical: 0 }]}
                             onPress={handleSignIn}
                             disabled={isLoading || isGoogleLoading}
@@ -296,12 +296,12 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
                             ) : (
                                 <Text style={[styles.authButtonText, { fontSize: 16 }]}>Sign In</Text>
                             )}
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 )}
 
                 {/* Create account link */}
-                <TouchableOpacity
+                <Pressable
                     style={{ marginTop: 32, alignItems: 'center' }}
                     onPress={onGoToSignup}
                 >
@@ -311,7 +311,7 @@ export const LoginScreen = ({ onBack, onGoToSignup, onLoginSuccess }: LoginScree
                             Create account
                         </Text>
                     </Text>
-                </TouchableOpacity>
+                </Pressable>
             </ScrollView>
         </SafeAreaView>
     );

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { memo, useCallback, useRef, useState } from 'react';
 import { Animated, Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -15,7 +15,7 @@ type ItemRowProps = {
 
 const CHECK_ANIM_DURATION = 300;
 
-export const ItemRow = ({ item, onToggle, onDelete, onIncrement, onDecrement }: ItemRowProps) => {
+export const ItemRow = memo(function ItemRow({ item, onToggle, onDelete, onIncrement, onDecrement }: ItemRowProps) {
   const styles = useAppStyles();
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const isAnimating = useRef(false);
@@ -29,9 +29,7 @@ export const ItemRow = ({ item, onToggle, onDelete, onIncrement, onDecrement }: 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     if (!item.purchased) {
-      // Show checkbox as checked immediately
       setCheckedVisual(true);
-      // Animate out before moving to completed
       isAnimating.current = true;
       Animated.timing(fadeAnim, {
         toValue: 0.4,
@@ -48,11 +46,18 @@ export const ItemRow = ({ item, onToggle, onDelete, onIncrement, onDecrement }: 
     }
   }, [item.id, item.purchased, onToggle, fadeAnim]);
 
+  const handleDecrement = useCallback(() => onDecrement(item.id), [item.id, onDecrement]);
+  const handleIncrement = useCallback(() => onIncrement(item.id), [item.id, onIncrement]);
+  const handleDelete = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onDelete(item.id);
+  }, [item.id, onDelete]);
+
   return (
     <Pressable onPress={handleToggle}>
       <Animated.View style={[styles.listItem, { opacity: fadeAnim }]}>
         <View style={[styles.checkbox, showChecked && styles.checkboxChecked]}>
-          {showChecked && <Text style={styles.checkmark}>✓</Text>}
+          {showChecked ? <Text style={styles.checkmark}>✓</Text> : null}
         </View>
 
         <View style={styles.itemTextWrap}>
@@ -68,11 +73,11 @@ export const ItemRow = ({ item, onToggle, onDelete, onIncrement, onDecrement }: 
 
         {!item.purchased && (
           <View style={styles.quantityWrap}>
-            <Pressable style={styles.quantityButton} onPress={() => onDecrement(item.id)}>
+            <Pressable style={styles.quantityButton} onPress={handleDecrement}>
               <Feather name="minus" size={14} color="#666" />
             </Pressable>
             <Text style={styles.quantityText}>{item.quantity}</Text>
-            <Pressable style={styles.quantityButton} onPress={() => onIncrement(item.id)}>
+            <Pressable style={styles.quantityButton} onPress={handleIncrement}>
               <Feather name="plus" size={14} color="#666" />
             </Pressable>
           </View>
@@ -84,10 +89,10 @@ export const ItemRow = ({ item, onToggle, onDelete, onIncrement, onDecrement }: 
           </View>
         )}
 
-        <Pressable style={styles.deleteButton} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onDelete(item.id); }}>
+        <Pressable style={styles.deleteButton} onPress={handleDelete}>
           <Feather name="trash-2" size={16} color="#9a3d3d" />
         </Pressable>
       </Animated.View>
     </Pressable>
   );
-};
+});
