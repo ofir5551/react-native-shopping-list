@@ -84,7 +84,7 @@ export const ItemRow = ({ item, onToggle, onDelete, onIncrement, onDecrement }: 
           </View>
         )}
 
-        <Pressable style={styles.deleteButton} onPress={() => onDelete(item.id)}>
+        <Pressable style={styles.deleteButton} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onDelete(item.id); }}>
           <Feather name="trash-2" size={16} color="#9a3d3d" />
         </Pressable>
       </Animated.View>
