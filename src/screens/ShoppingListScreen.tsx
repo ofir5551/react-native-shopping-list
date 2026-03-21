@@ -96,7 +96,7 @@ export const ShoppingListScreen = ({
   onShareList,
 }: ShoppingListScreenProps) => {
   const styles = useAppStyles();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCaretOpen, setIsCaretOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -121,17 +121,24 @@ export const ShoppingListScreen = ({
   // Confirm dialog state
   const [confirmModal, setConfirmModal] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
-  // Save as set state
-  const [isSaveSetPromptOpen, setIsSaveSetPromptOpen] = useState(false);
-  const [saveSetName, setSaveSetName] = useState('');
-  const saveSetInputRef = useRef<TextInput | null>(null);
+  // New set from scratch state
+  const [isNewSetPromptOpen, setIsNewSetPromptOpen] = useState(false);
+  const [newSetName, setNewSetName] = useState('');
+  const newSetInputRef = useRef<TextInput | null>(null);
 
-  const submitSaveAsSet = () => {
-    const trimmed = saveSetName.trim();
-    if (trimmed && selectedRecent.length > 0) {
-      onCreateSavedSet(trimmed, selectedRecent.map(({ name, quantity }) => ({ name, quantity })));
-      setIsSaveSetPromptOpen(false);
-    }
+  const submitNewSet = () => {
+    const name = newSetName.trim();
+    if (!name) return;
+    const draft: SavedSet = {
+      id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name,
+      items: [],
+      createdAt: Date.now(),
+    };
+    setActiveSavedSet(draft);
+    setIsNewSetPromptOpen(false);
+    setIsSavedSetsListOpen(false);
+    setIsSavedSetModalOpen(true);
   };
 
   const handleClearRecentsPress = () => {
@@ -175,11 +182,6 @@ export const ShoppingListScreen = ({
 
   const handleOpenSavedSetsList = () => {
     setIsSavedSetsListOpen(true);
-  };
-
-  const handleOpenSaveAsSet = () => {
-    setSaveSetName('');
-    setIsSaveSetPromptOpen(true);
   };
 
   return (
@@ -267,7 +269,6 @@ export const ShoppingListScreen = ({
         onUpdateRecentQuantity={handleUpdateRecentQuantity}
         onDismissSuggestion={handleDismissSuggestion}
         onClose={closeOverlay}
-        onSaveAsSet={handleOpenSaveAsSet}
       />
 
       {/* Caret popover */}
@@ -366,13 +367,21 @@ export const ShoppingListScreen = ({
           <View style={[styles.modalPanel, { height: 'auto', maxHeight: '60%' }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Saved Sets</Text>
+              <Pressable
+                onPress={() => { setNewSetName(''); setIsNewSetPromptOpen(true); }}
+                style={[styles.modalCloseButton, { marginRight: 8 }]}
+                accessibilityRole="button"
+                accessibilityLabel="Create new saved set"
+              >
+                <Ionicons name="add" size={22} color={theme.colors.primary} />
+              </Pressable>
               <Pressable onPress={() => setIsSavedSetsListOpen(false)} style={styles.modalCloseButton}>
                 <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
             {savedSets.length === 0 ? (
               <Text style={[styles.overlayPlaceholderText, { paddingBottom: 16 }]}>
-                No saved sets yet. Select items and tap "Save as set" to create one.
+                No saved sets yet. Tap + to create one.
               </Text>
             ) : (
               savedSets.map((set) => (
@@ -433,35 +442,39 @@ export const ShoppingListScreen = ({
           setIsSavedSetModalOpen(false);
         }}
         onUpdateSet={(setId, items) => {
-          onUpdateSavedSet(setId, items);
+          if (setId.startsWith('new-') && activeSavedSet) {
+            onCreateSavedSet(activeSavedSet.name, items);
+          } else {
+            onUpdateSavedSet(setId, items);
+          }
           setIsSavedSetModalOpen(false);
         }}
       />
 
-      {/* Save as set name prompt */}
+      {/* New saved set name prompt */}
       <Modal
         transparent
-        visible={isSaveSetPromptOpen}
+        visible={isNewSetPromptOpen}
         animationType="fade"
-        onRequestClose={() => setIsSaveSetPromptOpen(false)}
-        onShow={() => setTimeout(() => saveSetInputRef.current?.focus(), 100)}
+        onRequestClose={() => setIsNewSetPromptOpen(false)}
+        onShow={() => setTimeout(() => newSetInputRef.current?.focus(), 100)}
       >
         <View style={styles.modalContainer}>
-          <Pressable style={styles.modalBackdrop} onPress={() => setIsSaveSetPromptOpen(false)} />
+          <Pressable style={styles.modalBackdrop} onPress={() => setIsNewSetPromptOpen(false)} />
           <View style={[styles.modalPanel, { height: 'auto', maxHeight: 220 }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Save as set</Text>
-              <Pressable onPress={() => setIsSaveSetPromptOpen(false)} style={styles.modalCloseButton}>
+              <Text style={styles.modalTitle}>New Saved Set</Text>
+              <Pressable onPress={() => setIsNewSetPromptOpen(false)} style={styles.modalCloseButton}>
                 <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
             <View style={{ paddingBottom: 16, gap: 12 }}>
               <TextInput
-                ref={saveSetInputRef}
+                ref={newSetInputRef}
                 placeholder="Set name..."
-                value={saveSetName}
-                onChangeText={setSaveSetName}
-                onSubmitEditing={submitSaveAsSet}
+                value={newSetName}
+                onChangeText={setNewSetName}
+                onSubmitEditing={submitNewSet}
                 returnKeyType="done"
                 style={{
                   fontSize: 16,
@@ -480,14 +493,14 @@ export const ShoppingListScreen = ({
                 style={({ pressed }) => ({
                   padding: 14,
                   borderRadius: 12,
-                  backgroundColor: saveSetName.trim() ? theme.colors.primary : `${theme.colors.primary}40`,
+                  backgroundColor: newSetName.trim() ? theme.colors.primary : `${theme.colors.primary}40`,
                   alignItems: 'center' as const,
                   opacity: pressed ? 0.7 : 1,
                 })}
-                disabled={!saveSetName.trim()}
-                onPress={submitSaveAsSet}
+                disabled={!newSetName.trim()}
+                onPress={submitNewSet}
               >
-                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>Save</Text>
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>Create</Text>
               </Pressable>
             </View>
           </View>
@@ -541,7 +554,7 @@ export const ShoppingListScreen = ({
         </View>
       </Modal>
 
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
     </SafeAreaView>
   );
 };

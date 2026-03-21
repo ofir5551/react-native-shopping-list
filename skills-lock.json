@@ -56,6 +56,11 @@
       "sourceType": "github",
       "computedHash": "041823956988fc6d53e585a266ff0df3e5cc92200d98486b142c0cfd41131a8b"
     },
+    "nano-banana-2": {
+      "source": "inferen-sh/skills",
+      "sourceType": "github",
+      "computedHash": "5b39cc74ac68397b55980b9bdd6400c59ab9d69d9b2a908326af7267376d7d96"
+    },
     "normalize": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",

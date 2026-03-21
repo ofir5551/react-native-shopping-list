@@ -146,7 +146,7 @@ export const ListsScreen = ({
   hidden,
 }: ListsScreenProps) => {
   const styles = useAppStyles();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingList>) => (
     <ListCard
@@ -217,7 +217,7 @@ export const ListsScreen = ({
         onClose={onCloseListNameModal}
       />
 
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
     </SafeAreaView>
   );
 };

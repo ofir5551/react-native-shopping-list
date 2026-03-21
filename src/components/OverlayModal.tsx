@@ -27,7 +27,6 @@ type OverlayModalProps = {
   onUpdateRecentQuantity: (name: string, delta: number) => void;
   onDismissSuggestion: (name: string) => void;
   onClose: () => void;
-  onSaveAsSet?: () => void;
 };
 
 type TabKey = 'suggestions' | 'catalog';
@@ -54,7 +53,6 @@ export const OverlayModal = ({
   onUpdateRecentQuantity,
   onDismissSuggestion,
   onClose,
-  onSaveAsSet,
 }: OverlayModalProps) => {
   const styles = useAppStyles();
   const { theme } = useTheme();
@@ -220,18 +218,6 @@ export const OverlayModal = ({
       </View>
 
       <View style={styles.modalContent}>
-
-        {/* Save as set link */}
-        {selectedRecent.length > 0 && onSaveAsSet && (
-          <Pressable
-            style={({ pressed }) => [styles.saveAsSetLink, pressed && { opacity: 0.7 }]}
-            onPress={onSaveAsSet}
-            accessibilityRole="button"
-            accessibilityLabel="Save selected items as a set"
-          >
-            <Text style={styles.saveAsSetLinkText}>Save as set...</Text>
-          </Pressable>
-        )}
 
         {/* Tab bar */}
         <View style={styles.tabBar}>

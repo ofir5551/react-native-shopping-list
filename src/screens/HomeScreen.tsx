@@ -12,7 +12,7 @@ import { useTheme } from '../context/ThemeContext';
 
 export const HomeScreen = () => {
   const styles = useAppStyles();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const {
     isHydrated,
     route,
@@ -95,7 +95,7 @@ export const HomeScreen = () => {
         <View style={styles.loadingWrap}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
       </SafeAreaView>
     );
   }
