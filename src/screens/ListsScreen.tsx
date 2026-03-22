@@ -47,8 +47,8 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
   const styles = useAppStyles();
   const { theme } = useTheme();
   const completedCount = item.items.filter((entry) => entry.purchased).length;
-  const isOwner = !item.ownerId || item.ownerId === currentUserId;
-  const isShared = !!item.ownerId && item.ownerId !== currentUserId;
+  const isOwner = !currentUserId || !item.ownerId || item.ownerId === currentUserId;
+  const isShared = !!currentUserId && !!item.ownerId && item.ownerId !== currentUserId;
 
   const handleOpen = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -56,11 +56,14 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
   }, [item.id, onOpenList]);
   const handleRename = useCallback(() => onOpenRenameListModal(item.id), [item.id, onOpenRenameListModal]);
   const handleDelete = useCallback(() => {
-    Alert.alert('Delete list?', `Delete "${item.name}" permanently? This will remove the list for all shared users.`, [
+    const message = item.shareCode
+      ? `Delete "${item.name}" permanently? This will remove the list for all shared users.`
+      : `Delete "${item.name}" permanently?`;
+    Alert.alert('Delete list?', message, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => onDeleteList(item.id) },
     ]);
-  }, [item.id, item.name, onDeleteList]);
+  }, [item.id, item.name, item.shareCode, onDeleteList]);
   const handleLeave = useCallback(() => {
     Alert.alert('Exit list?', `Leave "${item.name}"? You can rejoin later with the share code.`, [
       { text: 'Cancel', style: 'cancel' },
@@ -178,14 +181,16 @@ export const ListsScreen = ({
         subtitle="Choose a list or create a new one"
         onOpenSettings={onOpenSettings}
       >
-        <Pressable
-          style={styles.iconButton}
-          onPress={onOpenJoinListModal}
-          accessibilityRole="button"
-          accessibilityLabel="Join a shared list"
-        >
-          <Ionicons name="link-outline" size={20} color={theme.colors.textSecondary} />
-        </Pressable>
+        {currentUserId && (
+          <Pressable
+            style={styles.iconButton}
+            onPress={onOpenJoinListModal}
+            accessibilityRole="button"
+            accessibilityLabel="Join a shared list"
+          >
+            <Ionicons name="link-outline" size={20} color={theme.colors.textSecondary} />
+          </Pressable>
+        )}
       </Header>
 
       {lists.length === 0 ? (

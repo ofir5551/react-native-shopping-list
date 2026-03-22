@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StorageProvider, LocalStorageProvider } from '../storage';
 import { SupabaseApiClient } from '../sync/SupabaseApiClient';
-import { SyncEngine } from '../sync/SyncEngine';
+import { SyncEngine, PENDING_DELETES_KEY } from '../sync/SyncEngine';
 import { ShoppingList } from '../types';
 import { useAuth } from './AuthContext';
 
@@ -80,7 +81,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const leaveList = async (listId: string): Promise<void> => {
         if (!syncEngineRef.current) {
-            throw new Error('You need to be online to leave a list.');
+            throw new Error('You need to be signed in to leave a list.');
         }
         await syncEngineRef.current.leaveList(listId);
     };
@@ -88,8 +89,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const deleteListFromServer = async (listId: string): Promise<void> => {
         if (syncEngineRef.current) {
             await syncEngineRef.current.deleteList(listId);
+        } else {
+            // Queue delete so SyncEngine processes it on next sign-in
+            const raw = await AsyncStorage.getItem(PENDING_DELETES_KEY);
+            const pending: string[] = raw ? JSON.parse(raw) : [];
+            if (!pending.includes(listId)) {
+                pending.push(listId);
+                await AsyncStorage.setItem(PENDING_DELETES_KEY, JSON.stringify(pending));
+            }
         }
-        // If no sync engine (unauthenticated), just skip — local delete is handled by the hook
     };
 
     return (

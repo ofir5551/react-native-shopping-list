@@ -4,7 +4,7 @@ import { SupabaseApiClient } from './SupabaseApiClient';
 import { LocalStorageProvider } from '../storage';
 
 const DIRTY_IDS_KEY = '@sync_dirty_ids';
-const PENDING_DELETES_KEY = '@sync_pending_deletes';
+export const PENDING_DELETES_KEY = '@sync_pending_deletes';
 const MAX_RETRY_DELAY = 30000;
 const INITIAL_RETRY_DELAY = 2000;
 
@@ -108,7 +108,9 @@ export class SyncEngine {
     private async initialSync(): Promise<void> {
         const serverLists = await this.apiClient.fetchLists();
         const localLists = await LocalStorageProvider.loadLists();
-        const merged = this.mergeLists(serverLists, localLists);
+        const pendingDeleteSet = new Set(this.pendingDeletes);
+        const merged = this.mergeLists(serverLists, localLists)
+            .filter(l => !pendingDeleteSet.has(l.id));
 
         this.isMergingRemote = true;
         await LocalStorageProvider.saveLists(merged);
@@ -118,8 +120,9 @@ export class SyncEngine {
         // Reset retry delay on successful sync
         this.retryDelay = INITIAL_RETRY_DELAY;
 
-        // Push any remaining dirty lists
+        // Push any remaining dirty lists and pending deletes
         await this.pushDirty();
+        await this.pushPendingDeletes();
     }
 
     private mergeLists(serverLists: ShoppingList[], localLists: ShoppingList[]): ShoppingList[] {

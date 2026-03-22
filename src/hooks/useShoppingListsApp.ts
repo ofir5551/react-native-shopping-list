@@ -86,6 +86,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const [isHydrated, setIsHydrated] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const prevListMapRef = useRef<Map<string, string>>(new Map());
+  const prevUserIdRef = useRef<string | undefined>(undefined);
   const isFromRealtimeRef = useRef(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [overlayInput, setOverlayInput] = useState('');
@@ -156,6 +157,14 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       if (unsubscribe) unsubscribe();
     };
   }, [storageProvider, isInitializing]);
+
+  useEffect(() => {
+    const prevId = prevUserIdRef.current;
+    prevUserIdRef.current = currentUserId;
+    if (prevId && !currentUserId && isHydrated) {
+      setLists(prev => prev.filter(l => !l.ownerId || l.ownerId === prevId));
+    }
+  }, [currentUserId, isHydrated]);
 
   useEffect(() => {
     if (!isHydrated || isInitializing) return;
