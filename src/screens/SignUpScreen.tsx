@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ActivityIndicator,
     Image,
+    Keyboard,
+    KeyboardAvoidingView,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -46,6 +48,13 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [authError, setAuthError] = useState<AuthError>(null);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+        const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+        const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+        return () => { show.remove(); hide.remove(); };
+    }, []);
 
     const pickAvatar = async () => {
         const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -181,30 +190,36 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                 </Pressable>
             </View>
 
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             <ScrollView
                 contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60, paddingTop: 20 }}
                 keyboardShouldPersistTaps="handled"
             >
                 {/* Branding */}
-                <View style={{ alignItems: 'center', marginBottom: 40 }}>
-                    <View style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: 24,
-                        backgroundColor: theme.colors.primary,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: 16,
-                    }}>
-                        <Ionicons name="bag-outline" size={44} color="#ffffff" />
+                {!keyboardVisible && (
+                    <View style={{ alignItems: 'center', marginBottom: 40 }}>
+                        <View style={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 24,
+                            backgroundColor: theme.colors.primary,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: 16,
+                        }}>
+                            <Ionicons name="bag-outline" size={44} color="#ffffff" />
+                        </View>
+                        <Text style={[styles.title, { textAlign: 'center', marginBottom: 8 }]}>
+                            Create Account
+                        </Text>
+                        <Text style={[styles.subtitle, { textAlign: 'center' }]}>
+                            Join to sync and share lists across your devices
+                        </Text>
                     </View>
-                    <Text style={[styles.title, { textAlign: 'center', marginBottom: 8 }]}>
-                        Create Account
-                    </Text>
-                    <Text style={[styles.subtitle, { textAlign: 'center' }]}>
-                        Join to sync and share lists across your devices
-                    </Text>
-                </View>
+                )}
 
                 {/* Google hero button */}
                 <Pressable
@@ -413,6 +428,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                     </Text>
                 </Pressable>
             </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
