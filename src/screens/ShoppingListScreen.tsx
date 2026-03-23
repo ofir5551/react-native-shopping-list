@@ -25,6 +25,7 @@ import { SavedSet, SavedSetItem, ShoppingItem, SelectedRecentItem } from '../typ
 type ShoppingListScreenProps = {
   listId: string;
   listName: string;
+  listDescription?: string;
   hasItems: boolean;
   activeItems: ShoppingItem[];
   completedItems: ShoppingItem[];
@@ -62,6 +63,7 @@ type ShoppingListScreenProps = {
 export const ShoppingListScreen = ({
   listId,
   listName,
+  listDescription,
   hasItems,
   activeItems,
   completedItems,
@@ -188,7 +190,7 @@ export const ShoppingListScreen = ({
     <SafeAreaView style={styles.container}>
       <Header
         title={listName}
-        subtitle="Simple, fast, and focused"
+        subtitle={listDescription}
         onBack={onBack}
         onOpenSettings={() => setIsSettingsOpen((current) => !current)}
         settingsIcon="options"

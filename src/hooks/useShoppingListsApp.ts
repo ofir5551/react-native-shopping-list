@@ -49,6 +49,8 @@ export type ShoppingListsAppState = {
 
   listNameInput: string;
   setListNameInput: (value: string) => void;
+  listDescriptionInput: string;
+  setListDescriptionInput: (value: string) => void;
   listNameError: string;
   openCreateListModal: () => void;
   openRenameListModal: (listId: string) => void;
@@ -96,6 +98,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const [listNameMode, setListNameMode] = useState<ListNameModalMode>('create');
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const [listNameInput, setListNameInput] = useState('');
+  const [listDescriptionInput, setListDescriptionInput] = useState('');
   const [listNameError, setListNameError] = useState('');
   const [savedSets, setSavedSets] = useState<SavedSet[]>([]);
 
@@ -259,6 +262,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const closeListNameModal = () => {
     setIsListNameModalOpen(false);
     setListNameInput('');
+    setListDescriptionInput('');
     setListNameError('');
     setEditingListId(null);
     setListNameMode('create');
@@ -268,6 +272,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setListNameMode('create');
     setEditingListId(null);
     setListNameInput('');
+    setListDescriptionInput('');
     setListNameError('');
     setIsListNameModalOpen(true);
   };
@@ -278,6 +283,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setListNameMode('rename');
     setEditingListId(listId);
     setListNameInput(list.name);
+    setListDescriptionInput(list.description ?? '');
     setListNameError('');
     setIsListNameModalOpen(true);
   };
@@ -335,9 +341,11 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
 
     if (listNameMode === 'create') {
       const listId = createId();
+      const trimmedDescription = listDescriptionInput.trim() || undefined;
       const newList: ShoppingList = {
         id: listId,
         name: trimmed,
+        ...(trimmedDescription ? { description: trimmedDescription } : {}),
         createdAt: timestamp,
         updatedAt: timestamp,
         items: [],
@@ -350,10 +358,11 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
 
     if (!editingListId) return;
 
+    const trimmedDescription = listDescriptionInput.trim() || undefined;
     setLists((current) =>
       current.map((list) =>
         list.id === editingListId
-          ? { ...list, name: trimmed, updatedAt: timestamp }
+          ? { ...list, name: trimmed, description: trimmedDescription, updatedAt: timestamp }
           : list
       )
     );
@@ -759,6 +768,8 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     listNameMode,
     listNameInput,
     setListNameInput: handleListNameInputChange,
+    listDescriptionInput,
+    setListDescriptionInput,
     listNameError,
     openCreateListModal,
     openRenameListModal,

@@ -26,8 +26,10 @@ export const HomeScreen = () => {
     isListNameModalOpen,
     listNameMode,
     listNameInput,
+    listDescriptionInput,
     listNameError,
     setListNameInput,
+    setListDescriptionInput,
     openCreateListModal,
     openRenameListModal,
     openJoinListModal,
@@ -126,8 +128,10 @@ export const HomeScreen = () => {
         isListNameModalOpen={isListNameModalOpen}
         listNameMode={listNameMode}
         listNameInput={listNameInput}
+        listDescriptionInput={listDescriptionInput}
         listNameError={listNameError}
         onChangeListName={setListNameInput}
+        onChangeListDescription={setListDescriptionInput}
         onCloseListNameModal={closeListNameModal}
         onSubmitListName={submitListName}
         onOpenSettings={goToSettings}
@@ -140,6 +144,7 @@ export const HomeScreen = () => {
       <ShoppingListScreen
         listId={currentList.id}
         listName={currentList.name}
+        listDescription={currentList.description}
         hasItems={hasItems}
         activeItems={activeItems}
         completedItems={completedItems}
@@ -186,8 +191,10 @@ export const HomeScreen = () => {
         isListNameModalOpen={isListNameModalOpen}
         listNameMode={listNameMode}
         listNameInput={listNameInput}
+        listDescriptionInput={listDescriptionInput}
         listNameError={listNameError}
         onChangeListName={setListNameInput}
+        onChangeListDescription={setListDescriptionInput}
         onCloseListNameModal={closeListNameModal}
         onSubmitListName={submitListName}
         onOpenSettings={goToSettings}

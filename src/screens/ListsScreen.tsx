@@ -22,8 +22,10 @@ type ListsScreenProps = {
   isListNameModalOpen: boolean;
   listNameMode: 'create' | 'rename' | 'join' | 'share';
   listNameInput: string;
+  listDescriptionInput: string;
   listNameError: string;
   onChangeListName: (value: string) => void;
+  onChangeListDescription: (value: string) => void;
   onCloseListNameModal: () => void;
   onSubmitListName: () => void;
   onOpenSettings: () => void;
@@ -141,8 +143,10 @@ export const ListsScreen = ({
   isListNameModalOpen,
   listNameMode,
   listNameInput,
+  listDescriptionInput,
   listNameError,
   onChangeListName,
+  onChangeListDescription,
   onCloseListNameModal,
   onSubmitListName,
   onOpenSettings,
@@ -167,8 +171,10 @@ export const ListsScreen = ({
       visible={isListNameModalOpen}
       mode={listNameMode}
       value={listNameInput}
+      description={listDescriptionInput}
       error={listNameError}
       onChange={onChangeListName}
+      onDescriptionChange={onChangeListDescription}
       onSubmit={onSubmitListName}
       onClose={onCloseListNameModal}
     />
@@ -216,8 +222,10 @@ export const ListsScreen = ({
         visible={isListNameModalOpen}
         mode={listNameMode}
         value={listNameInput}
+        description={listDescriptionInput}
         error={listNameError}
         onChange={onChangeListName}
+        onDescriptionChange={onChangeListDescription}
         onSubmit={onSubmitListName}
         onClose={onCloseListNameModal}
       />

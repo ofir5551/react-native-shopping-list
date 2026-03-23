@@ -9,6 +9,7 @@ export type ShoppingItem = {
 export type ShoppingList = {
   id: string;
   name: string;
+  description?: string;
   createdAt: number;
   updatedAt: number;
   items: ShoppingItem[];

@@ -12,6 +12,8 @@ type ListNameModalProps = {
   onChange: (value: string) => void;
   onSubmit: () => void;
   onClose: () => void;
+  description?: string;
+  onDescriptionChange?: (value: string) => void;
 };
 
 export const ListNameModal = ({
@@ -22,6 +24,8 @@ export const ListNameModal = ({
   onChange,
   onSubmit,
   onClose,
+  description,
+  onDescriptionChange,
 }: ListNameModalProps) => {
   const styles = useAppStyles();
   const { theme } = useTheme();
@@ -77,9 +81,22 @@ export const ListNameModal = ({
               placeholder={mode === 'join' ? 'Paste Share ID' : 'List name'}
               value={value}
               onChangeText={onChange}
+              onSubmitEditing={(mode === 'create' || mode === 'rename') ? undefined : onSubmit}
+              returnKeyType={(mode === 'create' || mode === 'rename') ? 'next' : 'done'}
+              style={styles.nameModalInput}
+              placeholderTextColor={theme.colors.textSecondary}
+            />
+          )}
+
+          {(mode === 'create' || mode === 'rename') && (
+            <TextInput
+              showSoftInputOnFocus
+              placeholder="Description (optional)"
+              value={description ?? ''}
+              onChangeText={onDescriptionChange}
               onSubmitEditing={onSubmit}
               returnKeyType="done"
-              style={styles.nameModalInput}
+              style={[styles.nameModalInput, { marginTop: 8 }]}
               placeholderTextColor={theme.colors.textSecondary}
             />
           )}
