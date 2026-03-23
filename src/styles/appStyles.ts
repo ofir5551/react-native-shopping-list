@@ -616,38 +616,6 @@ export const useAppStyles = () => {
       tabBarTextActive: {
         color: theme.colors.primary,
       },
-      // Caret popover styles
-      caretPopover: {
-        position: 'absolute',
-        right: 20,
-        bottom: 90,
-        minWidth: 200,
-        borderRadius: 12,
-        backgroundColor: theme.colors.surface,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        zIndex: 10,
-        shadowColor: '#000',
-        shadowOpacity: 0.12,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 8,
-      },
-      caretPopoverItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        gap: 10,
-      },
-      caretPopoverItemText: {
-        fontSize: 16,
-        fontFamily: theme.fonts.semibold,
-        color: theme.colors.text,
-      },
-      caretPopoverItemDisabled: {
-        opacity: 0.4,
-      },
       // Item list row styles (inside overlay modal)
       itemListRow: {
         flexDirection: 'row',

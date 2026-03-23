@@ -1,8 +1,14 @@
-import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+
+type SpeedDialAction = {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+};
 
 type CaretPopoverProps = {
   onAiSuggestions: () => void;
@@ -15,49 +21,190 @@ export const CaretPopover = ({
   onSavedSets,
   onClose,
 }: CaretPopoverProps) => {
-  const styles = useAppStyles();
   const { theme } = useTheme();
+  const backdropAnim = useRef(new Animated.Value(0)).current;
+  const actionAnims = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
+
+  const actions: SpeedDialAction[] = [
+    { icon: 'albums-outline', label: 'Saved Sets', onPress: onSavedSets },
+    { icon: 'sparkles-outline', label: 'AI Suggestions', onPress: onAiSuggestions },
+    { icon: 'mic-outline', label: 'Record', onPress: () => {}, disabled: true },
+    { icon: 'camera-outline', label: 'From Photo', onPress: () => {}, disabled: true },
+  ];
+
+  useEffect(() => {
+    Animated.timing(backdropAnim, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+
+    const staggered = actionAnims.map((anim, i) =>
+      Animated.spring(anim, {
+        toValue: 1,
+        tension: 280,
+        friction: 14,
+        useNativeDriver: true,
+        delay: i * 35,
+      })
+    );
+    Animated.stagger(35, staggered).start();
+  }, []);
+
+  const handleClose = () => {
+    const reverseAnims = [...actionAnims].reverse().map((anim, i) =>
+      Animated.timing(anim, {
+        toValue: 0,
+        duration: 80,
+        delay: i * 20,
+        useNativeDriver: true,
+      })
+    );
+    Animated.parallel([
+      ...reverseAnims,
+      Animated.timing(backdropAnim, {
+        toValue: 0,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+    ]).start(() => onClose());
+  };
+
+  const handleAction = (action: SpeedDialAction) => {
+    if (action.disabled) return;
+    const reverseAnims = [...actionAnims].reverse().map((anim, i) =>
+      Animated.timing(anim, {
+        toValue: 0,
+        duration: 70,
+        delay: i * 15,
+        useNativeDriver: true,
+      })
+    );
+    Animated.parallel([
+      ...reverseAnims,
+      Animated.timing(backdropAnim, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onClose();
+      action.onPress();
+    });
+  };
+
+  const baseOffset = 70;
+  const spacing = 60;
 
   return (
     <>
-      <Pressable
-        style={styles.settingsPopoverBackdrop}
-        onPress={onClose}
-      />
-      <View style={styles.caretPopover}>
-        <View style={[styles.caretPopoverItem, styles.caretPopoverItemDisabled]}>
-          <Ionicons name="camera-outline" size={20} color={theme.colors.text} />
-          <Text style={styles.caretPopoverItemText}>From Photo</Text>
-        </View>
-        <View style={styles.settingsPopoverDivider} />
-        <Pressable
-          style={({ pressed }) => [styles.caretPopoverItem, pressed && { opacity: 0.7 }]}
-          onPress={() => {
-            onClose();
-            onAiSuggestions();
-          }}
-          accessibilityRole="button"
-          accessibilityLabel="AI Suggestions"
-          android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-        >
-          <Ionicons name="sparkles-outline" size={20} color={theme.colors.text} />
-          <Text style={styles.caretPopoverItemText}>AI Suggestions</Text>
-        </Pressable>
-        <View style={styles.settingsPopoverDivider} />
-        <Pressable
-          style={({ pressed }) => [styles.caretPopoverItem, pressed && { opacity: 0.7 }]}
-          onPress={() => {
-            onClose();
-            onSavedSets();
-          }}
-          accessibilityRole="button"
-          accessibilityLabel="Saved Sets"
-          android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-        >
-          <Ionicons name="albums-outline" size={20} color={theme.colors.text} />
-          <Text style={styles.caretPopoverItemText}>Saved Sets</Text>
-        </Pressable>
-      </View>
+      {/* Backdrop */}
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            opacity: backdropAnim,
+            zIndex: 15,
+          },
+        ]}
+      >
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+      </Animated.View>
+
+      {/* Speed dial actions */}
+      {actions.map((action, index) => {
+        const anim = actionAnims[index];
+        const translateY = anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -(baseOffset + index * spacing)],
+        });
+        const scale = anim.interpolate({
+          inputRange: [0, 0.5, 1],
+          outputRange: [0.3, 1.05, 1],
+        });
+        const opacity = anim.interpolate({
+          inputRange: [0, 0.4, 1],
+          outputRange: [0, 0.8, action.disabled ? 0.4 : 1],
+        });
+
+        return (
+          <Animated.View
+            key={action.label}
+            style={{
+              position: 'absolute',
+              right: 20,
+              bottom: 28,
+              zIndex: 18,
+              flexDirection: 'row',
+              alignItems: 'center',
+              transform: [{ translateY }, { scale }],
+              opacity,
+            }}
+          >
+            {/* Label */}
+            <Animated.View
+              style={{
+                marginRight: 12,
+                backgroundColor: theme.colors.surface,
+                paddingHorizontal: 12,
+                paddingVertical: 7,
+                borderRadius: 8,
+                shadowColor: '#000',
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 2 },
+                elevation: 4,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: theme.fonts.semibold,
+                  color: theme.colors.text,
+                }}
+              >
+                {action.label}
+              </Text>
+            </Animated.View>
+
+            {/* Icon button */}
+            <Pressable
+              onPress={() => handleAction(action)}
+              disabled={action.disabled}
+              style={({ pressed }) => ({
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: theme.colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#000',
+                shadowOpacity: pressed ? 0.05 : 0.14,
+                shadowRadius: pressed ? 4 : 8,
+                shadowOffset: { width: 0, height: pressed ? 1 : 3 },
+                elevation: pressed ? 2 : 6,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                transform: [{ scale: pressed ? 0.92 : 1 }],
+              })}
+              accessibilityRole="button"
+              accessibilityLabel={action.label}
+            >
+              <Ionicons
+                name={action.icon}
+                size={22}
+                color={action.disabled ? theme.colors.textSecondary : theme.colors.primary}
+              />
+            </Pressable>
+          </Animated.View>
+        );
+      })}
     </>
   );
 };

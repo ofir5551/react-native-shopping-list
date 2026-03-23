@@ -288,6 +288,7 @@ export const ShoppingListScreen = ({
           mode={isOverlayOpen ? 'confirm' : 'add'}
           onPress={handleFabPress}
           onCaretPress={() => setIsCaretOpen((c) => !c)}
+          isCaretOpen={isCaretOpen}
           style={isOverlayOpen && keyboardHeight > 0 ? { bottom: 28 + keyboardHeight } : undefined}
         />
       )}
