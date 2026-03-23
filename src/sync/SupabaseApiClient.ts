@@ -18,6 +18,7 @@ export class SupabaseApiClient {
         return (data || []).map((row: any) => ({
             id: row.id,
             name: row.name,
+            ...(row.description ? { description: row.description } : {}),
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             items: row.items || [],
@@ -37,6 +38,7 @@ export class SupabaseApiClient {
                     id: list.id,
                     user_id: this.userId,
                     name: list.name,
+                    description: list.description ?? null,
                     created_at: list.createdAt,
                     updated_at: list.updatedAt,
                     items: list.items,
