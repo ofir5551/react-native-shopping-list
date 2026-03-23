@@ -64,7 +64,6 @@ export type ShoppingListsAppState = {
   goToSettings: () => void;
   goToLogin: () => void;
   goToSignup: () => void;
-  handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
   savedSets: SavedSet[];
   createSavedSet: (name: string, items: SavedSetItem[]) => void;
@@ -598,21 +597,6 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     if (parts.length > 0) showToast(parts.join('\n'));
   };
 
-  const handleAddMultipleSelected = (items: { name: string; quantity: number }[]) => {
-    setSelectedRecent((current) => {
-      const newSelected = [...current];
-      items.forEach((item) => {
-        const existing = newSelected.find((s) => normalizeName(s.name) === normalizeName(item.name));
-        if (existing) {
-          existing.quantity += item.quantity;
-        } else {
-          newSelected.push(item);
-        }
-      });
-      return newSelected;
-    });
-  };
-
   const handleQuickAddMultiple = (items: { name: string; quantity: number }[]) => {
     if (!currentList || items.length === 0) return;
     mergeItemsIntoList(currentList.id, items, 'add', '-qa');
@@ -783,7 +767,6 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     goToSettings,
     goToLogin,
     goToSignup,
-    handleAddMultipleSelected,
     handleQuickAddMultiple,
     savedSets,
     createSavedSet,

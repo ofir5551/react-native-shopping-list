@@ -23,7 +23,6 @@ type SmartSuggestionsModalProps = {
     visible: boolean;
     prompt: string;
     onClose: () => void;
-    onAddSelected: (items: { name: string; quantity: number }[]) => void;
     onQuickAdd: (items: { name: string; quantity: number }[]) => void;
 };
 
@@ -37,7 +36,6 @@ export const SmartSuggestionsModal = ({
     visible,
     prompt,
     onClose,
-    onAddSelected,
     onQuickAdd,
 }: SmartSuggestionsModalProps) => {
     const styles = useAppStyles();
@@ -214,7 +212,7 @@ export const SmartSuggestionsModal = ({
                         </ScrollView>
                     )}
 
-                    <View style={{ padding: 16, paddingBottom: 20, borderTopWidth: 1, borderColor: theme.colors.border, gap: 8 }}>
+                    <View style={{ padding: 16, paddingBottom: 20, borderTopWidth: 1, borderColor: theme.colors.border }}>
                         <View style={{ flexDirection: 'row', gap: 8 }}>
                             <Pressable
                                 style={({ pressed }) => ({
@@ -237,43 +235,23 @@ export const SmartSuggestionsModal = ({
                                     flex: 1,
                                     padding: 14,
                                     borderRadius: 12,
-                                    backgroundColor: theme.colors.surfaceHighlight,
-                                    borderWidth: 1,
-                                    borderColor: selectedCount === 0 || loading ? theme.colors.border : theme.colors.primary,
+                                    backgroundColor: selectedCount === 0 || loading ? theme.colors.surfaceHighlight : theme.colors.primary,
                                     alignItems: 'center' as const,
                                     opacity: pressed ? 0.7 : 1,
                                 })}
                                 disabled={selectedCount === 0 || loading}
-                                onPress={() => onAddSelected(getSelectedItems())}
+                                onPress={() => {
+                                    triggerHaptic();
+                                    onQuickAdd(getSelectedItems());
+                                }}
                                 accessibilityRole="button"
-                                accessibilityLabel="Add selected items to selection"
+                                accessibilityLabel={`Add ${selectedCount} items to list`}
                             >
-                                <Text style={{ fontSize: 16, fontWeight: '600', color: selectedCount === 0 || loading ? theme.colors.textSecondary : theme.colors.primary }}>
-                                    Add to Selection
+                                <Text style={{ fontSize: 16, fontWeight: '600', color: selectedCount === 0 || loading ? theme.colors.textSecondary : theme.colors.primaryText }}>
+                                    Add {selectedCount} to List
                                 </Text>
                             </Pressable>
                         </View>
-
-                        <Pressable
-                            style={({ pressed }) => ({
-                                padding: 14,
-                                borderRadius: 12,
-                                backgroundColor: selectedCount === 0 || loading ? theme.colors.surfaceHighlight : theme.colors.primary,
-                                alignItems: 'center' as const,
-                                opacity: pressed ? 0.7 : 1,
-                            })}
-                            disabled={selectedCount === 0 || loading}
-                            onPress={() => {
-                                triggerHaptic();
-                                onQuickAdd(getSelectedItems());
-                            }}
-                            accessibilityRole="button"
-                            accessibilityLabel={`Add ${selectedCount} items to list`}
-                        >
-                            <Text style={{ fontSize: 16, fontWeight: '600', color: selectedCount === 0 || loading ? theme.colors.textSecondary : theme.colors.primaryText }}>
-                                Add {selectedCount} Items to List
-                            </Text>
-                        </Pressable>
                     </View>
 
                 </View>

@@ -44,7 +44,6 @@ type ShoppingListScreenProps = {
   handleToggleRecent: (name: string) => void;
   handleUpdateRecentQuantity: (name: string, delta: number) => void;
   handleDismissSuggestion: (name: string) => void;
-  handleAddMultipleSelected: (items: { name: string; quantity: number }[]) => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
   handleClearRecents: () => void;
   savedSets: SavedSet[];
@@ -82,7 +81,6 @@ export const ShoppingListScreen = ({
   handleToggleRecent,
   handleUpdateRecentQuantity,
   handleDismissSuggestion,
-  handleAddMultipleSelected,
   handleQuickAddMultiple,
   handleClearRecents,
   savedSets,
@@ -346,11 +344,6 @@ export const ShoppingListScreen = ({
         visible={isSuggestModalOpen}
         prompt={suggestPrompt.trim()}
         onClose={() => setIsSuggestModalOpen(false)}
-        onAddSelected={(items) => {
-          handleAddMultipleSelected(items);
-          setIsSuggestModalOpen(false);
-          setSuggestPrompt('');
-        }}
         onQuickAdd={(items) => {
           handleQuickAddMultiple(items);
           setIsSuggestModalOpen(false);

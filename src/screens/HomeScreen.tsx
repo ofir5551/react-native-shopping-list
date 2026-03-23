@@ -57,7 +57,6 @@ export const HomeScreen = () => {
     handleToggleRecent,
     handleUpdateRecentQuantity,
     handleDismissSuggestion,
-    handleAddMultipleSelected,
     handleQuickAddMultiple,
     handleClearRecents,
     savedSets,
@@ -163,7 +162,6 @@ export const HomeScreen = () => {
         handleToggleRecent={handleToggleRecent}
         handleUpdateRecentQuantity={handleUpdateRecentQuantity}
         handleDismissSuggestion={handleDismissSuggestion}
-        handleAddMultipleSelected={handleAddMultipleSelected}
         handleQuickAddMultiple={handleQuickAddMultiple}
         handleClearRecents={handleClearRecents}
         savedSets={savedSets}
