@@ -179,7 +179,7 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                                 <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
                             </Pressable>
                         </View>
-                        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 16 }}>
+                        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
                             <Text style={{ fontSize: 14, color: theme.colors.text, lineHeight: 22 }}>
                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.{'\n\n'}
                                 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.{'\n\n'}

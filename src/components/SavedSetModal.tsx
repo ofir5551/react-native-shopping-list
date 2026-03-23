@@ -199,7 +199,7 @@ export const SavedSetModal = ({
             </View>
           </ScrollView>
 
-          <View style={{ padding: 16, borderTopWidth: 1, borderColor: theme.colors.border, gap: 8 }}>
+          <View style={{ padding: 16, paddingBottom: 20, borderTopWidth: 1, borderColor: theme.colors.border, gap: 8 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable
                 style={({ pressed }) => ({
@@ -254,10 +254,13 @@ export const SavedSetModal = ({
               disabled={items.length === 0}
               onPress={() => {
                 triggerHaptic();
+                if (savedSet) {
+                  onUpdateSet(savedSet.id, items);
+                }
                 onAddAllToList(items.map(({ name, quantity }) => ({ name, quantity })));
               }}
               accessibilityRole="button"
-              accessibilityLabel={`Add all ${items.length} items to list`}
+              accessibilityLabel="Save and add items to list"
             >
               <Text
                 style={{
@@ -266,7 +269,7 @@ export const SavedSetModal = ({
                   color: items.length === 0 ? theme.colors.textSecondary : theme.colors.primaryText,
                 }}
               >
-                Add {items.length} Items to List
+                Save and Add Items to List
               </Text>
             </Pressable>
           </View>

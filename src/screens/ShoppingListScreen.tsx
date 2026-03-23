@@ -310,7 +310,7 @@ export const ShoppingListScreen = ({
                 <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
-            <View style={{ paddingHorizontal: 0, paddingBottom: 16, gap: 12 }}>
+            <View style={{ paddingHorizontal: 0, paddingBottom: 20, gap: 12 }}>
               <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>
                 Type a prompt (e.g., "birthday party for 10 kids") to generate suggested items.
               </Text>
@@ -367,7 +367,7 @@ export const ShoppingListScreen = ({
       >
         <View style={styles.modalContainer}>
           <Pressable style={styles.modalBackdrop} onPress={() => setIsSavedSetsListOpen(false)} />
-          <View style={[styles.modalPanel, { height: 'auto', maxHeight: '60%' }]}>
+          <View style={[styles.modalPanel, { height: 'auto', maxHeight: '60%', paddingBottom: 20 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Saved Sets</Text>
               <Pressable
@@ -471,7 +471,7 @@ export const ShoppingListScreen = ({
                 <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
-            <View style={{ paddingBottom: 16, gap: 12 }}>
+            <View style={{ paddingBottom: 20, gap: 12 }}>
               <TextInput
                 ref={newSetInputRef}
                 placeholder="Set name..."
@@ -519,7 +519,7 @@ export const ShoppingListScreen = ({
       >
         <View style={styles.modalContainer}>
           <Pressable style={styles.modalBackdrop} onPress={() => setConfirmModal(null)} />
-          <View style={[styles.modalPanel, { height: 'auto' }]}>
+          <View style={[styles.modalPanel, { height: 'auto', paddingBottom: 20 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{confirmModal?.title}</Text>
             </View>

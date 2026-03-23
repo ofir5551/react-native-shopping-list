@@ -214,7 +214,7 @@ export const SmartSuggestionsModal = ({
                         </ScrollView>
                     )}
 
-                    <View style={{ padding: 16, borderTopWidth: 1, borderColor: theme.colors.border, gap: 8 }}>
+                    <View style={{ padding: 16, paddingBottom: 20, borderTopWidth: 1, borderColor: theme.colors.border, gap: 8 }}>
                         <View style={{ flexDirection: 'row', gap: 8 }}>
                             <Pressable
                                 style={({ pressed }) => ({

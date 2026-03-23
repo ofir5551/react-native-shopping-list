@@ -296,7 +296,6 @@ export const useAppStyles = () => {
         borderTopRightRadius: 24,
         paddingHorizontal: 20,
         paddingTop: 18,
-        paddingBottom: 20,
       },
       overlayFullScreen: {
         position: 'absolute',
