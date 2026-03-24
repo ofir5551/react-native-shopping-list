@@ -345,6 +345,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
         id: listId,
         name: trimmed,
         ...(trimmedDescription ? { description: trimmedDescription } : {}),
+        ...(currentUserId ? { ownerId: currentUserId } : {}),
         createdAt: timestamp,
         updatedAt: timestamp,
         items: [],
