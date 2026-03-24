@@ -8,6 +8,8 @@ import { ListNameModal } from '../components/ListNameModal';
 import { Header } from '../components/Header';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
+import { pluralItemCount } from '../i18n/index';
 import { ShoppingList } from '../types';
 
 type ListsScreenProps = {
@@ -32,8 +34,6 @@ type ListsScreenProps = {
   hidden?: boolean;
 };
 
-const getItemsLabel = (count: number) => (count === 1 ? '1 item' : `${count} items`);
-
 const keyExtractor = (item: ShoppingList) => item.id;
 
 type ListCardProps = {
@@ -48,6 +48,7 @@ type ListCardProps = {
 const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpenRenameListModal, onDeleteList, onLeaveList }: ListCardProps) {
   const styles = useAppStyles();
   const { theme } = useTheme();
+  const { t } = useLocale();
   const completedCount = item.items.filter((entry) => entry.purchased).length;
   const isOwner = !currentUserId || !item.ownerId || item.ownerId === currentUserId;
   const isShared = !!currentUserId && !!item.ownerId && item.ownerId !== currentUserId;
@@ -59,19 +60,19 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
   const handleRename = useCallback(() => onOpenRenameListModal(item.id), [item.id, onOpenRenameListModal]);
   const handleDelete = useCallback(() => {
     const message = item.shareCode
-      ? `Delete "${item.name}" permanently? This will remove the list for all shared users.`
-      : `Delete "${item.name}" permanently?`;
-    Alert.alert('Delete list?', message, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => onDeleteList(item.id) },
+      ? t('lists.deleteSharedMessage', { name: item.name })
+      : t('lists.deleteMessage', { name: item.name });
+    Alert.alert(t('lists.deleteTitle'), message, [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => onDeleteList(item.id) },
     ]);
-  }, [item.id, item.name, item.shareCode, onDeleteList]);
+  }, [item.id, item.name, item.shareCode, onDeleteList, t]);
   const handleLeave = useCallback(() => {
-    Alert.alert('Exit list?', `Leave "${item.name}"? You can rejoin later with the share code.`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Exit', style: 'destructive', onPress: () => onLeaveList(item.id) },
+    Alert.alert(t('lists.exitTitle'), t('lists.exitMessage', { name: item.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('lists.exitButton'), style: 'destructive', onPress: () => onLeaveList(item.id) },
     ]);
-  }, [item.id, item.name, onLeaveList]);
+  }, [item.id, item.name, onLeaveList, t]);
 
   return (
     <View style={styles.listCard}>
@@ -92,7 +93,7 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
             )}
           </View>
           <Text style={styles.listCardMeta}>
-            {getItemsLabel(item.items.length)} • {completedCount} completed
+            {pluralItemCount(t, item.items.length)} • {completedCount} {t('lists.completed')}
           </Text>
         </Pressable>
         <View style={styles.listCardActions}>
@@ -101,7 +102,7 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
               style={styles.listCardActionButton}
               onPress={handleRename}
               accessibilityRole="button"
-              accessibilityLabel={`Rename ${item.name}`}
+              accessibilityLabel={t('lists.renameLabel', { name: item.name })}
             >
               <Ionicons name="create-outline" size={18} color={theme.colors.textSecondary} />
             </Pressable>
@@ -111,7 +112,7 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
               style={styles.listCardActionButton}
               onPress={handleDelete}
               accessibilityRole="button"
-              accessibilityLabel={`Delete ${item.name}`}
+              accessibilityLabel={t('lists.deleteLabel', { name: item.name })}
             >
               <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
             </Pressable>
@@ -120,7 +121,7 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
               style={styles.listCardActionButton}
               onPress={handleLeave}
               accessibilityRole="button"
-              accessibilityLabel={`Exit ${item.name}`}
+              accessibilityLabel={t('lists.exitLabel', { name: item.name })}
             >
               <Ionicons name="exit-outline" size={18} color={theme.colors.textSecondary} />
             </Pressable>
@@ -154,6 +155,7 @@ export const ListsScreen = ({
 }: ListsScreenProps) => {
   const styles = useAppStyles();
   const { theme, isDark } = useTheme();
+  const { t } = useLocale();
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingList>) => (
     <ListCard
@@ -183,8 +185,8 @@ export const ListsScreen = ({
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Lists"
-        subtitle="Choose a list or create a new one"
+        title={t('lists.title')}
+        subtitle={t('lists.subtitle')}
         onOpenSettings={onOpenSettings}
       >
         {currentUserId && (
@@ -192,7 +194,7 @@ export const ListsScreen = ({
             style={styles.iconButton}
             onPress={onOpenJoinListModal}
             accessibilityRole="button"
-            accessibilityLabel="Join a shared list"
+            accessibilityLabel={t('lists.joinShared')}
           >
             <Ionicons name="link-outline" size={20} color={theme.colors.textSecondary} />
           </Pressable>
@@ -201,10 +203,8 @@ export const ListsScreen = ({
 
       {lists.length === 0 ? (
         <View style={styles.listsEmptyState}>
-          <Text style={styles.emptyTitle}>No lists yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Tap + to create your first shopping list.
-          </Text>
+          <Text style={styles.emptyTitle}>{t('lists.emptyTitle')}</Text>
+          <Text style={styles.emptySubtitle}>{t('lists.emptySubtitle')}</Text>
         </View>
       ) : (
         <FlatList

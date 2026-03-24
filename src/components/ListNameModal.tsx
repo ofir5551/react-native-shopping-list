@@ -3,6 +3,7 @@ import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 type ListNameModalProps = {
   visible: boolean;
@@ -29,6 +30,7 @@ export const ListNameModal = ({
 }: ListNameModalProps) => {
   const styles = useAppStyles();
   const { theme } = useTheme();
+  const { t } = useLocale();
   const inputRef = useRef<TextInput | null>(null);
   const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -55,6 +57,20 @@ export const ListNameModal = ({
     onClose();
   };
 
+  const titleMap = {
+    create: t('listModal.createTitle'),
+    rename: t('listModal.renameTitle'),
+    join: t('listModal.joinTitle'),
+    share: t('listModal.shareTitle'),
+  };
+
+  const submitLabelMap = {
+    create: t('listModal.createButton'),
+    rename: t('listModal.saveButton'),
+    join: t('listModal.joinButton'),
+    share: t('listModal.copyButton'),
+  };
+
   return (
     <Modal
       transparent
@@ -66,9 +82,7 @@ export const ListNameModal = ({
       <View style={styles.nameModalContainer}>
         <Pressable style={styles.nameModalBackdrop} onPress={onClose} />
         <View style={styles.nameModalCard}>
-          <Text style={styles.nameModalTitle}>
-            {mode === 'create' ? 'Create list' : mode === 'rename' ? 'Rename list' : mode === 'join' ? 'Join shared list' : 'Share List'}
-          </Text>
+          <Text style={styles.nameModalTitle}>{titleMap[mode]}</Text>
 
           {mode === 'share' ? (
             <View style={[styles.nameModalInput, { backgroundColor: theme.colors.surfaceHighlight, justifyContent: 'center' }]}>
@@ -78,7 +92,7 @@ export const ListNameModal = ({
             <TextInput
               ref={inputRef}
               showSoftInputOnFocus
-              placeholder={mode === 'join' ? 'Paste Share ID' : 'List name'}
+              placeholder={mode === 'join' ? t('listModal.joinPlaceholder') : t('listModal.listNamePlaceholder')}
               value={value}
               onChangeText={onChange}
               onSubmitEditing={(mode === 'create' || mode === 'rename') ? undefined : onSubmit}
@@ -91,7 +105,7 @@ export const ListNameModal = ({
           {(mode === 'create' || mode === 'rename') && (
             <TextInput
               showSoftInputOnFocus
-              placeholder="Description (optional)"
+              placeholder={t('listModal.descriptionPlaceholder')}
               value={description ?? ''}
               onChangeText={onDescriptionChange}
               onSubmitEditing={onSubmit}
@@ -105,12 +119,10 @@ export const ListNameModal = ({
 
           <View style={styles.nameModalActions}>
             <Pressable style={styles.nameModalCancelButton} onPress={onClose}>
-              <Text style={styles.nameModalCancelText}>Cancel</Text>
+              <Text style={styles.nameModalCancelText}>{t('listModal.cancelButton')}</Text>
             </Pressable>
             <Pressable style={styles.nameModalSubmitButton} onPress={mode === 'share' ? handleCopy : onSubmit}>
-              <Text style={styles.nameModalSubmitText}>
-                {mode === 'create' ? 'Create' : mode === 'rename' ? 'Save' : mode === 'join' ? 'Join' : 'Copy ID'}
-              </Text>
+              <Text style={styles.nameModalSubmitText}>{submitLabelMap[mode]}</Text>
             </Pressable>
           </View>
         </View>

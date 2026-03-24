@@ -3,6 +3,7 @@ import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-nativ
 import { ShoppingItem } from '../types';
 import { useAppStyles } from '../styles/appStyles';
 import { ItemRow } from './ItemRow';
+import { useLocale } from '../i18n/LocaleContext';
 
 type CompletedSectionProps = {
   items: ShoppingItem[];
@@ -26,6 +27,7 @@ export const CompletedSection = ({
   onDecrementItem,
 }: CompletedSectionProps) => {
   const styles = useAppStyles();
+  const { t } = useLocale();
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingItem>) => (
     <ItemRow
@@ -40,7 +42,7 @@ export const CompletedSection = ({
   return (
     <View style={styles.completedSection}>
       <Pressable style={styles.completedHeader} onPress={onToggleExpanded}>
-        <Text style={styles.completedTitle}>Completed ({items.length})</Text>
+        <Text style={styles.completedTitle}>{t('completed.header', { count: items.length })}</Text>
         <Text style={styles.completedChevron}>{isExpanded ? '▾' : '▸'}</Text>
       </Pressable>
 

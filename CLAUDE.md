@@ -75,6 +75,15 @@ Online-only operations (throw if offline — caught by existing try/catch in hoo
 - Utility scripts: clean up after use, never commit
 - **Always remove redundant or unused code** — dead functions, unreachable branches, obsolete props, unused imports, and leftover variables must be deleted, not commented out
 
+## i18n / RTL
+
+- All UI strings must use `t('key')` from `useLocale()` — never hardcode English text
+- Add new strings to both `src/i18n/translations/en.ts` and `src/i18n/translations/he.ts`
+- **For every UI change, verify it looks correct in RTL mode** — toggle language to Hebrew in Settings and check layout, icons, and text direction
+- Back/forward arrow icons: use `isRTL ? 'arrow-forward' : 'arrow-back'` from `useLocale()`
+- `I18nManager.forceRTL()` auto-flips: flexDirection rows, marginLeft/Right, paddingLeft/Right, absolute left/right positions — no manual overrides needed
+- Popular items catalog is locale-keyed: `POPULAR_ITEMS[locale]` in `src/data/popularItems.ts`
+
 ## Testing
 
 - All tests must pass before committing

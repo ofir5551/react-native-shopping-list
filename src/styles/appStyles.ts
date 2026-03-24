@@ -1,9 +1,11 @@
 import { StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 import { useMemo } from 'react';
 
 export const useAppStyles = () => {
   const { theme } = useTheme();
+  const { isRTL } = useLocale();
 
   return useMemo(() => {
     return StyleSheet.create({
@@ -534,7 +536,7 @@ export const useAppStyles = () => {
       // Pill FAB styles
       fabPill: {
         position: 'absolute',
-        right: 20,
+        ...(isRTL ? { left: 20 } : { right: 20 }),
         bottom: 28,
         flexDirection: 'row',
         alignItems: 'center',
@@ -574,7 +576,7 @@ export const useAppStyles = () => {
       },
       fabConfirm: {
         position: 'absolute',
-        right: 20,
+        ...(isRTL ? { left: 20 } : { right: 20 }),
         bottom: 28,
         width: 58,
         height: 58,
@@ -699,5 +701,5 @@ export const useAppStyles = () => {
         color: theme.colors.primary,
       },
     });
-  }, [theme]);
+  }, [theme, isRTL]);
 };

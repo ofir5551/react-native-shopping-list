@@ -5,6 +5,8 @@ import { supabase } from '../supabase';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAppStyles } from '../styles/appStyles';
+import { useLocale } from '../i18n/LocaleContext';
+import { createT } from '../i18n/index';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
@@ -28,6 +30,10 @@ jest.mock('../context/ThemeContext', () => ({
 
 jest.mock('../styles/appStyles', () => ({
   useAppStyles: jest.fn(),
+}));
+
+jest.mock('../i18n/LocaleContext', () => ({
+  useLocale: jest.fn(),
 }));
 
 // expo-status-bar and vector icons are mocked globally in jest.setup.js
@@ -61,11 +67,14 @@ const mockStyles = {
   authButtonText: {},
 };
 
+const mockT = createT('en');
+
 beforeEach(() => {
   jest.clearAllMocks();
   (useToast as jest.Mock).mockReturnValue({ showToast: mockShowToast });
   (useTheme as jest.Mock).mockReturnValue(mockTheme);
   (useAppStyles as jest.Mock).mockReturnValue(mockStyles);
+  (useLocale as jest.Mock).mockReturnValue({ t: mockT, locale: 'en', isRTL: false, setLocale: jest.fn() });
 });
 
 const defaultProps = {

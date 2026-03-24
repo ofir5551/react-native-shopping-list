@@ -3,6 +3,7 @@ import { Animated, Pressable, Text, View, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 type FabProps = {
   mode: 'add' | 'confirm';
@@ -15,6 +16,7 @@ type FabProps = {
 export const Fab = ({ mode, onPress, onCaretPress, isCaretOpen = false, style }: FabProps) => {
   const styles = useAppStyles();
   const { theme } = useTheme();
+  const { t } = useLocale();
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export const Fab = ({ mode, onPress, onCaretPress, isCaretOpen = false, style }:
         style={({ pressed }) => [styles.fabConfirm, style, pressed && { opacity: 0.85 }]}
         onPress={onPress}
         accessibilityRole="button"
-        accessibilityLabel={mode === 'confirm' ? 'Save selected items to list' : 'Create new list'}
+        accessibilityLabel={mode === 'confirm' ? t('fab.saveSelected') : t('fab.createNewList')}
       >
         <Ionicons name={mode === 'confirm' ? 'checkmark' : 'add'} size={28} color={theme.colors.primaryText} />
       </Pressable>
@@ -50,17 +52,17 @@ export const Fab = ({ mode, onPress, onCaretPress, isCaretOpen = false, style }:
         style={({ pressed }) => [styles.fabPillLeft, pressed && { opacity: 0.85 }]}
         onPress={onPress}
         accessibilityRole="button"
-        accessibilityLabel="Add items"
+        accessibilityLabel={t('fab.addItems')}
       >
         <Ionicons name="add" size={20} color={theme.colors.primaryText} />
-        <Text style={styles.fabPillLeftText}>Add</Text>
+        <Text style={styles.fabPillLeftText}>{t('fab.add')}</Text>
       </Pressable>
       <View style={styles.fabDivider} />
       <Pressable
         style={({ pressed }) => [styles.fabPillRight, pressed && { opacity: 0.85 }]}
         onPress={onCaretPress}
         accessibilityRole="button"
-        accessibilityLabel={isCaretOpen ? 'Close menu' : 'More add options'}
+        accessibilityLabel={isCaretOpen ? t('fab.closeMenu') : t('fab.moreOptions')}
       >
         <Animated.View style={{ transform: [{ rotate: rotation }] }}>
           <Ionicons name="chevron-up" size={18} color={theme.colors.primaryText} />

@@ -20,6 +20,7 @@ import { SmartSuggestionsModal } from '../components/SmartSuggestionsModal';
 import { SavedSetModal } from '../components/SavedSetModal';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 import { SavedSet, SavedSetItem, ShoppingItem, SelectedRecentItem } from '../types';
 
 type ShoppingListScreenProps = {
@@ -97,6 +98,7 @@ export const ShoppingListScreen = ({
 }: ShoppingListScreenProps) => {
   const styles = useAppStyles();
   const { theme, isDark } = useTheme();
+  const { t } = useLocale();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCaretOpen, setIsCaretOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -144,8 +146,8 @@ export const ShoppingListScreen = ({
   const handleClearRecentsPress = () => {
     setIsSettingsOpen(false);
     setConfirmModal({
-      title: 'Clear recents?',
-      message: 'This will remove all recent items from this list.',
+      title: t('shoppingList.clearRecentsTitle'),
+      message: t('shoppingList.clearRecentsMessage'),
       onConfirm: handleClearRecents,
     });
   };
@@ -153,8 +155,8 @@ export const ShoppingListScreen = ({
   const handleClearAllPress = () => {
     setIsSettingsOpen(false);
     setConfirmModal({
-      title: 'Clear all items?',
-      message: 'This will permanently remove all items from this list.',
+      title: t('shoppingList.clearAllTitle'),
+      message: t('shoppingList.clearAllMessage'),
       onConfirm: handleClearAll,
     });
   };
@@ -206,14 +208,14 @@ export const ShoppingListScreen = ({
               style={styles.settingsPopoverButton}
               onPress={() => { setIsSettingsOpen(false); onShareList(); }}
             >
-              <Text style={styles.settingsPopoverButtonText}>Share list</Text>
+              <Text style={styles.settingsPopoverButtonText}>{t('shoppingList.shareList')}</Text>
             </Pressable>
             <View style={styles.settingsPopoverDivider} />
             <Pressable
               style={styles.settingsPopoverButton}
               onPress={handleClearRecentsPress}
             >
-              <Text style={styles.settingsPopoverButtonText}>Clear recents</Text>
+              <Text style={styles.settingsPopoverButtonText}>{t('shoppingList.clearRecents')}</Text>
             </Pressable>
             {hasItems ? (
               <>
@@ -228,7 +230,7 @@ export const ShoppingListScreen = ({
                       styles.settingsPopoverDangerText,
                     ]}
                   >
-                    Clear all items
+                    {t('shoppingList.clearAllItems')}
                   </Text>
                 </Pressable>
               </>
@@ -239,8 +241,8 @@ export const ShoppingListScreen = ({
 
       {!hasItems && (
         <EmptyState
-          title="Your list is empty"
-          subtitle="Add your first item to get started."
+          title={t('shoppingList.emptyTitle')}
+          subtitle={t('shoppingList.emptySubtitle')}
         />
       )}
 
@@ -303,19 +305,19 @@ export const ShoppingListScreen = ({
           <Pressable style={styles.modalBackdrop} onPress={() => setIsSuggestPromptOpen(false)} />
           <View style={[styles.modalPanel, { height: 'auto', maxHeight: 260 }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>AI Suggestions</Text>
+              <Text style={styles.modalTitle}>{t('shoppingList.aiSuggestions')}</Text>
               <Pressable onPress={() => setIsSuggestPromptOpen(false)} style={styles.modalCloseButton}>
                 <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
             <View style={{ paddingHorizontal: 0, paddingBottom: 20, gap: 12 }}>
               <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>
-                Type a prompt (e.g., "birthday party for 10 kids") to generate suggested items.
+                {t('shoppingList.aiPromptHint')}
               </Text>
               <View style={{ flexDirection: 'row', gap: 8, height: 44 }}>
                 <TextInput
                   ref={suggestInputRef}
-                  placeholder="Enter prompt..."
+                  placeholder={t('shoppingList.aiPromptPlaceholder')}
                   value={suggestPrompt}
                   onChangeText={setSuggestPrompt}
                   onSubmitEditing={handleSubmitSuggestPrompt}
@@ -329,7 +331,7 @@ export const ShoppingListScreen = ({
                   onPress={handleSubmitSuggestPrompt}
                   disabled={!suggestPrompt.trim()}
                   accessibilityRole="button"
-                  accessibilityLabel="Generate suggestions"
+                  accessibilityLabel={t('shoppingList.aiGenerate')}
                 >
                   <Ionicons name="sparkles" size={20} color={theme.colors.primaryText} />
                 </Pressable>
@@ -362,12 +364,12 @@ export const ShoppingListScreen = ({
           <Pressable style={styles.modalBackdrop} onPress={() => setIsSavedSetsListOpen(false)} />
           <View style={[styles.modalPanel, { height: 'auto', maxHeight: '60%', paddingBottom: 20 }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Saved Sets</Text>
+              <Text style={styles.modalTitle}>{t('shoppingList.savedSets')}</Text>
               <Pressable
                 onPress={() => { setNewSetName(''); setIsNewSetPromptOpen(true); }}
                 style={[styles.modalCloseButton, { marginRight: 8 }]}
                 accessibilityRole="button"
-                accessibilityLabel="Create new saved set"
+                accessibilityLabel={t('shoppingList.createSetLabel')}
               >
                 <Ionicons name="add" size={22} color={theme.colors.primary} />
               </Pressable>
@@ -377,7 +379,7 @@ export const ShoppingListScreen = ({
             </View>
             {savedSets.length === 0 ? (
               <Text style={[styles.overlayPlaceholderText, { paddingBottom: 16 }]}>
-                No saved sets yet. Tap + to create one.
+                {t('shoppingList.noSavedSets')}
               </Text>
             ) : (
               savedSets.map((set) => (
@@ -398,26 +400,26 @@ export const ShoppingListScreen = ({
                     opacity: pressed ? 0.7 : 1,
                   })}
                   accessibilityRole="button"
-                  accessibilityLabel={`Open saved set ${set.name}`}
+                  accessibilityLabel={t('shoppingList.openSavedSet', { name: set.name })}
                   android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
                 >
                   <Ionicons name="albums-outline" size={20} color={theme.colors.primary} style={{ marginRight: 10 }} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 15, fontFamily: theme.fonts.medium, color: theme.colors.text }}>{set.name}</Text>
-                    <Text style={{ fontSize: 12, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>{set.items.length} items</Text>
+                    <Text style={{ fontSize: 12, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>{set.items.length} {t('lists.itemCount.other', { count: set.items.length })}</Text>
                   </View>
                   <Pressable
                     onPress={() => {
                       setIsSavedSetsListOpen(false);
                       setConfirmModal({
-                        title: 'Delete set?',
-                        message: `Remove "${set.name}"? This cannot be undone.`,
+                        title: t('shoppingList.deleteSetTitle'),
+                        message: t('shoppingList.deleteSetMessage', { name: set.name }),
                         onConfirm: () => onDeleteSavedSet(set.id),
                       });
                     }}
                     style={{ padding: 10, minWidth: 44, minHeight: 44, alignItems: 'center' as const, justifyContent: 'center' as const }}
                     accessibilityRole="button"
-                    accessibilityLabel={`Delete set ${set.name}`}
+                    accessibilityLabel={t('shoppingList.deleteSavedSet', { name: set.name })}
                   >
                     <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
                   </Pressable>
@@ -459,7 +461,7 @@ export const ShoppingListScreen = ({
           <Pressable style={styles.modalBackdrop} onPress={() => setIsNewSetPromptOpen(false)} />
           <View style={[styles.modalPanel, { height: 'auto', maxHeight: 220 }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>New Saved Set</Text>
+              <Text style={styles.modalTitle}>{t('shoppingList.newSavedSet')}</Text>
               <Pressable onPress={() => setIsNewSetPromptOpen(false)} style={styles.modalCloseButton}>
                 <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
               </Pressable>
@@ -467,7 +469,7 @@ export const ShoppingListScreen = ({
             <View style={{ paddingBottom: 20, gap: 12 }}>
               <TextInput
                 ref={newSetInputRef}
-                placeholder="Set name..."
+                placeholder={t('shoppingList.setNamePlaceholder')}
                 value={newSetName}
                 onChangeText={setNewSetName}
                 onSubmitEditing={submitNewSet}
@@ -496,7 +498,7 @@ export const ShoppingListScreen = ({
                 disabled={!newSetName.trim()}
                 onPress={submitNewSet}
               >
-                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>Create</Text>
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>{t('common.create')}</Text>
               </Pressable>
             </View>
           </View>
@@ -529,7 +531,7 @@ export const ShoppingListScreen = ({
                 })}
                 onPress={() => setConfirmModal(null)}
               >
-                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.text }}>Cancel</Text>
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.text }}>{t('common.cancel')}</Text>
               </Pressable>
               <Pressable
                 style={({ pressed }) => ({
@@ -543,7 +545,7 @@ export const ShoppingListScreen = ({
                   setConfirmModal(null);
                 }}
               >
-                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>Clear</Text>
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>{t('shoppingList.clearConfirm')}</Text>
               </Pressable>
             </View>
           </View>

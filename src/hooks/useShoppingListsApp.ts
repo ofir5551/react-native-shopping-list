@@ -8,6 +8,7 @@ import {
 import { useSync } from '../context/SyncContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useLocale } from '../i18n/LocaleContext';
 import { AppRoute, SavedSet, SavedSetItem, SelectedRecentItem, ShoppingItem, ShoppingList } from '../types';
 import { MAX_RECENTS, sanitizeRecents } from '../utils/recents';
 import { POPULAR_ITEMS } from '../data/popularItems';
@@ -81,6 +82,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const { storageProvider, isInitializing, joinList: joinListOnServer, leaveList: leaveListOnServer, deleteListFromServer } = useSync();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { t, locale } = useLocale();
   const currentUserId = user?.id;
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [route, setRoute] = useState<AppRoute>(DEFAULT_ROUTE);
@@ -141,7 +143,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
           prevListMapRef.current.forEach((name, id) => {
             if (!newIds.has(id)) {
               // List disappeared – it was a shared list whose owner deleted it
-              showToast(`"${name}" was deleted by its owner.`);
+              showToast(t('toast.listDeleted', { name }));
             }
           });
           // Update the ref with the latest list map
@@ -225,7 +227,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     const recents = currentList?.recents ?? [];
     const dismissed = new Set(currentList?.dismissedSuggestions ?? []);
     const recentsSet = new Set(recents.map((r) => r.toLowerCase()));
-    const popularFiller = POPULAR_ITEMS.filter(
+    const popularFiller = POPULAR_ITEMS[locale].filter(
       (item) => !recentsSet.has(item.toLowerCase()) && !dismissed.has(item)
     );
     return [...recents, ...popularFiller].filter((item) => !dismissed.has(item));
@@ -399,10 +401,10 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       if (route.name === 'list' && route.listId === listId) {
         setRoute(DEFAULT_ROUTE);
       }
-      showToast(`Left "${listName}".`);
+      showToast(t('toast.leftList', { name: listName }));
     } catch (err: any) {
       console.error('Error leaving list:', err);
-      showToast('Failed to leave list. Please try again.');
+      showToast(t('toast.leaveError'));
     }
   };
 
@@ -702,7 +704,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       createdAt: Date.now(),
     };
     setSavedSets((current) => [newSet, ...current]);
-    showToast(`Saved set "${name}" created.`);
+    showToast(t('toast.setCreated', { name }));
   };
 
   const updateSavedSet = (setId: string, items: SavedSetItem[]) => {
@@ -710,12 +712,12 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       current.map((s) => (s.id === setId ? { ...s, items } : s))
     );
     const name = savedSets.find((s) => s.id === setId)?.name;
-    showToast(name ? `"${name}" updated.` : 'Set updated.');
+    showToast(name ? t('toast.setUpdated', { name }) : t('toast.setUpdatedGeneric'));
   };
 
   const deleteSavedSet = (setId: string) => {
     setSavedSets((current) => current.filter((s) => s.id !== setId));
-    showToast('Set deleted.');
+    showToast(t('toast.setDeleted'));
   };
 
   return {

@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 type HeaderProps = {
   title: string;
@@ -23,6 +24,7 @@ export const Header = ({
 }: HeaderProps) => {
   const styles = useAppStyles();
   const { theme } = useTheme();
+  const { t, isRTL } = useLocale();
 
   return (
     <View style={styles.header}>
@@ -33,9 +35,9 @@ export const Header = ({
               style={styles.overlayBackBtn}
               onPress={onBack}
               accessibilityRole="button"
-              accessibilityLabel="Go back"
+              accessibilityLabel={t('header.goBack')}
             >
-              <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
+              <Ionicons name={isRTL ? 'arrow-forward' : 'arrow-back'} size={24} color={theme.colors.text} />
             </Pressable>
           ) : null}
           <View>

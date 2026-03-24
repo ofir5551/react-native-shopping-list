@@ -178,7 +178,7 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                     >
                         <Text style={styles.settingsLabel}>{t('settings.termsOfService')}</Text>
                         <Ionicons
-                            name="chevron-forward"
+                            name={isRTL ? 'chevron-back' : 'chevron-forward'}
                             size={20}
                             color={theme.colors.textSecondary}
                         />

@@ -14,6 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { usePreferences } from '../context/PreferencesContext';
+import { useLocale } from '../i18n/LocaleContext';
 import { SelectedRecentItem } from '../types';
 
 type OverlayModalProps = {
@@ -37,11 +38,6 @@ const triggerHaptic = () => {
   } catch {}
 };
 
-const TABS: { key: TabKey; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'suggestions', label: 'Suggestions', icon: 'sparkles' },
-  { key: 'catalog', label: 'Catalog', icon: 'grid-outline' },
-];
-
 export const OverlayModal = ({
   visible,
   overlayInput,
@@ -57,8 +53,14 @@ export const OverlayModal = ({
   const styles = useAppStyles();
   const { theme } = useTheme();
   const { preferences } = usePreferences();
+  const { t, isRTL } = useLocale();
   const inputRef = useRef<TextInput | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('suggestions');
+
+  const TABS: { key: TabKey; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { key: 'suggestions', label: t('overlay.suggestions'), icon: 'sparkles' },
+    { key: 'catalog', label: t('overlay.catalog'), icon: 'grid-outline' },
+  ];
 
   useEffect(() => {
     if (!visible) return;
@@ -108,7 +110,7 @@ export const OverlayModal = ({
           }
         }}
         accessibilityRole="button"
-        accessibilityLabel={selected ? `Add more ${name}` : `Add ${name}`}
+        accessibilityLabel={selected ? t('overlay.addMore', { name }) : t('overlay.addItem', { name })}
         android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
       >
         <Ionicons name="add-circle-outline" size={26} color={selected ? theme.colors.primary : theme.colors.textSecondary} style={styles.itemListRowAddBtn} />
@@ -136,7 +138,7 @@ export const OverlayModal = ({
             }}
             style={({ pressed }) => [styles.itemListRowRemoveBtn, pressed && { opacity: 0.6 }]}
             accessibilityRole="button"
-            accessibilityLabel={quantity > 1 ? `Decrease quantity of ${name}` : `Remove ${name}`}
+            accessibilityLabel={quantity > 1 ? t('overlay.decreaseQty', { name }) : t('overlay.removeItem', { name })}
           >
             <Ionicons
               name={quantity > 1 ? 'remove-circle-outline' : 'close-circle-outline'}
@@ -151,7 +153,7 @@ export const OverlayModal = ({
 
   const renderSuggestionsTab = () => {
     if (suggestions.length === 0) {
-      return <Text style={styles.recentsEmpty}>No suggestions yet. Add items to get started.</Text>;
+      return <Text style={styles.recentsEmpty}>{t('overlay.noSuggestions')}</Text>;
     }
     return <View>{suggestions.map((item) => renderItemRow(item))}</View>;
   };
@@ -160,10 +162,10 @@ export const OverlayModal = ({
     <View style={{ alignItems: 'center', paddingVertical: 40 }}>
       <Ionicons name="grid-outline" size={40} color={theme.colors.textSecondary} />
       <Text style={{ fontSize: 16, color: theme.colors.textSecondary, marginTop: 12, fontWeight: '600' }}>
-        Coming soon
+        {t('overlay.comingSoon')}
       </Text>
       <Text style={{ fontSize: 13, color: theme.colors.textSecondary, marginTop: 4, textAlign: 'center' }}>
-        Browse items by category
+        {t('overlay.browseByCategory')}
       </Text>
     </View>
   );
@@ -177,9 +179,9 @@ export const OverlayModal = ({
           onPress={onClose}
           style={({ pressed }) => [styles.overlayBackBtn, pressed && { opacity: 0.6 }]}
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t('header.goBack')}
         >
-          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
+          <Ionicons name={isRTL ? 'arrow-forward' : 'arrow-back'} size={24} color={theme.colors.text} />
         </Pressable>
 
         {/* Search input */}
@@ -187,7 +189,7 @@ export const OverlayModal = ({
           <Ionicons name="search" size={18} color={theme.colors.textSecondary} style={{ marginRight: 8 }} />
           <TextInput
             ref={inputRef}
-            placeholder="Add new item"
+            placeholder={t('overlay.addNewItem')}
             value={overlayInput}
             onChangeText={onChangeInput}
             onSubmitEditing={handleAdd}
@@ -201,9 +203,9 @@ export const OverlayModal = ({
               style={styles.addButton}
               onPress={handleAdd}
               accessibilityRole="button"
-              accessibilityLabel="Add typed item"
+              accessibilityLabel={t('overlay.addTypedItem')}
             >
-              <Text style={styles.addButtonText}>Add</Text>
+              <Text style={styles.addButtonText}>{t('overlay.add')}</Text>
             </Pressable>
           )}
         </View>

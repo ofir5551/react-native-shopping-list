@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 type SpeedDialAction = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -22,6 +23,7 @@ export const CaretPopover = ({
   onClose,
 }: CaretPopoverProps) => {
   const { theme } = useTheme();
+  const { t, isRTL } = useLocale();
   const backdropAnim = useRef(new Animated.Value(0)).current;
   const actionAnims = useRef([
     new Animated.Value(0),
@@ -31,10 +33,10 @@ export const CaretPopover = ({
   ]).current;
 
   const actions: SpeedDialAction[] = [
-    { icon: 'albums-outline', label: 'Saved Sets', onPress: onSavedSets },
-    { icon: 'sparkles-outline', label: 'AI Suggestions', onPress: onAiSuggestions },
-    { icon: 'mic-outline', label: 'Record', onPress: () => {}, disabled: true },
-    { icon: 'camera-outline', label: 'From Photo', onPress: () => {}, disabled: true },
+    { icon: 'albums-outline', label: t('caret.savedSets'), onPress: onSavedSets },
+    { icon: 'sparkles-outline', label: t('caret.aiSuggestions'), onPress: onAiSuggestions },
+    { icon: 'mic-outline', label: t('caret.record'), onPress: () => {}, disabled: true },
+    { icon: 'camera-outline', label: t('caret.fromPhoto'), onPress: () => {}, disabled: true },
   ];
 
   useEffect(() => {
@@ -138,7 +140,7 @@ export const CaretPopover = ({
             key={action.label}
             style={{
               position: 'absolute',
-              right: 20,
+              ...(isRTL ? { left: 20 } : { right: 20 }),
               bottom: 28,
               zIndex: 18,
               flexDirection: 'row',
@@ -147,61 +149,65 @@ export const CaretPopover = ({
               opacity,
             }}
           >
-            {/* Label */}
-            <Animated.View
-              style={{
-                marginRight: 12,
-                backgroundColor: theme.colors.surface,
-                paddingHorizontal: 12,
-                paddingVertical: 7,
-                borderRadius: 8,
-                shadowColor: '#000',
-                shadowOpacity: 0.1,
-                shadowRadius: 6,
-                shadowOffset: { width: 0, height: 2 },
-                elevation: 4,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontFamily: theme.fonts.semibold,
-                  color: theme.colors.text,
-                }}
-              >
-                {action.label}
-              </Text>
-            </Animated.View>
-
-            {/* Icon button */}
-            <Pressable
-              onPress={() => handleAction(action)}
-              disabled={action.disabled}
-              style={({ pressed }) => ({
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                backgroundColor: theme.colors.surface,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
-                shadowOpacity: pressed ? 0.05 : 0.14,
-                shadowRadius: pressed ? 4 : 8,
-                shadowOffset: { width: 0, height: pressed ? 1 : 3 },
-                elevation: pressed ? 2 : 6,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                transform: [{ scale: pressed ? 0.92 : 1 }],
-              })}
-              accessibilityRole="button"
-              accessibilityLabel={action.label}
-            >
-              <Ionicons
-                name={action.icon}
-                size={22}
-                color={action.disabled ? theme.colors.textSecondary : theme.colors.primary}
-              />
-            </Pressable>
+            {(() => {
+              const label = (
+                <Animated.View
+                  style={{
+                    marginRight: 12,
+                    backgroundColor: theme.colors.surface,
+                    paddingHorizontal: 12,
+                    paddingVertical: 7,
+                    borderRadius: 8,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.1,
+                    shadowRadius: 6,
+                    shadowOffset: { width: 0, height: 2 },
+                    elevation: 4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontFamily: theme.fonts.semibold,
+                      color: theme.colors.text,
+                    }}
+                  >
+                    {action.label}
+                  </Text>
+                </Animated.View>
+              );
+              const iconBtn = (
+                <Pressable
+                  onPress={() => handleAction(action)}
+                  disabled={action.disabled}
+                  style={({ pressed }) => ({
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: theme.colors.surface,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    shadowColor: '#000',
+                    shadowOpacity: pressed ? 0.05 : 0.14,
+                    shadowRadius: pressed ? 4 : 8,
+                    shadowOffset: { width: 0, height: pressed ? 1 : 3 },
+                    elevation: pressed ? 2 : 6,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                    transform: [{ scale: pressed ? 0.92 : 1 }],
+                  })}
+                  accessibilityRole="button"
+                  accessibilityLabel={action.label}
+                >
+                  <Ionicons
+                    name={action.icon}
+                    size={22}
+                    color={action.disabled ? theme.colors.textSecondary : theme.colors.primary}
+                  />
+                </Pressable>
+              );
+              return isRTL ? <>{iconBtn}{label}</> : <>{label}{iconBtn}</>;
+            })()}
           </Animated.View>
         );
       })}
