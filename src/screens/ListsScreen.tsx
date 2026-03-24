@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { memo, useCallback } from 'react';
-import { Alert, FlatList, ListRenderItemInfo, Pressable, SafeAreaView, Text, View } from 'react-native';
+import React, { memo, useCallback, useState } from 'react';
+import { FlatList, ListRenderItemInfo, Modal, Pressable, SafeAreaView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Fab } from '../components/Fab';
@@ -41,11 +41,11 @@ type ListCardProps = {
   currentUserId?: string;
   onOpenList: (listId: string) => void;
   onOpenRenameListModal: (listId: string) => void;
-  onDeleteList: (listId: string) => void;
-  onLeaveList: (listId: string) => void;
+  onRequestDeleteList: (listId: string, message: string) => void;
+  onRequestLeaveList: (listId: string, message: string) => void;
 };
 
-const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpenRenameListModal, onDeleteList, onLeaveList }: ListCardProps) {
+const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpenRenameListModal, onRequestDeleteList, onRequestLeaveList }: ListCardProps) {
   const styles = useAppStyles();
   const { theme } = useTheme();
   const { t } = useLocale();
@@ -62,17 +62,11 @@ const ListCard = memo(function ListCard({ item, currentUserId, onOpenList, onOpe
     const message = item.shareCode
       ? t('lists.deleteSharedMessage', { name: item.name })
       : t('lists.deleteMessage', { name: item.name });
-    Alert.alert(t('lists.deleteTitle'), message, [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: () => onDeleteList(item.id) },
-    ]);
-  }, [item.id, item.name, item.shareCode, onDeleteList, t]);
+    onRequestDeleteList(item.id, message);
+  }, [item.id, item.name, item.shareCode, onRequestDeleteList, t]);
   const handleLeave = useCallback(() => {
-    Alert.alert(t('lists.exitTitle'), t('lists.exitMessage', { name: item.name }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('lists.exitButton'), style: 'destructive', onPress: () => onLeaveList(item.id) },
-    ]);
-  }, [item.id, item.name, onLeaveList, t]);
+    onRequestLeaveList(item.id, t('lists.exitMessage', { name: item.name }));
+  }, [item.id, item.name, onRequestLeaveList, t]);
 
   return (
     <View style={styles.listCard}>
@@ -156,6 +150,15 @@ export const ListsScreen = ({
   const styles = useAppStyles();
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
+  const [confirmModal, setConfirmModal] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
+
+  const handleRequestDeleteList = useCallback((listId: string, message: string) => {
+    setConfirmModal({ title: t('lists.deleteTitle'), message, onConfirm: () => onDeleteList(listId) });
+  }, [onDeleteList, t]);
+
+  const handleRequestLeaveList = useCallback((listId: string, message: string) => {
+    setConfirmModal({ title: t('lists.exitTitle'), message, onConfirm: () => onLeaveList(listId) });
+  }, [onLeaveList, t]);
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingList>) => (
     <ListCard
@@ -163,10 +166,10 @@ export const ListsScreen = ({
       currentUserId={currentUserId}
       onOpenList={onOpenList}
       onOpenRenameListModal={onOpenRenameListModal}
-      onDeleteList={onDeleteList}
-      onLeaveList={onLeaveList}
+      onRequestDeleteList={handleRequestDeleteList}
+      onRequestLeaveList={handleRequestLeaveList}
     />
-  ), [currentUserId, onOpenList, onOpenRenameListModal, onDeleteList, onLeaveList]);
+  ), [currentUserId, onOpenList, onOpenRenameListModal, handleRequestDeleteList, handleRequestLeaveList]);
 
   if (hidden) return (
     <ListNameModal
@@ -229,6 +232,52 @@ export const ListsScreen = ({
         onSubmit={onSubmitListName}
         onClose={onCloseListNameModal}
       />
+
+      <Modal
+        transparent
+        visible={!!confirmModal}
+        animationType="fade"
+        onRequestClose={() => setConfirmModal(null)}
+      >
+        <View style={styles.modalContainer}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setConfirmModal(null)} />
+          <View style={[styles.modalPanel, { height: 'auto', paddingBottom: 20 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{confirmModal?.title}</Text>
+            </View>
+            <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary, paddingBottom: 16 }}>
+              {confirmModal?.message}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Pressable
+                style={({ pressed }) => ({
+                  flex: 1, padding: 14, borderRadius: 12,
+                  backgroundColor: theme.colors.surfaceHighlight,
+                  alignItems: 'center' as const,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+                onPress={() => setConfirmModal(null)}
+              >
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.text }}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => ({
+                  flex: 1, padding: 14, borderRadius: 12,
+                  backgroundColor: theme.colors.danger,
+                  alignItems: 'center' as const,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+                onPress={() => {
+                  confirmModal?.onConfirm();
+                  setConfirmModal(null);
+                }}
+              >
+                <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>{t('common.delete')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <StatusBar style={isDark ? 'light' : 'dark'} />
     </SafeAreaView>

@@ -355,6 +355,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       };
       setLists((current) => [newList, ...current]);
       closeListNameModal();
+      setRoute({ name: 'list', listId });
       return;
     }
 
