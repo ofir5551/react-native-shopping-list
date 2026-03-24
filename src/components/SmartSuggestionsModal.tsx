@@ -11,6 +11,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 import { supabase } from '../supabase';
 
 type SuggestionItem = {
@@ -40,6 +41,7 @@ export const SmartSuggestionsModal = ({
 }: SmartSuggestionsModalProps) => {
     const styles = useAppStyles();
     const { theme } = useTheme();
+    const { t } = useLocale();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [items, setItems] = useState<SuggestionItem[]>([]);
@@ -114,7 +116,7 @@ export const SmartSuggestionsModal = ({
                 <Pressable style={styles.modalBackdrop} onPress={onClose} />
                 <View style={[styles.modalPanel, { maxHeight: '85%' }]}>
                     <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Smart Suggestions</Text>
+                        <Text style={styles.modalTitle}>{t('smartSuggestions.title')}</Text>
                         <Pressable onPress={onClose} style={styles.modalCloseButton}>
                             <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
                         </Pressable>
@@ -122,14 +124,14 @@ export const SmartSuggestionsModal = ({
 
                     <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
                         <Text style={{ fontSize: 14, color: theme.colors.textSecondary }}>
-                            Prompt: "{prompt}"
+                            {t('smartSuggestions.prompt', { prompt })}
                         </Text>
                     </View>
 
                     {loading ? (
                         <View style={{ padding: 40, alignItems: 'center' }}>
                             <ActivityIndicator size="large" color={theme.colors.primary} />
-                            <Text style={{ marginTop: 16, color: theme.colors.textSecondary }}>Generating list...</Text>
+                            <Text style={{ marginTop: 16, color: theme.colors.textSecondary }}>{t('smartSuggestions.generating')}</Text>
                         </View>
                     ) : error ? (
                         <View style={{ padding: 20, alignItems: 'center' }}>
@@ -147,16 +149,16 @@ export const SmartSuggestionsModal = ({
                                 })}
                                 onPress={() => generateSuggestions(prompt)}
                                 accessibilityRole="button"
-                                accessibilityLabel="Retry generating suggestions"
+                                accessibilityLabel={t('smartSuggestions.retryLabel')}
                             >
-                                <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>Try Again</Text>
+                                <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>{t('smartSuggestions.tryAgain')}</Text>
                             </Pressable>
                         </View>
                     ) : (
-                        <ScrollView style={{ flex: 1, paddingHorizontal: 16 }}>
+                        <ScrollView style={{ flex: 1, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
                             {items.length === 0 ? (
                                 <Text style={{ textAlign: 'center', color: theme.colors.textSecondary, marginTop: 20 }}>
-                                    No items suggested.
+                                    {t('smartSuggestions.noItems')}
                                 </Text>
                             ) : (
                                 items.map((item, index) => (
@@ -172,7 +174,7 @@ export const SmartSuggestionsModal = ({
                                         })}
                                         onPress={() => handleToggleSelect(index)}
                                         accessibilityRole="button"
-                                        accessibilityLabel={`${item.selected ? 'Deselect' : 'Select'} ${item.name}`}
+                                        accessibilityLabel={item.selected ? t('smartSuggestions.deselectLabel', { name: item.name }) : t('smartSuggestions.selectLabel', { name: item.name })}
                                         android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
                                     >
                                         <View style={{ paddingRight: 12 }}>
@@ -191,7 +193,7 @@ export const SmartSuggestionsModal = ({
                                             <Pressable
                                                 style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                                                 onPress={() => handleUpdateQuantity(index, -1)}
-                                                accessibilityLabel={`Decrease quantity for ${item.name}`}
+                                                accessibilityLabel={t('smartSuggestions.decreaseQty', { name: item.name })}
                                             >
                                                 <Feather name="minus" size={16} color={theme.colors.primary} />
                                             </Pressable>
@@ -201,7 +203,7 @@ export const SmartSuggestionsModal = ({
                                             <Pressable
                                                 style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                                                 onPress={() => handleUpdateQuantity(index, 1)}
-                                                accessibilityLabel={`Increase quantity for ${item.name}`}
+                                                accessibilityLabel={t('smartSuggestions.increaseQty', { name: item.name })}
                                             >
                                                 <Feather name="plus" size={16} color={theme.colors.primary} />
                                             </Pressable>
@@ -225,9 +227,9 @@ export const SmartSuggestionsModal = ({
                                 })}
                                 onPress={onClose}
                                 accessibilityRole="button"
-                                accessibilityLabel="Cancel"
+                                accessibilityLabel={t('smartSuggestions.cancelLabel')}
                             >
-                                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.danger }}>Cancel</Text>
+                                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.danger }}>{t('smartSuggestions.cancel')}</Text>
                             </Pressable>
 
                             <Pressable
@@ -245,10 +247,10 @@ export const SmartSuggestionsModal = ({
                                     onQuickAdd(getSelectedItems());
                                 }}
                                 accessibilityRole="button"
-                                accessibilityLabel={`Add ${selectedCount} items to list`}
+                                accessibilityLabel={t('smartSuggestions.addLabel', { count: selectedCount })}
                             >
                                 <Text style={{ fontSize: 16, fontWeight: '600', color: selectedCount === 0 || loading ? theme.colors.textSecondary : theme.colors.primaryText }}>
-                                    Add {selectedCount} to List
+                                    {t('smartSuggestions.addToList', { count: selectedCount })}
                                 </Text>
                             </Pressable>
                         </View>

@@ -20,6 +20,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
+import { useLocale } from '../i18n/LocaleContext';
 import { supabase } from '../supabase';
 
 type AuthError = {
@@ -38,6 +39,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
     const styles = useAppStyles();
     const { theme, isDark } = useTheme();
     const { showToast } = useToast();
+    const { t, isRTL } = useLocale();
 
     const [emailExpanded, setEmailExpanded] = useState(false);
     const [name, setName] = useState('');
@@ -94,19 +96,19 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
     const handleSignUp = async () => {
         setAuthError(null);
         if (!name.trim()) {
-            setAuthError({ field: 'name', message: 'Please enter your name.' });
+            setAuthError({ field: 'name', message: t('signup.errorName') });
             return;
         }
         if (!email.trim()) {
-            setAuthError({ field: 'email', message: 'Please enter your email.' });
+            setAuthError({ field: 'email', message: t('signup.errorEmail') });
             return;
         }
         if (!password) {
-            setAuthError({ field: 'password', message: 'Please enter a password.' });
+            setAuthError({ field: 'password', message: t('signup.errorPassword') });
             return;
         }
         if (password.length < 6) {
-            setAuthError({ field: 'password', message: 'Password must be at least 6 characters.' });
+            setAuthError({ field: 'password', message: t('signup.errorPasswordLength') });
             return;
         }
 
@@ -136,7 +138,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
         }
 
         setIsLoading(false);
-        showToast('Account created! Check your email to verify.');
+        showToast(t('signup.accountCreated'));
         onSignUpSuccess();
     };
 
@@ -162,7 +164,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                     if (result.type === 'success') {
                         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
                         if (exchangeError) throw exchangeError;
-                        showToast('Signed in successfully!');
+                        showToast(t('signup.signedIn'));
                         onLoginSuccess();
                     }
                 }
@@ -184,9 +186,9 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                     style={styles.iconButton}
                     onPress={onBack}
                     accessibilityRole="button"
-                    accessibilityLabel="Go back"
+                    accessibilityLabel={t('common.goBack')}
                 >
-                    <Ionicons name="arrow-back" size={20} color={theme.colors.text} />
+                    <Ionicons name={isRTL ? 'arrow-forward' : 'arrow-back'} size={20} color={theme.colors.text} />
                 </Pressable>
             </View>
 
@@ -197,6 +199,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
             <ScrollView
                 contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60, paddingTop: 20 }}
                 keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
             >
                 {/* Branding */}
                 {!keyboardVisible && (
@@ -213,10 +216,10 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                             <Ionicons name="bag-outline" size={44} color="#ffffff" />
                         </View>
                         <Text style={[styles.title, { textAlign: 'center', marginBottom: 8 }]}>
-                            Create Account
+                            {t('signup.createAccount')}
                         </Text>
                         <Text style={[styles.subtitle, { textAlign: 'center' }]}>
-                            Join to sync and share lists across your devices
+                            {t('signup.subtitle')}
                         </Text>
                     </View>
                 )}
@@ -249,7 +252,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                         <>
                             <AntDesign name="google" size={20} color="#DB4437" />
                             <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.text }}>
-                                Continue with Google
+                                {t('signup.continueWithGoogle')}
                             </Text>
                         </>
                     )}
@@ -258,7 +261,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                 {/* Divider */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
                     <View style={{ flex: 1, height: 1, backgroundColor: theme.colors.border }} />
-                    <Text style={{ marginHorizontal: 12, color: theme.colors.textSecondary, fontSize: 13 }}>or</Text>
+                    <Text style={{ marginHorizontal: 12, color: theme.colors.textSecondary, fontSize: 13 }}>{t('common.or')}</Text>
                     <View style={{ flex: 1, height: 1, backgroundColor: theme.colors.border }} />
                 </View>
 
@@ -270,7 +273,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                     >
                         <Ionicons name="mail-outline" size={18} color={theme.colors.text} />
                         <Text style={[styles.authButtonTextSecondary, { fontSize: 16 }]}>
-                            Continue with email
+                            {t('signup.continueWithEmail')}
                         </Text>
                     </Pressable>
                 )}
@@ -318,18 +321,18 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                                 </View>
                             </Pressable>
                             <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 6 }}>
-                                Add photo (optional)
+                                {t('signup.addPhoto')}
                             </Text>
                         </View>
 
                         {/* Name field */}
                         <View style={{ marginBottom: 12 }}>
                             <Text style={{ fontSize: 14, fontWeight: '500', color: theme.colors.textSecondary, marginBottom: 6 }}>
-                                Name
+                                {t('signup.nameLabel')}
                             </Text>
                             <TextInput
                                 style={[styles.nameModalInput, { fontSize: 16, paddingVertical: 12 }]}
-                                placeholder="Your name"
+                                placeholder={t('signup.namePlaceholder')}
                                 placeholderTextColor={theme.colors.textSecondary}
                                 value={name}
                                 onChangeText={(v) => { setName(v); setAuthError(null); }}
@@ -345,11 +348,11 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                         {/* Email field */}
                         <View style={{ marginBottom: 12 }}>
                             <Text style={{ fontSize: 14, fontWeight: '500', color: theme.colors.textSecondary, marginBottom: 6 }}>
-                                Email
+                                {t('signup.emailLabel')}
                             </Text>
                             <TextInput
                                 style={[styles.nameModalInput, { fontSize: 16, paddingVertical: 12 }]}
-                                placeholder="you@example.com"
+                                placeholder={t('signup.emailPlaceholder')}
                                 placeholderTextColor={theme.colors.textSecondary}
                                 value={email}
                                 onChangeText={(v) => { setEmail(v); setAuthError(null); }}
@@ -366,12 +369,12 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                         {/* Password field */}
                         <View style={{ marginBottom: 20 }}>
                             <Text style={{ fontSize: 14, fontWeight: '500', color: theme.colors.textSecondary, marginBottom: 6 }}>
-                                Password
+                                {t('signup.passwordLabel')}
                             </Text>
                             <View style={[styles.nameModalInput, { flexDirection: 'row', alignItems: 'center', paddingVertical: 0 }]}>
                                 <TextInput
                                     style={{ flex: 1, fontSize: 16, color: theme.colors.text, paddingVertical: 12 }}
-                                    placeholder="At least 6 characters"
+                                    placeholder={t('signup.passwordPlaceholder')}
                                     placeholderTextColor={theme.colors.textSecondary}
                                     value={password}
                                     onChangeText={(v) => { setPassword(v); setAuthError(null); }}
@@ -409,7 +412,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                             {isLoading ? (
                                 <ActivityIndicator color="#ffffff" />
                             ) : (
-                                <Text style={[styles.authButtonText, { fontSize: 16 }]}>Create Account</Text>
+                                <Text style={[styles.authButtonText, { fontSize: 16 }]}>{t('signup.createAccountButton')}</Text>
                             )}
                         </Pressable>
                     </View>
@@ -421,9 +424,9 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess, onLoginSucc
                     onPress={onGoToLogin}
                 >
                     <Text style={{ color: theme.colors.textSecondary, fontSize: 15 }}>
-                        Already have an account?{' '}
+                        {t('signup.alreadyHaveAccount')}{' '}
                         <Text style={{ color: theme.colors.primary, fontWeight: '600' }}>
-                            Sign In
+                            {t('signup.signIn')}
                         </Text>
                     </Text>
                 </Pressable>

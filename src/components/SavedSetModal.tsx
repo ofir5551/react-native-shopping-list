@@ -11,6 +11,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../i18n/LocaleContext';
 import { SavedSet, SavedSetItem } from '../types';
 
 type SavedSetModalProps = {
@@ -36,6 +37,7 @@ export const SavedSetModal = ({
 }: SavedSetModalProps) => {
   const styles = useAppStyles();
   const { theme } = useTheme();
+  const { t } = useLocale();
   const [items, setItems] = useState<SavedSetItem[]>([]);
   const [newItemName, setNewItemName] = useState('');
   const inputRef = useRef<TextInput>(null);
@@ -87,13 +89,13 @@ export const SavedSetModal = ({
         <Pressable style={styles.modalBackdrop} onPress={onClose} />
         <View style={[styles.modalPanel, { maxHeight: '85%' }]}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{savedSet?.name ?? 'Saved Set'}</Text>
+            <Text style={styles.modalTitle}>{savedSet?.name ?? ''}</Text>
             <Pressable onPress={onClose} style={styles.modalCloseButton}>
               <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
             </Pressable>
           </View>
 
-          <ScrollView style={{ flex: 1, paddingHorizontal: 16 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
             {items.map((item, index) => (
               <View
                 key={index}
@@ -109,7 +111,7 @@ export const SavedSetModal = ({
                   style={{ paddingRight: 12, minWidth: 36, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                   onPress={() => handleRemoveItem(index)}
                   accessibilityRole="button"
-                  accessibilityLabel={`Remove ${item.name} from set`}
+                  accessibilityLabel={t('savedSet.removeItem', { name: item.name })}
                 >
                   <Feather name="trash-2" size={16} color={theme.colors.danger} />
                 </Pressable>
@@ -130,7 +132,7 @@ export const SavedSetModal = ({
                   <Pressable
                     style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                     onPress={() => handleUpdateQuantity(index, -1)}
-                    accessibilityLabel={`Decrease quantity for ${item.name}`}
+                    accessibilityLabel={t('savedSet.decreaseQty', { name: item.name })}
                   >
                     <Feather name="minus" size={16} color={theme.colors.primary} />
                   </Pressable>
@@ -147,7 +149,7 @@ export const SavedSetModal = ({
                   <Pressable
                     style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                     onPress={() => handleUpdateQuantity(index, 1)}
-                    accessibilityLabel={`Increase quantity for ${item.name}`}
+                    accessibilityLabel={t('savedSet.increaseQty', { name: item.name })}
                   >
                     <Feather name="plus" size={16} color={theme.colors.primary} />
                   </Pressable>
@@ -173,7 +175,7 @@ export const SavedSetModal = ({
                   paddingVertical: 8,
                   paddingHorizontal: 4,
                 }}
-                placeholder="Add item…"
+                placeholder={t('savedSet.addItem')}
                 placeholderTextColor={theme.colors.textSecondary}
                 value={newItemName}
                 onChangeText={setNewItemName}
@@ -192,7 +194,7 @@ export const SavedSetModal = ({
                 onPress={handleAddItem}
                 disabled={!newItemName.trim()}
                 accessibilityRole="button"
-                accessibilityLabel="Add item to set"
+                accessibilityLabel={t('savedSet.addItemLabel')}
               >
                 <Ionicons name="add-circle" size={26} color={theme.colors.primary} />
               </Pressable>
@@ -212,9 +214,9 @@ export const SavedSetModal = ({
                 })}
                 onPress={onClose}
                 accessibilityRole="button"
-                accessibilityLabel="Cancel"
+                accessibilityLabel={t('savedSet.cancel')}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.danger }}>Cancel</Text>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.danger }}>{t('savedSet.cancel')}</Text>
               </Pressable>
 
               <Pressable
@@ -235,10 +237,10 @@ export const SavedSetModal = ({
                   }
                 }}
                 accessibilityRole="button"
-                accessibilityLabel="Save set"
+                accessibilityLabel={t('savedSet.saveLabel')}
               >
                 <Text style={{ fontSize: 16, fontWeight: '600', color: items.length === 0 ? theme.colors.textSecondary : theme.colors.primary }}>
-                  Save Set
+                  {t('savedSet.saveSet')}
                 </Text>
               </Pressable>
             </View>
@@ -260,7 +262,7 @@ export const SavedSetModal = ({
                 onAddAllToList(items.map(({ name, quantity }) => ({ name, quantity })));
               }}
               accessibilityRole="button"
-              accessibilityLabel="Save and add items to list"
+              accessibilityLabel={t('savedSet.saveAndAddLabel')}
             >
               <Text
                 style={{
@@ -269,7 +271,7 @@ export const SavedSetModal = ({
                   color: items.length === 0 ? theme.colors.textSecondary : theme.colors.primaryText,
                 }}
               >
-                Save and Add Items to List
+                {t('savedSet.saveAndAdd')}
               </Text>
             </Pressable>
           </View>
