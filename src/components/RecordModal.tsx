@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
 import { useToast } from '../context/ToastContext';
+import { usePreferences } from '../context/PreferencesContext';
 import { useAppStyles } from '../styles/appStyles';
 import { parseTranscript } from '../utils/itemParser';
 
@@ -36,7 +37,9 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
   const { theme } = useTheme();
   const { t } = useLocale();
   const { showToast } = useToast();
+  const { preferences } = usePreferences();
   const styles = useAppStyles();
+  const showTextInput = !hasNativeModule || preferences.parserDevMode;
 
   const [isListening, setIsListening] = useState(false);
   const [items, setItems] = useState<{ name: string; quantity: number }[]>([]);
@@ -55,7 +58,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
       lastResultAtRef.current = Date.now();
       setItems([]);
       setDevInput('');
-      if (hasNativeModule) startRecognition();
+      if (!showTextInput) startRecognition();
     } else {
       stopEverything();
     }
@@ -180,7 +183,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
             </Pressable>
           </View>
 
-          {hasNativeModule ? (
+          {!showTextInput ? (
             <View style={{ alignItems: 'center', paddingVertical: 20 }}>
               <Pressable
                 onPress={isListening ? handleManualStop : handleMicResume}

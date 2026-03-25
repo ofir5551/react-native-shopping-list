@@ -13,6 +13,7 @@ export const en = {
   'settings.appearance': 'Appearance',
   'settings.darkMode': 'Dark Mode',
   'settings.autoFocusKeyboard': 'Auto-focus keyboard when adding items',
+  'settings.parserDevMode': 'Record: use text input instead of mic',
   'settings.language': 'Language',
   'settings.account': 'Account',
   'settings.greeting': 'Hi, {{name}}!',
@@ -186,6 +187,19 @@ export const en = {
   'signup.errorPasswordLength': 'Password must be at least 6 characters.',
   'signup.accountCreated': 'Account created! Check your email to verify.',
   'signup.signedIn': 'Signed in successfully!',
+
+  // From Photo modal
+  'fromPhoto.title': 'From Photo',
+  'fromPhoto.takePhoto': 'Take Photo',
+  'fromPhoto.chooseLibrary': 'Choose from Library',
+  'fromPhoto.scanning': 'Scanning photo…',
+  'fromPhoto.noItems': 'No items detected',
+  'fromPhoto.tryAgain': 'Try Again',
+  'fromPhoto.cancel': 'Cancel',
+  'fromPhoto.addToList': 'Add {{count}} to List',
+  'fromPhoto.retryLabel': 'Retry scanning photo',
+  'fromPhoto.cancelLabel': 'Cancel',
+  'fromPhoto.addLabel': 'Add {{count}} items to list',
 
   // Voice record modal
   'voiceRecord.title': 'Record to Add',

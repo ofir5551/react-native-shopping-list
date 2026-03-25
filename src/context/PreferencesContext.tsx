@@ -5,10 +5,12 @@ const PREFS_STORAGE_KEY = '@shopping-list/preferences';
 
 type Preferences = {
     autoFocusKeyboard: boolean;
+    parserDevMode: boolean;
 };
 
 const DEFAULT_PREFS: Preferences = {
     autoFocusKeyboard: true,
+    parserDevMode: false,
 };
 
 type PreferencesContextType = {

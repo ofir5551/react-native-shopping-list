@@ -15,6 +15,7 @@ export const he: Record<TranslationKey, string> = {
   'settings.appearance': 'מראה',
   'settings.darkMode': 'מצב כהה',
   'settings.autoFocusKeyboard': 'מקלדת אוטומטית בעת הוספת פריטים',
+  'settings.parserDevMode': 'הקלטה: שימוש בשדה טקסט במקום מיקרופון',
   'settings.language': 'שפה',
   'settings.account': 'חשבון',
   'settings.greeting': 'שלום, {{name}}!',

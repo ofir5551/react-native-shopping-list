@@ -89,6 +89,16 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                             ios_backgroundColor={theme.colors.surfaceHighlight}
                         />
                     </View>
+                    <View style={styles.settingsRow}>
+                        <Text style={styles.settingsLabel}>{t('settings.parserDevMode')}</Text>
+                        <Switch
+                            value={preferences.parserDevMode}
+                            onValueChange={(value) => setPreference('parserDevMode', value)}
+                            trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
+                            thumbColor={preferences.parserDevMode ? theme.colors.primaryText : '#f4f3f4'}
+                            ios_backgroundColor={theme.colors.surfaceHighlight}
+                        />
+                    </View>
                     <View style={[styles.settingsRow, styles.settingsRowLast]}>
                         <Text style={styles.settingsLabel}>{t('settings.language')}</Text>
                         <Pressable
