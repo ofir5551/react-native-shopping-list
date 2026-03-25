@@ -14,12 +14,14 @@ type SpeedDialAction = {
 type CaretPopoverProps = {
   onAiSuggestions: () => void;
   onSavedSets: () => void;
+  onRecord: () => void;
   onClose: () => void;
 };
 
 export const CaretPopover = ({
   onAiSuggestions,
   onSavedSets,
+  onRecord,
   onClose,
 }: CaretPopoverProps) => {
   const { theme } = useTheme();
@@ -35,7 +37,7 @@ export const CaretPopover = ({
   const actions: SpeedDialAction[] = [
     { icon: 'albums-outline', label: t('caret.savedSets'), onPress: onSavedSets },
     { icon: 'sparkles-outline', label: t('caret.aiSuggestions'), onPress: onAiSuggestions },
-    { icon: 'mic-outline', label: t('caret.record'), onPress: () => {}, disabled: true },
+    { icon: 'mic-outline', label: t('caret.record'), onPress: onRecord },
     { icon: 'camera-outline', label: t('caret.fromPhoto'), onPress: () => {}, disabled: true },
   ];
 

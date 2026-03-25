@@ -18,6 +18,7 @@ import { OverlayModal } from '../components/OverlayModal';
 import { ShoppingList } from '../components/ShoppingList';
 import { SmartSuggestionsModal } from '../components/SmartSuggestionsModal';
 import { SavedSetModal } from '../components/SavedSetModal';
+import { RecordModal } from '../components/RecordModal';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
@@ -114,6 +115,9 @@ export const ShoppingListScreen = ({
   const [isSuggestPromptOpen, setIsSuggestPromptOpen] = useState(false);
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
   const suggestInputRef = useRef<TextInput | null>(null);
+
+  // Record modal state
+  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
 
   // Saved Sets state
   const [isSavedSetsListOpen, setIsSavedSetsListOpen] = useState(false);
@@ -278,6 +282,7 @@ export const ShoppingListScreen = ({
         <CaretPopover
           onAiSuggestions={handleOpenAiSuggestions}
           onSavedSets={handleOpenSavedSetsList}
+          onRecord={() => setIsRecordModalOpen(true)}
           onClose={() => setIsCaretOpen(false)}
         />
       )}
@@ -551,6 +556,16 @@ export const ShoppingListScreen = ({
           </View>
         </View>
       </Modal>
+
+      {/* Record modal */}
+      <RecordModal
+        visible={isRecordModalOpen}
+        onClose={() => setIsRecordModalOpen(false)}
+        onAdd={(items) => {
+          handleQuickAddMultiple(items);
+          setIsRecordModalOpen(false);
+        }}
+      />
 
       <StatusBar style={isDark ? 'light' : 'dark'} />
     </SafeAreaView>

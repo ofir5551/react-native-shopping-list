@@ -187,6 +187,16 @@ export const en = {
   'signup.accountCreated': 'Account created! Check your email to verify.',
   'signup.signedIn': 'Signed in successfully!',
 
+  // Voice record modal
+  'voiceRecord.title': 'Record to Add',
+  'voiceRecord.listening': 'Listening…',
+  'voiceRecord.tapToStop': 'Tap mic to stop',
+  'voiceRecord.stopped': 'Recording stopped',
+  'voiceRecord.noItems': 'No items detected yet — start speaking',
+  'voiceRecord.add': 'Add {{count}} Items',
+  'voiceRecord.micDenied': 'Microphone permission is required',
+  'voiceRecord.removeItem': 'Remove {{name}}',
+
   // Toast messages
   'toast.listDeleted': '"{{name}}" was deleted by its owner.',
   'toast.leftList': 'Left "{{name}}".',

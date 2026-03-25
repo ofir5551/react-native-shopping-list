@@ -189,6 +189,16 @@ export const he: Record<TranslationKey, string> = {
   'signup.accountCreated': 'החשבון נוצר! בדקו את האימייל שלכם לאימות.',
   'signup.signedIn': 'התחברת בהצלחה!',
 
+  // Voice record modal
+  'voiceRecord.title': 'הקלטה להוספה',
+  'voiceRecord.listening': 'מאזין…',
+  'voiceRecord.tapToStop': 'הקש על המיקרופון להפסקה',
+  'voiceRecord.stopped': 'ההקלטה הופסקה',
+  'voiceRecord.noItems': 'לא זוהו פריטים עדיין — התחל לדבר',
+  'voiceRecord.add': 'הוסף {{count}} פריטים',
+  'voiceRecord.micDenied': 'נדרשת הרשאת מיקרופון',
+  'voiceRecord.removeItem': 'הסר {{name}}',
+
   // Toast messages
   'toast.listDeleted': '"{{name}}" נמחקה על ידי הבעלים.',
   'toast.leftList': 'יצאתם מ-"{{name}}".',

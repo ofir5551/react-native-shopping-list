@@ -36,7 +36,8 @@
     "plugins": [
       "expo-web-browser",
       "expo-image-picker",
-      "expo-font"
+      "expo-font",
+      "expo-speech-recognition"
     ]
   }
 }
