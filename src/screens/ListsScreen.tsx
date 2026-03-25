@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useState } from 'react';
-import { FlatList, ListRenderItemInfo, Modal, Pressable, SafeAreaView, Text, View } from 'react-native';
+import { FlatList, ListRenderItemInfo, Modal, Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Fab } from '../components/Fab';

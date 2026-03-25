@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import {
     Image,
     Modal,
-    SafeAreaView,
     ScrollView,
     Switch,
     Text,
     Pressable,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';

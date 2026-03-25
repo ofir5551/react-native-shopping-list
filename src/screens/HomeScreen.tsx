@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, BackHandler, SafeAreaView, View } from 'react-native';
+import { ActivityIndicator, BackHandler, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useShoppingListsApp } from '../hooks/useShoppingListsApp';
 import { ListsScreen } from './ListsScreen';
 import { LoginScreen } from './LoginScreen';

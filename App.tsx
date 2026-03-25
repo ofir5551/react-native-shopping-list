@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { I18nManager, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   useFonts,
@@ -45,6 +46,7 @@ export default function App() {
   }
 
   return (
+    <SafeAreaProvider>
     <LocaleProvider initialLocale={initialLocale}>
       <AuthProvider>
         <SyncProvider>
@@ -58,5 +60,6 @@ export default function App() {
         </SyncProvider>
       </AuthProvider>
     </LocaleProvider>
+    </SafeAreaProvider>
   );
 }
