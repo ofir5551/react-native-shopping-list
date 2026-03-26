@@ -17,7 +17,8 @@ type CaretPopoverProps = {
   onRecord: () => void;
   onFromPhoto: () => void;
   onClose: () => void;
-  isSignedIn: boolean;
+  // MVP: isSignedIn removed — AI features are open to guests during testing phase.
+  // Re-add `isSignedIn: boolean` here and pass it from ShoppingListScreen to restore the gate.
 };
 
 export const CaretPopover = ({
@@ -26,7 +27,6 @@ export const CaretPopover = ({
   onRecord,
   onFromPhoto,
   onClose,
-  isSignedIn,
 }: CaretPopoverProps) => {
   const { theme } = useTheme();
   const { t, isRTL } = useLocale();
@@ -41,8 +41,8 @@ export const CaretPopover = ({
   const actions: SpeedDialAction[] = [
     { icon: 'albums-outline', label: t('caret.savedSets'), onPress: onSavedSets },
     { icon: 'mic-outline', label: t('caret.record'), onPress: onRecord },
-    { icon: 'sparkles-outline', label: t('caret.aiSuggestions'), onPress: onAiSuggestions, disabled: !isSignedIn },
-    { icon: 'camera-outline', label: t('caret.fromPhoto'), onPress: onFromPhoto, disabled: !isSignedIn },
+    { icon: 'sparkles-outline', label: t('caret.aiSuggestions'), onPress: onAiSuggestions },
+    { icon: 'camera-outline', label: t('caret.fromPhoto'), onPress: onFromPhoto },
   ];
 
   useEffect(() => {

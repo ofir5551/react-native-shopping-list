@@ -184,11 +184,7 @@ export const ShoppingListScreen = ({
   };
 
   const handleOpenAiSuggestions = () => {
-    if (!currentUserId) {
-      showToast(t('toast.signInRequired'));
-      goToLogin();
-      return;
-    }
+    // MVP: available to guests; re-add auth check here when restricting to signed-in users only
     setSuggestPrompt('');
     setIsSuggestPromptOpen(true);
   };
@@ -299,15 +295,10 @@ export const ShoppingListScreen = ({
           onSavedSets={handleOpenSavedSetsList}
           onRecord={() => setIsRecordModalOpen(true)}
           onFromPhoto={() => {
-            if (!currentUserId) {
-              showToast(t('toast.signInRequired'));
-              goToLogin();
-              return;
-            }
+            // MVP: available to guests; re-add auth check here when restricting to signed-in users only
             setIsPhotoModalOpen(true);
           }}
           onClose={() => setIsCaretOpen(false)}
-          isSignedIn={!!currentUserId}
         />
       )}
 
