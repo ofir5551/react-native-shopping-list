@@ -15,6 +15,7 @@ type CaretPopoverProps = {
   onAiSuggestions: () => void;
   onSavedSets: () => void;
   onRecord: () => void;
+  onFromPhoto: () => void;
   onClose: () => void;
 };
 
@@ -22,6 +23,7 @@ export const CaretPopover = ({
   onAiSuggestions,
   onSavedSets,
   onRecord,
+  onFromPhoto,
   onClose,
 }: CaretPopoverProps) => {
   const { theme } = useTheme();
@@ -38,7 +40,7 @@ export const CaretPopover = ({
     { icon: 'albums-outline', label: t('caret.savedSets'), onPress: onSavedSets },
     { icon: 'sparkles-outline', label: t('caret.aiSuggestions'), onPress: onAiSuggestions },
     { icon: 'mic-outline', label: t('caret.record'), onPress: onRecord },
-    { icon: 'camera-outline', label: t('caret.fromPhoto'), onPress: () => {}, disabled: true },
+    { icon: 'camera-outline', label: t('caret.fromPhoto'), onPress: onFromPhoto },
   ];
 
   useEffect(() => {

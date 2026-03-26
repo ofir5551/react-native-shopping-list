@@ -209,6 +209,9 @@ export const en = {
   'voiceRecord.noItems': 'No items detected yet — start speaking',
   'voiceRecord.add': 'Add {{count}} Items',
   'voiceRecord.micDenied': 'Microphone permission is required',
+  'voiceRecord.permDeniedTitle': 'Microphone Access Required',
+  'voiceRecord.permDeniedMessage': 'Please enable microphone access in Settings to use voice recording.',
+  'voiceRecord.openSettings': 'Open Settings',
   'voiceRecord.removeItem': 'Remove {{name}}',
 
   // Toast messages

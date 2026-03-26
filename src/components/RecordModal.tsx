@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Modal, NativeModules, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Animated, Linking, Modal, NativeModules, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../context/ThemeContext';
@@ -39,7 +39,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
   const { showToast } = useToast();
   const { preferences } = usePreferences();
   const styles = useAppStyles();
-  const showTextInput = !hasNativeModule || preferences.parserDevMode;
+  const showTextInput = preferences.parserDevMode;
 
   const [isListening, setIsListening] = useState(false);
   const [items, setItems] = useState<{ name: string; quantity: number }[]>([]);
@@ -63,7 +63,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
       stopEverything();
     }
     return () => stopEverything();
-  }, [visible]);
+  }, [visible, showTextInput]);
 
   useEffect(() => {
     if (isListening) {
@@ -92,8 +92,14 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
     const { ExpoSpeechRecognitionModule } = mod;
     const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!granted) {
-      showToast(t('voiceRecord.micDenied'));
-      onClose();
+      Alert.alert(
+        t('voiceRecord.permDeniedTitle'),
+        t('voiceRecord.permDeniedMessage'),
+        [
+          { text: t('common.cancel'), onPress: onClose, style: 'cancel' },
+          { text: t('voiceRecord.openSettings'), onPress: () => { Linking.openSettings(); onClose(); } },
+        ]
+      );
       return;
     }
 

@@ -19,6 +19,7 @@ import { ShoppingList } from '../components/ShoppingList';
 import { SmartSuggestionsModal } from '../components/SmartSuggestionsModal';
 import { SavedSetModal } from '../components/SavedSetModal';
 import { RecordModal } from '../components/RecordModal';
+import { PhotoModal } from '../components/PhotoModal';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
@@ -118,6 +119,9 @@ export const ShoppingListScreen = ({
 
   // Record modal state
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+
+  // Photo modal state
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
   // Saved Sets state
   const [isSavedSetsListOpen, setIsSavedSetsListOpen] = useState(false);
@@ -283,6 +287,7 @@ export const ShoppingListScreen = ({
           onAiSuggestions={handleOpenAiSuggestions}
           onSavedSets={handleOpenSavedSetsList}
           onRecord={() => setIsRecordModalOpen(true)}
+          onFromPhoto={() => setIsPhotoModalOpen(true)}
           onClose={() => setIsCaretOpen(false)}
         />
       )}
@@ -564,6 +569,16 @@ export const ShoppingListScreen = ({
         onAdd={(items) => {
           handleQuickAddMultiple(items);
           setIsRecordModalOpen(false);
+        }}
+      />
+
+      {/* Photo modal */}
+      <PhotoModal
+        visible={isPhotoModalOpen}
+        onClose={() => setIsPhotoModalOpen(false)}
+        onAdd={(items) => {
+          handleQuickAddMultiple(items);
+          setIsPhotoModalOpen(false);
         }}
       />
 

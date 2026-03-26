@@ -197,9 +197,11 @@ export const SmartSuggestionsModal = ({
                                             >
                                                 <Feather name="minus" size={16} color={theme.colors.primary} />
                                             </Pressable>
-                                            <Text style={{ fontWeight: '600', minWidth: 20, textAlign: 'center', color: theme.colors.text }}>
-                                                {item.quantity}
-                                            </Text>
+                                            <Pressable onPress={() => {}}>
+                                                <Text style={{ fontWeight: '600', minWidth: 20, textAlign: 'center', color: theme.colors.text }}>
+                                                    {item.quantity}
+                                                </Text>
+                                            </Pressable>
                                             <Pressable
                                                 style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                                                 onPress={() => handleUpdateQuantity(index, 1)}

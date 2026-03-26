@@ -190,6 +190,19 @@ export const he: Record<TranslationKey, string> = {
   'signup.accountCreated': 'החשבון נוצר! בדקו את האימייל שלכם לאימות.',
   'signup.signedIn': 'התחברת בהצלחה!',
 
+  // From Photo modal
+  'fromPhoto.title': 'מתמונה',
+  'fromPhoto.takePhoto': 'צלם תמונה',
+  'fromPhoto.chooseLibrary': 'בחר מהגלריה',
+  'fromPhoto.scanning': 'סורק תמונה…',
+  'fromPhoto.noItems': 'לא זוהו פריטים',
+  'fromPhoto.tryAgain': 'נסה שוב',
+  'fromPhoto.cancel': 'ביטול',
+  'fromPhoto.addToList': 'הוסף {{count}} לרשימה',
+  'fromPhoto.retryLabel': 'נסה לסרוק שוב',
+  'fromPhoto.cancelLabel': 'ביטול',
+  'fromPhoto.addLabel': 'הוסף {{count}} פריטים לרשימה',
+
   // Voice record modal
   'voiceRecord.title': 'הקלטה להוספה',
   'voiceRecord.listening': 'מאזין…',
@@ -198,6 +211,9 @@ export const he: Record<TranslationKey, string> = {
   'voiceRecord.noItems': 'לא זוהו פריטים עדיין — התחל לדבר',
   'voiceRecord.add': 'הוסף {{count}} פריטים',
   'voiceRecord.micDenied': 'נדרשת הרשאת מיקרופון',
+  'voiceRecord.permDeniedTitle': 'נדרשת גישה למיקרופון',
+  'voiceRecord.permDeniedMessage': 'יש לאפשר גישה למיקרופון בהגדרות כדי להשתמש בהקלטת קול.',
+  'voiceRecord.openSettings': 'פתח הגדרות',
   'voiceRecord.removeItem': 'הסר {{name}}',
 
   // Toast messages
