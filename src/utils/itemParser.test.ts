@@ -54,11 +54,19 @@ describe('parseTranscript', () => {
     expect(parseTranscript('also butter')).toEqual([{ name: 'butter', quantity: 1 }]);
   });
 
-  it('deduplicates by normalized name', () => {
+  it('deduplicates by normalized name, keeping last occurrence', () => {
     const result = parseTranscript('milk and eggs and milk');
     expect(result).toEqual([
       { name: 'milk', quantity: 1 },
       { name: 'eggs', quantity: 1 },
+    ]);
+  });
+
+  it('replaces quantity on repeated item (self-correction)', () => {
+    const result = parseTranscript('4 cheese and 2 milk and 3 cheese');
+    expect(result).toEqual([
+      { name: 'cheese', quantity: 3 },
+      { name: 'milk', quantity: 2 },
     ]);
   });
 
@@ -89,6 +97,33 @@ describe('parseTranscript', () => {
     ]);
   });
 
+  it('splits on "plus"', () => {
+    const result = parseTranscript('milk plus eggs plus bread');
+    expect(result).toEqual([
+      { name: 'milk', quantity: 1 },
+      { name: 'eggs', quantity: 1 },
+      { name: 'bread', quantity: 1 },
+    ]);
+  });
+
+  it('splits on "also"', () => {
+    const result = parseTranscript('milk also 2 eggs also bread');
+    expect(result).toEqual([
+      { name: 'milk', quantity: 1 },
+      { name: 'eggs', quantity: 2 },
+      { name: 'bread', quantity: 1 },
+    ]);
+  });
+
+  it('splits on spoken "comma"', () => {
+    const result = parseTranscript('milk comma eggs comma bread');
+    expect(result).toEqual([
+      { name: 'milk', quantity: 1 },
+      { name: 'eggs', quantity: 1 },
+      { name: 'bread', quantity: 1 },
+    ]);
+  });
+
   it('splits on number boundaries', () => {
     const result = parseTranscript('5 bread 2 milk 3 eggs');
     expect(result).toEqual([
@@ -104,6 +139,32 @@ describe('parseTranscript', () => {
       { name: 'bread', quantity: 5 },
       { name: 'milk', quantity: 1 },
       { name: 'eggs', quantity: 3 },
+    ]);
+  });
+
+  it('handles accent homophones as quantities', () => {
+    expect(parseTranscript('for cheese')).toEqual([{ name: 'cheese', quantity: 4 }]);
+    expect(parseTranscript('to milk')).toEqual([{ name: 'milk', quantity: 2 }]);
+    expect(parseTranscript('ate eggs')).toEqual([{ name: 'eggs', quantity: 8 }]);
+    expect(parseTranscript('tree apples')).toEqual([{ name: 'apples', quantity: 3 }]);
+  });
+
+  it('splits on word-number boundaries', () => {
+    const result = parseTranscript('two bread three cheese five milk');
+    expect(result).toEqual([
+      { name: 'bread', quantity: 2 },
+      { name: 'cheese', quantity: 3 },
+      { name: 'milk', quantity: 5 },
+    ]);
+  });
+
+  it('self-corrects with word-number then digit boundary', () => {
+    const result = parseTranscript('two bread three cheese 5 popcorn 6 paper 4 bread');
+    expect(result).toEqual([
+      { name: 'bread', quantity: 4 },
+      { name: 'cheese', quantity: 3 },
+      { name: 'popcorn', quantity: 5 },
+      { name: 'paper', quantity: 6 },
     ]);
   });
 });

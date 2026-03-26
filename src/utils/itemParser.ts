@@ -1,15 +1,15 @@
 const QUANTITY_WORDS: Record<string, number> = {
   a: 1,
   an: 1,
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
+  one: 1,  won: 1,
+  two: 2,  to: 2, too: 2,
+  three: 3, tree: 3,
+  four: 4,  for: 4, fore: 4,
   five: 5,
   six: 6,
   seven: 7,
-  eight: 8,
-  nine: 9,
+  eight: 8, ate: 8,
+  nine: 9,  nein: 9,
   ten: 10,
   eleven: 11,
   twelve: 12,
@@ -28,13 +28,10 @@ const FILLER_PREFIXES = [
   "please get",
   "maybe some",
   "maybe",
-  "also some",
-  "also",
   "a bit of",
   "a little",
   "some",
   "please",
-  "and also",
 ];
 
 function stripFillers(text: string): string {
@@ -81,9 +78,12 @@ function extractQuantity(text: string): { name: string; quantity: number } {
   return { name: text.trim(), quantity: 1 };
 }
 
+const QUANTITY_WORD_SPLIT_RE = /\s+(?=(?:\d+|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s)/i;
+
 function splitOnNumberBoundaries(text: string): string[] {
-  // "5 bread 2 milk 3 eggs" → ["5 bread", "2 milk", "3 eggs"]
-  return text.split(/\s+(?=\d+\s)/).filter(Boolean);
+  // "5 bread 2 milk" → ["5 bread", "2 milk"]
+  // "two bread three cheese" → ["two bread", "three cheese"]
+  return text.split(QUANTITY_WORD_SPLIT_RE).filter(Boolean);
 }
 
 export function parseTranscript(transcript: string): { name: string; quantity: number }[] {
@@ -91,14 +91,14 @@ export function parseTranscript(transcript: string): { name: string; quantity: n
 
   // Split on comma, "and", "next", "then", or newline
   const rawParts = transcript
-    .split(/,|\band\b|\bnext\b|\bthen\b|\n/i)
+    .split(/,|\band\b|\bnext\b|\bthen\b|\bplus\b|\balso\b|\bcomma\b|\n/i)
     .map((p) => p.trim())
     .filter(Boolean);
 
   // Further split each part on number boundaries
   const parts = rawParts.flatMap(splitOnNumberBoundaries);
 
-  const seen = new Set<string>();
+  const indexMap = new Map<string, number>();
   const results: { name: string; quantity: number }[] = [];
 
   for (const part of parts) {
@@ -107,11 +107,16 @@ export function parseTranscript(transcript: string): { name: string; quantity: n
 
     const { name, quantity } = extractQuantity(stripped);
     const normalized = name.toLowerCase().trim();
-    if (!normalized || seen.has(normalized)) continue;
+    if (!normalized) continue;
 
-    seen.add(normalized);
-    // Preserve original casing from the first word-boundary match in the stripped text
-    results.push({ name: name.trim(), quantity });
+    const existing = indexMap.get(normalized);
+    if (existing !== undefined) {
+      // Self-correction — replace with the latest quantity
+      results[existing] = { name: name.trim(), quantity };
+    } else {
+      indexMap.set(normalized, results.length);
+      results.push({ name: name.trim(), quantity });
+    }
   }
 
   return results;

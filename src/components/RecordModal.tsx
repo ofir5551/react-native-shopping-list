@@ -45,15 +45,19 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
   const [devInput, setDevInput] = useState('');
 
   const committedRef = useRef('');
+  const processedFinalCountRef = useRef(0);
   const lastResultAtRef = useRef(Date.now());
   const silenceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recognitionRef = useRef<any>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoopRef = useRef<Animated.CompositeAnimation | null>(null);
+  const prevItemsRef = useRef<{ name: string; quantity: number }[]>([]);
+  const chipAnims = useRef<Map<string, Animated.Value>>(new Map());
 
   useEffect(() => {
     if (visible) {
       committedRef.current = '';
+      processedFinalCountRef.current = 0;
       lastResultAtRef.current = Date.now();
       setItems([]);
       setDevInput('');
@@ -80,6 +84,25 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
     }
     return () => pulseLoopRef.current?.stop();
   }, [isListening]);
+
+  useEffect(() => {
+    const prev = prevItemsRef.current;
+    for (const item of items) {
+      const key = item.name.toLowerCase();
+      if (!chipAnims.current.has(key)) {
+        chipAnims.current.set(key, new Animated.Value(1));
+      }
+      const prevItem = prev.find((p) => p.name.toLowerCase() === key);
+      if (prevItem && prevItem.quantity !== item.quantity) {
+        const anim = chipAnims.current.get(key)!;
+        Animated.sequence([
+          Animated.timing(anim, { toValue: 1.25, duration: 120, useNativeDriver: true }),
+          Animated.spring(anim, { toValue: 1, useNativeDriver: true }),
+        ]).start();
+      }
+    }
+    prevItemsRef.current = items;
+  }, [items]);
 
   const startRecognition = async () => {
     const mod = await getExpoSpeechModule();
@@ -115,17 +138,26 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
     recognition.onerror = () => setIsListening(false);
     recognition.onresult = (event: any) => {
       lastResultAtRef.current = Date.now();
-      let committed = '';
       let interim = '';
+      // Only process final results we haven't seen yet to avoid
+      // double-counting on platforms that keep all results in the list,
+      // while also surviving platforms that reset the list after a pause.
+      let finalCount = 0;
       for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          committed += (committed ? ', ' : '') + result[0].transcript;
+          finalCount++;
+          if (finalCount > processedFinalCountRef.current) {
+            committedRef.current = committedRef.current
+              ? `${committedRef.current}, ${result[0].transcript}`
+              : result[0].transcript;
+          }
         } else {
           interim = result[0].transcript;
         }
       }
-      committedRef.current = committed;
+      processedFinalCountRef.current = Math.max(processedFinalCountRef.current, finalCount);
+      const committed = committedRef.current;
       const full = interim
         ? (committed ? `${committed}, ${interim}` : interim)
         : committed;
@@ -254,8 +286,14 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
               </Text>
             ) : (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingBottom: 16 }}>
-                {items.map((item, index) => (
-                  <View
+                {items.map((item, index) => {
+                  const key = item.name.toLowerCase();
+                  if (!chipAnims.current.has(key)) {
+                    chipAnims.current.set(key, new Animated.Value(1));
+                  }
+                  const chipScale = chipAnims.current.get(key)!;
+                  return (
+                  <Animated.View
                     key={`${item.name}-${index}`}
                     style={{
                       flexDirection: 'row',
@@ -266,6 +304,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
                       paddingLeft: 12,
                       paddingRight: 6,
                       gap: 4,
+                      transform: [{ scale: chipScale }],
                     }}
                   >
                     <Text style={{ color: theme.colors.primaryText, fontSize: 14, fontFamily: theme.fonts.medium }}>
@@ -279,8 +318,9 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
                     >
                       <Ionicons name="close-circle" size={16} color={theme.colors.primaryText} />
                     </Pressable>
-                  </View>
-                ))}
+                  </Animated.View>
+                  );
+                })}
               </View>
             )}
           </ScrollView>
