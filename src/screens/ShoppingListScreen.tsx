@@ -23,6 +23,7 @@ import { PhotoModal } from '../components/PhotoModal';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
+import { useToast } from '../context/ToastContext';
 import { SavedSet, SavedSetItem, ShoppingItem, SelectedRecentItem } from '../types';
 
 type ShoppingListScreenProps = {
@@ -60,6 +61,8 @@ type ShoppingListScreenProps = {
   handleDecrementQuantity: (id: string) => void;
   onBack: () => void;
   onShareList: () => void;
+  currentUserId: string | undefined;
+  goToLogin: () => void;
 };
 
 export const ShoppingListScreen = ({
@@ -97,10 +100,13 @@ export const ShoppingListScreen = ({
   handleDecrementQuantity,
   onBack,
   onShareList,
+  currentUserId,
+  goToLogin,
 }: ShoppingListScreenProps) => {
   const styles = useAppStyles();
   const { theme, isDark } = useTheme();
   const { t } = useLocale();
+  const { showToast } = useToast();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCaretOpen, setIsCaretOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -178,6 +184,11 @@ export const ShoppingListScreen = ({
   };
 
   const handleOpenAiSuggestions = () => {
+    if (!currentUserId) {
+      showToast(t('toast.signInRequired'));
+      goToLogin();
+      return;
+    }
     setSuggestPrompt('');
     setIsSuggestPromptOpen(true);
   };
@@ -287,8 +298,16 @@ export const ShoppingListScreen = ({
           onAiSuggestions={handleOpenAiSuggestions}
           onSavedSets={handleOpenSavedSetsList}
           onRecord={() => setIsRecordModalOpen(true)}
-          onFromPhoto={() => setIsPhotoModalOpen(true)}
+          onFromPhoto={() => {
+            if (!currentUserId) {
+              showToast(t('toast.signInRequired'));
+              goToLogin();
+              return;
+            }
+            setIsPhotoModalOpen(true);
+          }}
           onClose={() => setIsCaretOpen(false)}
+          isSignedIn={!!currentUserId}
         />
       )}
 

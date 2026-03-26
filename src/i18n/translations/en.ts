@@ -222,6 +222,9 @@ export const en = {
   'toast.setUpdated': '"{{name}}" updated.',
   'toast.setUpdatedGeneric': 'Set updated.',
   'toast.setDeleted': 'Set deleted.',
+  'toast.itemsAdded': 'Items added: {{count}}',
+  'toast.itemsRemoved': 'Items removed: {{count}}',
+  'toast.signInRequired': 'Sign in to use AI features.',
 } as const;
 
 export type TranslationKey = keyof typeof en;

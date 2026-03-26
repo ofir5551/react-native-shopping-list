@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StorageProvider, LocalStorageProvider } from '../storage';
 import { SupabaseApiClient } from '../sync/SupabaseApiClient';
-import { SyncEngine, PENDING_DELETES_KEY } from '../sync/SyncEngine';
+import { SyncEngine, DIRTY_IDS_KEY, PENDING_DELETES_KEY } from '../sync/SyncEngine';
 import { ShoppingList } from '../types';
 import { useAuth } from './AuthContext';
 
@@ -67,6 +67,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 syncEngineRef.current = null;
             };
         } else {
+            // Clear queued sync data so a future sign-in (possibly a different user)
+            // does not attempt to push stale list ids.
+            AsyncStorage.multiRemove([DIRTY_IDS_KEY, PENDING_DELETES_KEY]);
             syncEngineRef.current = null;
             setIsInitializing(false);
         }

@@ -176,6 +176,8 @@ export const HomeScreen = () => {
         handleDecrementQuantity={handleDecrementQuantity}
         onBack={goToLists}
         onShareList={() => openShareListModal(currentList.id)}
+        currentUserId={currentUserId}
+        goToLogin={goToLogin}
       />
       {/* We need to render the Modal here so it can overlay ShoppingListScreen too */}
       <ListsScreen

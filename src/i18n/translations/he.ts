@@ -224,4 +224,7 @@ export const he: Record<TranslationKey, string> = {
   'toast.setUpdated': '"{{name}}" עודכן.',
   'toast.setUpdatedGeneric': 'הסט עודכן.',
   'toast.setDeleted': 'הסט נמחק.',
+  'toast.itemsAdded': 'פריטים נוספו: {{count}}',
+  'toast.itemsRemoved': 'פריטים הוסרו: {{count}}',
+  'toast.signInRequired': 'יש להתחבר כדי להשתמש בתכונות AI.',
 };

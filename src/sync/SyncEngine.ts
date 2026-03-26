@@ -3,7 +3,7 @@ import { ShoppingList } from '../types';
 import { SupabaseApiClient } from './SupabaseApiClient';
 import { LocalStorageProvider } from '../storage';
 
-const DIRTY_IDS_KEY = '@sync_dirty_ids';
+export const DIRTY_IDS_KEY = '@sync_dirty_ids';
 export const PENDING_DELETES_KEY = '@sync_pending_deletes';
 const MAX_RETRY_DELAY = 30000;
 const INITIAL_RETRY_DELAY = 2000;
@@ -12,6 +12,7 @@ export class SyncEngine {
     private dirtyIds = new Set<string>();
     private pendingDeletes: string[] = [];
     private isMergingRemote = false;
+    private lastSavedUpdatedAt = new Map<string, number>();
     private retryTimer: ReturnType<typeof setTimeout> | null = null;
     private retryDelay = INITIAL_RETRY_DELAY;
     private unsubRealtime?: () => void;
@@ -54,12 +55,14 @@ export class SyncEngine {
     async onLocalSave(lists: ShoppingList[]): Promise<void> {
         if (this.isMergingRemote) return;
 
-        // Determine which lists changed by comparing with what's in local storage
-        // Since we're called after save, all lists are candidates.
-        // Mark all lists as dirty (the push will handle deduplication)
         for (const list of lists) {
-            this.dirtyIds.add(list.id);
+            const lastAt = this.lastSavedUpdatedAt.get(list.id);
+            if (lastAt === undefined || list.updatedAt > lastAt) {
+                this.dirtyIds.add(list.id);
+            }
         }
+        this.lastSavedUpdatedAt = new Map(lists.map(l => [l.id, l.updatedAt]));
+
         await this.persistQueue();
         this.tryPush();
     }
@@ -94,11 +97,14 @@ export class SyncEngine {
             const merged = this.mergeLists(serverLists, localLists);
 
             this.isMergingRemote = true;
-            await LocalStorageProvider.saveLists(merged);
-            this.onRemoteUpdate(merged);
-            this.isMergingRemote = false;
+            try {
+                await LocalStorageProvider.saveLists(merged);
+                this.lastSavedUpdatedAt = new Map(merged.map(l => [l.id, l.updatedAt]));
+                this.onRemoteUpdate(merged);
+            } finally {
+                this.isMergingRemote = false;
+            }
         } catch (err) {
-            this.isMergingRemote = false;
             console.warn('SyncEngine: post-join sync failed', err);
         }
     }
@@ -113,9 +119,13 @@ export class SyncEngine {
             .filter(l => !pendingDeleteSet.has(l.id));
 
         this.isMergingRemote = true;
-        await LocalStorageProvider.saveLists(merged);
-        this.onRemoteUpdate(merged);
-        this.isMergingRemote = false;
+        try {
+            await LocalStorageProvider.saveLists(merged);
+            this.lastSavedUpdatedAt = new Map(merged.map(l => [l.id, l.updatedAt]));
+            this.onRemoteUpdate(merged);
+        } finally {
+            this.isMergingRemote = false;
+        }
 
         // Reset retry delay on successful sync
         this.retryDelay = INITIAL_RETRY_DELAY;
@@ -231,11 +241,14 @@ export class SyncEngine {
             const merged = this.mergeLists(serverLists, localLists);
 
             this.isMergingRemote = true;
-            await LocalStorageProvider.saveLists(merged);
-            this.onRemoteUpdate(merged);
-            this.isMergingRemote = false;
+            try {
+                await LocalStorageProvider.saveLists(merged);
+                this.lastSavedUpdatedAt = new Map(merged.map(l => [l.id, l.updatedAt]));
+                this.onRemoteUpdate(merged);
+            } finally {
+                this.isMergingRemote = false;
+            }
         } catch (err) {
-            this.isMergingRemote = false;
             console.warn('SyncEngine: realtime refetch failed', err);
         }
     }

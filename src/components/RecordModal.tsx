@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Linking, Modal, NativeModules, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Animated, Linking, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
-import { useToast } from '../context/ToastContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAppStyles } from '../styles/appStyles';
 import { parseTranscript } from '../utils/itemParser';
@@ -13,14 +12,14 @@ const SILENCE_TIMEOUT_MS = 10000;
 const SILENCE_CHECK_INTERVAL_MS = 500;
 
 // expo-speech-recognition requires a dev build — not available in Expo Go
-const hasNativeModule = !!NativeModules.ExpoSpeechRecognition;
-
 let expoSpeechModule: any = null;
 async function getExpoSpeechModule() {
-  if (!hasNativeModule) return null;
   if (expoSpeechModule) return expoSpeechModule;
   try {
-    expoSpeechModule = await import('expo-speech-recognition');
+    const mod = await import('expo-speech-recognition');
+    // Verify the native module is actually linked (not just JS shim)
+    if (!mod.ExpoSpeechRecognitionModule?.requestPermissionsAsync) return null;
+    expoSpeechModule = mod;
     return expoSpeechModule;
   } catch {
     return null;
@@ -36,10 +35,10 @@ type RecordModalProps = {
 export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
   const { theme } = useTheme();
   const { t } = useLocale();
-  const { showToast } = useToast();
   const { preferences } = usePreferences();
   const styles = useAppStyles();
-  const showTextInput = preferences.parserDevMode;
+  const [useTextFallback, setUseTextFallback] = useState(false);
+  const showTextInput = preferences.parserDevMode || useTextFallback;
 
   const [isListening, setIsListening] = useState(false);
   const [items, setItems] = useState<{ name: string; quantity: number }[]>([]);
@@ -58,12 +57,13 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
       lastResultAtRef.current = Date.now();
       setItems([]);
       setDevInput('');
-      if (!showTextInput) startRecognition();
+      setUseTextFallback(false);
+      if (!preferences.parserDevMode) startRecognition();
     } else {
       stopEverything();
     }
     return () => stopEverything();
-  }, [visible, showTextInput]);
+  }, [visible]);
 
   useEffect(() => {
     if (isListening) {
@@ -84,8 +84,8 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
   const startRecognition = async () => {
     const mod = await getExpoSpeechModule();
     if (!mod) {
-      showToast(t('voiceRecord.micDenied'));
-      onClose();
+      // Native module not available (e.g. Expo Go) — fall back to text input
+      setUseTextFallback(true);
       return;
     }
 

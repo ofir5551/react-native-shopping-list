@@ -17,6 +17,7 @@ type CaretPopoverProps = {
   onRecord: () => void;
   onFromPhoto: () => void;
   onClose: () => void;
+  isSignedIn: boolean;
 };
 
 export const CaretPopover = ({
@@ -25,6 +26,7 @@ export const CaretPopover = ({
   onRecord,
   onFromPhoto,
   onClose,
+  isSignedIn,
 }: CaretPopoverProps) => {
   const { theme } = useTheme();
   const { t, isRTL } = useLocale();
@@ -38,9 +40,9 @@ export const CaretPopover = ({
 
   const actions: SpeedDialAction[] = [
     { icon: 'albums-outline', label: t('caret.savedSets'), onPress: onSavedSets },
-    { icon: 'sparkles-outline', label: t('caret.aiSuggestions'), onPress: onAiSuggestions },
     { icon: 'mic-outline', label: t('caret.record'), onPress: onRecord },
-    { icon: 'camera-outline', label: t('caret.fromPhoto'), onPress: onFromPhoto },
+    { icon: 'sparkles-outline', label: t('caret.aiSuggestions'), onPress: onAiSuggestions, disabled: !isSignedIn },
+    { icon: 'camera-outline', label: t('caret.fromPhoto'), onPress: onFromPhoto, disabled: !isSignedIn },
   ];
 
   useEffect(() => {
@@ -82,7 +84,6 @@ export const CaretPopover = ({
   };
 
   const handleAction = (action: SpeedDialAction) => {
-    if (action.disabled) return;
     const reverseAnims = [...actionAnims].reverse().map((anim, i) =>
       Animated.timing(anim, {
         toValue: 0,
@@ -136,7 +137,7 @@ export const CaretPopover = ({
         });
         const opacity = anim.interpolate({
           inputRange: [0, 0.4, 1],
-          outputRange: [0, 0.8, action.disabled ? 0.4 : 1],
+          outputRange: [0, 0.8, 1],
         });
 
         return (
@@ -154,26 +155,27 @@ export const CaretPopover = ({
             }}
           >
             {(() => {
+              const bgColor = action.disabled ? theme.colors.surfaceHighlight : theme.colors.surface;
               const label = (
                 <Animated.View
                   style={{
                     marginRight: 12,
-                    backgroundColor: theme.colors.surface,
+                    backgroundColor: bgColor,
                     paddingHorizontal: 12,
                     paddingVertical: 7,
                     borderRadius: 8,
                     shadowColor: '#000',
-                    shadowOpacity: 0.1,
+                    shadowOpacity: action.disabled ? 0 : 0.1,
                     shadowRadius: 6,
                     shadowOffset: { width: 0, height: 2 },
-                    elevation: 4,
+                    elevation: action.disabled ? 0 : 4,
                   }}
                 >
                   <Text
                     style={{
                       fontSize: 14,
                       fontFamily: theme.fonts.semibold,
-                      color: theme.colors.text,
+                      color: action.disabled ? theme.colors.textSecondary : theme.colors.text,
                     }}
                   >
                     {action.label}
@@ -183,19 +185,18 @@ export const CaretPopover = ({
               const iconBtn = (
                 <Pressable
                   onPress={() => handleAction(action)}
-                  disabled={action.disabled}
                   style={({ pressed }) => ({
                     width: 48,
                     height: 48,
                     borderRadius: 24,
-                    backgroundColor: theme.colors.surface,
+                    backgroundColor: bgColor,
                     alignItems: 'center',
                     justifyContent: 'center',
                     shadowColor: '#000',
-                    shadowOpacity: pressed ? 0.05 : 0.14,
+                    shadowOpacity: action.disabled ? 0 : pressed ? 0.05 : 0.14,
                     shadowRadius: pressed ? 4 : 8,
                     shadowOffset: { width: 0, height: pressed ? 1 : 3 },
-                    elevation: pressed ? 2 : 6,
+                    elevation: action.disabled ? 0 : pressed ? 2 : 6,
                     borderWidth: 1,
                     borderColor: theme.colors.border,
                     transform: [{ scale: pressed ? 0.92 : 1 }],

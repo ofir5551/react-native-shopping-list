@@ -352,6 +352,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
         updatedAt: timestamp,
         items: [],
         recents: [],
+        dismissedSuggestions: [],
       };
       setLists((current) => [newList, ...current]);
       closeListNameModal();
@@ -596,8 +597,8 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     closeOverlay();
 
     const parts: string[] = [];
-    if (newCount > 0) parts.push(`Items added to the list: ${newCount}`);
-    if (removedCount > 0) parts.push(`Items removed from the list: ${removedCount}`);
+    if (newCount > 0) parts.push(t('toast.itemsAdded', { count: newCount }));
+    if (removedCount > 0) parts.push(t('toast.itemsRemoved', { count: removedCount }));
     if (parts.length > 0) showToast(parts.join('\n'));
   };
 
