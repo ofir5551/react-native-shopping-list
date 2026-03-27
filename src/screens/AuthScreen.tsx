@@ -10,12 +10,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
+import { makeRedirectUri } from 'expo-auth-session';
+import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { useLocale } from '../i18n/LocaleContext';
 import { supabase } from '../supabase';
+
+WebBrowser.maybeCompleteAuthSession();
 
 type AuthScreenProps = {
     onBack: () => void;
@@ -44,7 +47,7 @@ export const AuthScreen = ({ onBack, onGoToLogin, onGoToSignup, onAuthSuccess }:
                 });
                 if (error) throw error;
             } else {
-                const redirectUrl = Linking.createURL('/');
+                const redirectUrl = makeRedirectUri();
                 const { data, error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: { redirectTo: redirectUrl, skipBrowserRedirect: true },
@@ -53,8 +56,11 @@ export const AuthScreen = ({ onBack, onGoToLogin, onGoToSignup, onAuthSuccess }:
                 if (data.url) {
                     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
                     if (result.type === 'success') {
-                        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
-                        if (exchangeError) throw exchangeError;
+                        const { params, errorCode } = QueryParams.getQueryParams(result.url);
+                        if (errorCode) throw new Error(errorCode);
+                        const { access_token, refresh_token } = params;
+                        const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+                        if (sessionError) throw sessionError;
                         showToast(t('login.signedIn'));
                         onAuthSuccess();
                     }
