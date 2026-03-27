@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, BackHandler, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useShoppingListsApp } from '../hooks/useShoppingListsApp';
+import { AuthScreen } from './AuthScreen';
 import { ListsScreen } from './ListsScreen';
 import { LoginScreen } from './LoginScreen';
 import { ShoppingListScreen } from './ShoppingListScreen';
@@ -22,6 +23,7 @@ export const HomeScreen = () => {
     openList,
     goToLists,
     goToSettings,
+    goToAuth,
     goToLogin,
     goToSignup,
     isListNameModalOpen,
@@ -102,16 +104,20 @@ export const HomeScreen = () => {
     );
   }
 
+  if (route.name === 'auth') {
+    return <AuthScreen onBack={goToSettings} onGoToLogin={goToLogin} onGoToSignup={goToSignup} onAuthSuccess={goToLists} />;
+  }
+
   if (route.name === 'login') {
-    return <LoginScreen onBack={goToSettings} onGoToSignup={goToSignup} onLoginSuccess={goToLists} />;
+    return <LoginScreen onBack={goToAuth} onGoToSignup={goToSignup} onLoginSuccess={goToLists} />;
   }
 
   if (route.name === 'signup') {
-    return <SignUpScreen onBack={goToSettings} onGoToLogin={goToLogin} onSignUpSuccess={goToSettings} onLoginSuccess={goToLists} />;
+    return <SignUpScreen onBack={goToAuth} onGoToLogin={goToLogin} onSignUpSuccess={goToSettings} />;
   }
 
   if (route.name === 'settings') {
-    return <SettingsScreen onBack={goToLists} onSignIn={goToLogin} />;
+    return <SettingsScreen onBack={goToLists} onSignIn={goToAuth} />;
   }
 
   if (route.name === 'lists' || !currentList) {

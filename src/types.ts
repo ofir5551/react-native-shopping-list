@@ -23,6 +23,7 @@ export type AppRoute =
   | { name: 'lists' }
   | { name: 'list'; listId: string }
   | { name: 'settings' }
+  | { name: 'auth' }
   | { name: 'login' }
   | { name: 'signup' };
 

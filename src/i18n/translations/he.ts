@@ -149,6 +149,13 @@ export const he: Record<TranslationKey, string> = {
   // Header
   'header.goBack': 'חזרה',
 
+  // Auth entry screen
+  'auth.title': 'ברוכים הבאים ל-Shoppy',
+  'auth.subtitle': 'סנכרנו ושתפו רשימות בכל המכשירים שלכם',
+  'auth.continueWithGoogle': 'המשך עם Google',
+  'auth.signInWithEmail': 'כניסה עם אימייל',
+  'auth.newAccount': 'יצירת חשבון',
+
   // Login screen
   'login.welcomeBack': 'ברוכים השבים',
   'login.signInSubtitle': 'התחברו כדי לסנכרן את הרשימות שלכם בכל המכשירים',

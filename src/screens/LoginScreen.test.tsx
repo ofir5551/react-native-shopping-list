@@ -14,7 +14,6 @@ jest.mock('../supabase', () => ({
   supabase: {
     auth: {
       signInWithPassword: jest.fn(),
-      signInWithOAuth: jest.fn(),
       resetPasswordForEmail: jest.fn(),
     },
   },
@@ -83,12 +82,8 @@ const defaultProps = {
   onLoginSuccess: jest.fn(),
 };
 
-// Helper to render and expand the email form
 function renderExpanded() {
-  const utils = render(<LoginScreen {...defaultProps} />);
-  // Tap "Continue with email" to reveal the form
-  fireEvent.press(utils.getByText('Continue with email'));
-  return utils;
+  return render(<LoginScreen {...defaultProps} />);
 }
 
 // ─── Validation tests ─────────────────────────────────────────────────────────
@@ -135,7 +130,6 @@ describe('LoginScreen validation', () => {
       <LoginScreen {...defaultProps} onLoginSuccess={onLoginSuccess} />,
     );
 
-    fireEvent.press(getByText('Continue with email'));
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'correctpassword');
     fireEvent.press(getByText('Sign In'));

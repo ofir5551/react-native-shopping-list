@@ -63,6 +63,7 @@ export type ShoppingListsAppState = {
   leaveList: (listId: string) => void;
   currentUserId: string | undefined;
   goToSettings: () => void;
+  goToAuth: () => void;
   goToLogin: () => void;
   goToSignup: () => void;
   handleQuickAddMultiple: (items: { name: string; quantity: number }[]) => void;
@@ -412,6 +413,10 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
 
   const goToSettings = () => {
     setRoute({ name: 'settings' });
+  };
+
+  const goToAuth = () => {
+    setRoute({ name: 'auth' });
   };
 
   const goToLogin = () => {
@@ -770,6 +775,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     leaveList,
     currentUserId,
     goToSettings,
+    goToAuth,
     goToLogin,
     goToSignup,
     handleQuickAddMultiple,

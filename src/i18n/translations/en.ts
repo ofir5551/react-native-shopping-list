@@ -147,6 +147,13 @@ export const en = {
   // Header
   'header.goBack': 'Go back',
 
+  // Auth entry screen
+  'auth.title': 'Welcome to Shoppy',
+  'auth.subtitle': 'Sync and share your lists across all your devices',
+  'auth.continueWithGoogle': 'Continue with Google',
+  'auth.signInWithEmail': 'Sign in with email',
+  'auth.newAccount': 'Create account',
+
   // Login screen
   'login.welcomeBack': 'Welcome Back',
   'login.signInSubtitle': 'Sign in to sync your lists across all your devices',
