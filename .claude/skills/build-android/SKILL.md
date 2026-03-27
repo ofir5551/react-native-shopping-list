@@ -57,11 +57,20 @@ Use when EAS monthly builds are depleted or the user explicitly passes `local`.
 - `adb devices` reachable (add platform-tools to PATH if needed)
 
 **Run the local build**:
+```bash
+npm run build:android
 ```
-npx expo run:android --variant release
+
+**After a successful build**, move the APK to a `builds/` folder in the project root with a timestamped name:
+```bash
+mkdir -p /c/Users/ofirb/dev/shopping-list/builds
+TIMESTAMP=$(date +%y-%m-%d-%H-%M)
+mv android/app/build/outputs/apk/release/app-release.apk /c/Users/ofirb/dev/shopping-list/builds/Shoppy${TIMESTAMP}.apk
 ```
 
 **Report the result**:
-- State where the APK was output (typically `android/app/build/outputs/apk/release/app-release.apk`)
+- Final APK path: `builds/Shoppy<YY-MM-DD-HH-MM>.apk`
+- File size
 - Remind the user to enable "Install from unknown sources" before sideloading
 - If the build fails due to missing SDK/NDK components, suggest running `npx expo install --fix` first
+- To install directly to a connected device: `adb install builds/Shoppy<timestamp>.apk`
