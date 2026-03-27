@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
+  KeyboardAvoidingView,
   Modal,
   Pressable,
   Text,
@@ -321,6 +322,7 @@ export const ShoppingListScreen = ({
         onRequestClose={() => setIsSuggestPromptOpen(false)}
         onShow={() => setTimeout(() => suggestInputRef.current?.focus(), 100)}
       >
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <View style={styles.modalContainer}>
           <Pressable style={styles.modalBackdrop} onPress={() => setIsSuggestPromptOpen(false)} />
           <View style={[styles.modalPanel, { height: 'auto', maxHeight: 260 }]}>
@@ -359,6 +361,7 @@ export const ShoppingListScreen = ({
             </View>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Smart Suggestions results modal */}
@@ -477,6 +480,7 @@ export const ShoppingListScreen = ({
         onRequestClose={() => setIsNewSetPromptOpen(false)}
         onShow={() => setTimeout(() => newSetInputRef.current?.focus(), 100)}
       >
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <View style={styles.modalContainer}>
           <Pressable style={styles.modalBackdrop} onPress={() => setIsNewSetPromptOpen(false)} />
           <View style={[styles.modalPanel, { height: 'auto', maxHeight: 220 }]}>
@@ -523,6 +527,7 @@ export const ShoppingListScreen = ({
             </View>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Confirm dialog */}
