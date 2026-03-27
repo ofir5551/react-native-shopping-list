@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -45,20 +46,43 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess }: SignUpScr
     const [isLoading, setIsLoading] = useState(false);
     const [authError, setAuthError] = useState<AuthError>(null);
 
-    const pickAvatar = async () => {
+    const launchLibrary = async () => {
         const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permission.granted) return;
-
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: 'images',
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.8,
         });
-
         if (!result.canceled && result.assets[0]) {
             setAvatarUri(result.assets[0].uri);
         }
+    };
+
+    const launchCamera = async () => {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permission.granted) return;
+        const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+        if (!result.canceled && result.assets[0]) {
+            setAvatarUri(result.assets[0].uri);
+        }
+    };
+
+    const pickAvatar = () => {
+        Alert.alert(
+            t('signup.photoSourceTitle'),
+            undefined,
+            [
+                { text: t('signup.takePhoto'), onPress: launchCamera },
+                { text: t('signup.chooseFromLibrary'), onPress: launchLibrary },
+                { text: t('common.cancel'), style: 'cancel' },
+            ],
+        );
     };
 
     const uploadAvatar = async (userId: string, uri: string): Promise<string | null> => {
