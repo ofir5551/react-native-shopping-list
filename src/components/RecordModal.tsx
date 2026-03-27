@@ -46,6 +46,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
 
   const committedRef = useRef('');
   const processedFinalTranscriptsRef = useRef<Set<string>>(new Set());
+  const removedItemNamesRef = useRef<Set<string>>(new Set());
   const lastResultAtRef = useRef(Date.now());
   const silenceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -58,6 +59,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
     if (visible) {
       committedRef.current = '';
       processedFinalTranscriptsRef.current = new Set();
+      removedItemNamesRef.current = new Set();
       lastResultAtRef.current = Date.now();
       setItems([]);
       setDevInput('');
@@ -131,6 +133,12 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
     recognition.lang = 'en-US';
     recognition.interimResults = true;
     recognition.continuous = true;
+    // Reduce silence threshold so rapid consecutive items segment faster
+    recognition.androidIntentOptions = {
+      EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: preferences.silenceCompleteMs,
+      EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: preferences.silencePossiblyCompleteMs,
+    };
+    (recognition as any).iosTaskHint = 'search';
     recognitionRef.current = recognition;
 
     recognition.onstart = () => setIsListening(true);
@@ -161,7 +169,9 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
       const full = interim
         ? (committed ? `${committed}, ${interim}` : interim)
         : committed;
-      setItems(parseTranscript(full));
+      setItems(parseTranscript(full).filter(
+        (item) => !removedItemNamesRef.current.has(item.name.toLowerCase())
+      ));
     };
 
     recognition.start();
@@ -200,7 +210,10 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
 
   const handleRemoveItem = (index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    setItems((prev) => prev.filter((_, i) => i !== index));
+    setItems((prev) => {
+      removedItemNamesRef.current.add(prev[index].name.toLowerCase());
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handleAdd = () => {

@@ -26,6 +26,10 @@ export const en = {
   'settings.termsOfService': 'Terms of Service',
   'settings.restartTitle': 'Restart required',
   'settings.restartMessage': 'Please restart the app for the language change to take full effect.',
+  'settings.developerOptions': 'Developer Options',
+  'settings.silenceCompleteMs': 'Complete silence threshold (Android)',
+  'settings.silencePossiblyCompleteMs': 'Possibly-complete silence threshold (Android)',
+  'settings.resetDefaults': 'Reset to defaults',
 
   // Lists screen
   'lists.title': 'Lists',

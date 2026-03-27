@@ -6,16 +6,21 @@ const PREFS_STORAGE_KEY = '@shopping-list/preferences';
 type Preferences = {
     autoFocusKeyboard: boolean;
     parserDevMode: boolean;
+    silenceCompleteMs: number;
+    silencePossiblyCompleteMs: number;
 };
 
 const DEFAULT_PREFS: Preferences = {
     autoFocusKeyboard: true,
     parserDevMode: false,
+    silenceCompleteMs: 500,
+    silencePossiblyCompleteMs: 300,
 };
 
 type PreferencesContextType = {
     preferences: Preferences;
     setPreference: <K extends keyof Preferences>(key: K, value: Preferences[K]) => void;
+    resetPreferences: () => void;
 };
 
 const PreferencesContext = createContext<PreferencesContextType | undefined>(undefined);
@@ -47,8 +52,17 @@ export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
     };
 
+    const resetPreferences = async () => {
+        setPreferences(DEFAULT_PREFS);
+        try {
+            await AsyncStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(DEFAULT_PREFS));
+        } catch (error) {
+            console.warn('Failed to reset preferences', error);
+        }
+    };
+
     return (
-        <PreferencesContext.Provider value={{ preferences, setPreference }}>
+        <PreferencesContext.Provider value={{ preferences, setPreference, resetPreferences }}>
             {children}
         </PreferencesContext.Provider>
     );

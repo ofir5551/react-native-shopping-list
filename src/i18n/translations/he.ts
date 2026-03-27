@@ -28,6 +28,10 @@ export const he: Record<TranslationKey, string> = {
   'settings.termsOfService': 'תנאי שימוש',
   'settings.restartTitle': 'נדרשת הפעלה מחדש',
   'settings.restartMessage': 'אנא הפעל מחדש את האפליקציה כדי שהשינוי בשפה ייכנס לתוקף.',
+  'settings.developerOptions': 'אפשרויות מפתח',
+  'settings.silenceCompleteMs': 'סף שתיקה מלאה (Android)',
+  'settings.silencePossiblyCompleteMs': 'סף שתיקה אפשרית (Android)',
+  'settings.resetDefaults': 'איפוס לברירות מחדל',
 
   // Lists screen
   'lists.title': 'רשימות',

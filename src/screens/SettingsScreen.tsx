@@ -26,7 +26,7 @@ type SettingsScreenProps = {
 export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
     const styles = useAppStyles();
     const { theme, isDark, setThemeType } = useTheme();
-    const { preferences, setPreference } = usePreferences();
+    const { preferences, setPreference, resetPreferences } = usePreferences();
     const { user } = useAuth();
     const { t, locale, setLocale, isRTL } = useLocale();
     const [isToSOpen, setIsToSOpen] = useState(false);
@@ -76,26 +76,6 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                             onValueChange={toggleTheme}
                             trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
                             thumbColor={isDark ? theme.colors.primaryText : '#f4f3f4'}
-                            ios_backgroundColor={theme.colors.surfaceHighlight}
-                        />
-                    </View>
-                    <View style={styles.settingsRow}>
-                        <Text style={styles.settingsLabel}>{t('settings.autoFocusKeyboard')}</Text>
-                        <Switch
-                            value={preferences.autoFocusKeyboard}
-                            onValueChange={(value) => setPreference('autoFocusKeyboard', value)}
-                            trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
-                            thumbColor={preferences.autoFocusKeyboard ? theme.colors.primaryText : '#f4f3f4'}
-                            ios_backgroundColor={theme.colors.surfaceHighlight}
-                        />
-                    </View>
-                    <View style={styles.settingsRow}>
-                        <Text style={styles.settingsLabel}>{t('settings.parserDevMode')}</Text>
-                        <Switch
-                            value={preferences.parserDevMode}
-                            onValueChange={(value) => setPreference('parserDevMode', value)}
-                            trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
-                            thumbColor={preferences.parserDevMode ? theme.colors.primaryText : '#f4f3f4'}
                             ios_backgroundColor={theme.colors.surfaceHighlight}
                         />
                     </View>
@@ -174,6 +154,76 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                             </Pressable>
                         </View>
                     )}
+                </View>
+
+                <View style={styles.settingsSection}>
+                    <Text style={styles.settingsSectionTitle}>{t('settings.developerOptions')}</Text>
+                    <View style={styles.settingsRow}>
+                        <Text style={styles.settingsLabel}>{t('settings.autoFocusKeyboard')}</Text>
+                        <Switch
+                            value={preferences.autoFocusKeyboard}
+                            onValueChange={(value) => setPreference('autoFocusKeyboard', value)}
+                            trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
+                            thumbColor={preferences.autoFocusKeyboard ? theme.colors.primaryText : '#f4f3f4'}
+                            ios_backgroundColor={theme.colors.surfaceHighlight}
+                        />
+                    </View>
+                    <View style={styles.settingsRow}>
+                        <Text style={styles.settingsLabel}>{t('settings.parserDevMode')}</Text>
+                        <Switch
+                            value={preferences.parserDevMode}
+                            onValueChange={(value) => setPreference('parserDevMode', value)}
+                            trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
+                            thumbColor={preferences.parserDevMode ? theme.colors.primaryText : '#f4f3f4'}
+                            ios_backgroundColor={theme.colors.surfaceHighlight}
+                        />
+                    </View>
+                    {(
+                        [
+                            { key: 'silenceCompleteMs', label: t('settings.silenceCompleteMs'), min: 200, max: 2000, step: 100 },
+                            { key: 'silencePossiblyCompleteMs', label: t('settings.silencePossiblyCompleteMs'), min: 100, max: 1000, step: 100 },
+                        ] as const
+                    ).map(({ key, label, min, max, step }) => (
+                        <View key={key} style={styles.settingsRow}>
+                            <Text style={[styles.settingsLabel, { flex: 1 }]}>{label}</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Pressable
+                                    onPress={() => setPreference(key, Math.max(min, preferences[key] - step))}
+                                    style={({ pressed }) => ({
+                                        width: 28, height: 28, borderRadius: 14,
+                                        backgroundColor: theme.colors.surfaceHighlight,
+                                        alignItems: 'center', justifyContent: 'center',
+                                        opacity: pressed ? 0.6 : 1,
+                                    })}
+                                    accessibilityRole="button"
+                                >
+                                    <Ionicons name="remove" size={16} color={theme.colors.text} />
+                                </Pressable>
+                                <Text style={{ fontSize: 13, fontFamily: theme.fonts.medium, color: theme.colors.text, minWidth: 44, textAlign: 'center' }}>
+                                    {preferences[key]}ms
+                                </Text>
+                                <Pressable
+                                    onPress={() => setPreference(key, Math.min(max, preferences[key] + step))}
+                                    style={({ pressed }) => ({
+                                        width: 28, height: 28, borderRadius: 14,
+                                        backgroundColor: theme.colors.surfaceHighlight,
+                                        alignItems: 'center', justifyContent: 'center',
+                                        opacity: pressed ? 0.6 : 1,
+                                    })}
+                                    accessibilityRole="button"
+                                >
+                                    <Ionicons name="add" size={16} color={theme.colors.text} />
+                                </Pressable>
+                            </View>
+                        </View>
+                    ))}
+                    <Pressable
+                        style={[styles.settingsRow, styles.settingsRowLast]}
+                        onPress={resetPreferences}
+                        accessibilityRole="button"
+                    >
+                        <Text style={[styles.settingsLabel, { color: theme.colors.danger }]}>{t('settings.resetDefaults')}</Text>
+                    </Pressable>
                 </View>
 
                 <View style={styles.settingsSection}>
