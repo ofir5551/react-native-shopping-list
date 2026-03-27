@@ -45,7 +45,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
   const [devInput, setDevInput] = useState('');
 
   const committedRef = useRef('');
-  const processedFinalCountRef = useRef(0);
+  const processedFinalTranscriptsRef = useRef<Set<string>>(new Set());
   const lastResultAtRef = useRef(Date.now());
   const silenceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -57,7 +57,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
   useEffect(() => {
     if (visible) {
       committedRef.current = '';
-      processedFinalCountRef.current = 0;
+      processedFinalTranscriptsRef.current = new Set();
       lastResultAtRef.current = Date.now();
       setItems([]);
       setDevInput('');
@@ -139,24 +139,24 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
     recognition.onresult = (event: any) => {
       lastResultAtRef.current = Date.now();
       let interim = '';
-      // Only process final results we haven't seen yet to avoid
-      // double-counting on platforms that keep all results in the list,
-      // while also surviving platforms that reset the list after a pause.
-      let finalCount = 0;
+      // Dedup by transcript text so that:
+      // - platforms that accumulate all results don't double-count previously seen finals
+      // - platforms that reset the results array after each phrase (e.g. Android) still
+      //   pick up new finals even when the array index resets back to 0
       for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          finalCount++;
-          if (finalCount > processedFinalCountRef.current) {
+          const transcript = result[0].transcript;
+          if (!processedFinalTranscriptsRef.current.has(transcript)) {
+            processedFinalTranscriptsRef.current.add(transcript);
             committedRef.current = committedRef.current
-              ? `${committedRef.current}, ${result[0].transcript}`
-              : result[0].transcript;
+              ? `${committedRef.current}, ${transcript}`
+              : transcript;
           }
         } else {
           interim = result[0].transcript;
         }
       }
-      processedFinalCountRef.current = Math.max(processedFinalCountRef.current, finalCount);
       const committed = committedRef.current;
       const full = interim
         ? (committed ? `${committed}, ${interim}` : interim)
