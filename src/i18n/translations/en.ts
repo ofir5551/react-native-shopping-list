@@ -111,6 +111,13 @@ export const en = {
   'caret.aiSuggestions': 'AI Suggestions',
   'caret.record': 'Record',
   'caret.fromPhoto': 'From Photo',
+  'caret.addFromOtherLists': 'Add from other lists',
+
+  // Add from other lists modal
+  'addFromOtherLists.selectAll': 'Select All',
+  'addFromOtherLists.unselectAll': 'Unselect All',
+  'addFromOtherLists.addCount': 'Add {{count}} to List',
+  'addFromOtherLists.noItems': 'No unchecked items in other lists',
 
   // Smart suggestions modal
   'smartSuggestions.title': 'Smart Suggestions',

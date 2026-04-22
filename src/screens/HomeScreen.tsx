@@ -180,6 +180,7 @@ export const HomeScreen = () => {
         handleClearAll={handleClearAll}
         handleIncrementQuantity={handleIncrementQuantity}
         handleDecrementQuantity={handleDecrementQuantity}
+        allLists={lists}
         onBack={goToLists}
         onShareList={() => openShareListModal(currentList.id)}
         currentUserId={currentUserId}

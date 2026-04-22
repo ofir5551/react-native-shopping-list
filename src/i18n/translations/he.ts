@@ -113,6 +113,13 @@ export const he: Record<TranslationKey, string> = {
   'caret.aiSuggestions': 'הצעות AI',
   'caret.record': 'הקלטה',
   'caret.fromPhoto': 'מתמונה',
+  'caret.addFromOtherLists': 'הוסף מרשימות אחרות',
+
+  // Add from other lists modal
+  'addFromOtherLists.selectAll': 'בחר הכול',
+  'addFromOtherLists.unselectAll': 'בטל בחירת הכול',
+  'addFromOtherLists.addCount': 'הוסף {{count}} לרשימה',
+  'addFromOtherLists.noItems': 'אין פריטים לא מסומנים ברשימות אחרות',
 
   // Smart suggestions modal
   'smartSuggestions.title': 'הצעות חכמות',
