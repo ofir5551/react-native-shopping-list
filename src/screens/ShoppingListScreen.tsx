@@ -25,7 +25,8 @@ import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
 import { useToast } from '../context/ToastContext';
-import { SavedSet, SavedSetItem, ShoppingItem, SelectedRecentItem } from '../types';
+import { SavedSet, SavedSetItem, ShoppingItem, ShoppingList, SelectedRecentItem } from '../types';
+import { AddFromOtherListsModal } from '../components/AddFromOtherListsModal';
 
 type ShoppingListScreenProps = {
   listId: string;
@@ -60,6 +61,7 @@ type ShoppingListScreenProps = {
   handleClearAll: () => void;
   handleIncrementQuantity: (id: string) => void;
   handleDecrementQuantity: (id: string) => void;
+  allLists: ShoppingList[];
   onBack: () => void;
   onShareList: () => void;
   currentUserId: string | undefined;
@@ -99,6 +101,7 @@ export const ShoppingListScreen = ({
   handleClearAll,
   handleIncrementQuantity,
   handleDecrementQuantity,
+  allLists,
   onBack,
   onShareList,
   currentUserId,
@@ -129,6 +132,9 @@ export const ShoppingListScreen = ({
 
   // Photo modal state
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+
+  // Add from other lists modal state
+  const [isAddFromOtherListsOpen, setIsAddFromOtherListsOpen] = useState(false);
 
   // Saved Sets state
   const [isSavedSetsListOpen, setIsSavedSetsListOpen] = useState(false);
@@ -298,6 +304,10 @@ export const ShoppingListScreen = ({
           onFromPhoto={() => {
             // MVP: available to guests; re-add auth check here when restricting to signed-in users only
             setIsPhotoModalOpen(true);
+          }}
+          onAddFromOtherLists={() => {
+            setIsCaretOpen(false);
+            setIsAddFromOtherListsOpen(true);
           }}
           onClose={() => setIsCaretOpen(false)}
         />
@@ -595,6 +605,19 @@ export const ShoppingListScreen = ({
           handleQuickAddMultiple(items);
           setIsPhotoModalOpen(false);
         }}
+      />
+
+      {/* Add from other lists modal */}
+      <AddFromOtherListsModal
+        visible={isAddFromOtherListsOpen}
+        currentListId={listId}
+        currentListItems={[...activeItems, ...completedItems]}
+        allLists={allLists}
+        onAdd={(items) => {
+          handleQuickAddMultiple(items);
+          setIsAddFromOtherListsOpen(false);
+        }}
+        onClose={() => setIsAddFromOtherListsOpen(false)}
       />
 
       <StatusBar style={isDark ? 'light' : 'dark'} />
