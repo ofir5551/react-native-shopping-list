@@ -25,7 +25,7 @@ import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
 import { useToast } from '../context/ToastContext';
-import { SavedSet, SavedSetItem, ShoppingItem, ShoppingList, SelectedRecentItem } from '../types';
+import { SavedSet, SavedSetItem, ShoppingItem, ShoppingList as ShoppingListType, SelectedRecentItem } from '../types';
 import { AddFromOtherListsModal } from '../components/AddFromOtherListsModal';
 
 type ShoppingListScreenProps = {
@@ -61,7 +61,7 @@ type ShoppingListScreenProps = {
   handleClearAll: () => void;
   handleIncrementQuantity: (id: string) => void;
   handleDecrementQuantity: (id: string) => void;
-  allLists: ShoppingList[];
+  allLists: ShoppingListType[];
   onBack: () => void;
   onShareList: () => void;
   currentUserId: string | undefined;
