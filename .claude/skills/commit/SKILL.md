@@ -20,14 +20,16 @@ description: Stage relevant changes, write a high-quality conventional commit me
    - Types: `feat`, `fix`, `refactor`, `style`, `chore`, `docs`
    - Scope examples: `storage`, `sharing`, `ui`, `auth`, `supabase`
 
-4. **Commit and push**:
+4. **Show the proposed commit message and staged files to the user. Stop and wait for explicit approval before proceeding.** Do not commit or push until the user confirms.
+
+5. **Only after approval — Commit and push**:
    ```
    git commit -m "type(scope): description"
    git push
    ```
    - **Never** add `Co-Authored-By` or any trailer lines to the commit message.
 
-5. **Report**:
+6. **Report**:
    - Commit hash and branch
    - One-line summary of what was committed
    - Any push errors (auth, upstream mismatch) with next required command
