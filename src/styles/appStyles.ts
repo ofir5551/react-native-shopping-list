@@ -288,7 +288,7 @@ export const useAppStyles = () => {
         fontSize: 14,
         fontFamily: theme.fonts.semibold,
         color: theme.colors.text,
-        minWidth: 18,
+        width: 30,
         textAlign: 'center',
       },
       modalContainer: {

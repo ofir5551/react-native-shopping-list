@@ -1,6 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/expo/expo/sdk-54/docs/public/static/schemas/unversioned/app-config-schema.json",
   "expo": {
+    "$schema": "https://raw.githubusercontent.com/expo/expo/sdk-54/docs/public/static/schemas/unversioned/app-config-schema.json",
     "name": "Shoppy",
     "slug": "shopping-list",
     "scheme": "shopping-list",
