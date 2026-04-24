@@ -3,11 +3,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PREFS_STORAGE_KEY = '@shopping-list/preferences';
 
+export type ListViewMode = 'compact' | 'normal' | 'wide';
+
 type Preferences = {
     autoFocusKeyboard: boolean;
     parserDevMode: boolean;
     silenceCompleteMs: number;
     silencePossiblyCompleteMs: number;
+    listViewMode: ListViewMode;
 };
 
 const DEFAULT_PREFS: Preferences = {
@@ -15,6 +18,7 @@ const DEFAULT_PREFS: Preferences = {
     parserDevMode: false,
     silenceCompleteMs: 500,
     silencePossiblyCompleteMs: 300,
+    listViewMode: 'wide',
 };
 
 type PreferencesContextType = {

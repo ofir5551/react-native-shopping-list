@@ -1,11 +1,19 @@
 import { StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
+import { usePreferences } from '../context/PreferencesContext';
 import { useMemo } from 'react';
 
 export const useAppStyles = () => {
   const { theme } = useTheme();
   const { isRTL } = useLocale();
+  const { preferences } = usePreferences();
+
+  const density = {
+    wide:    { paddingVertical: 12, fontSize: 17, checkboxSize: 24, qBtnMin: 36 },
+    normal:  { paddingVertical: 8,  fontSize: 16, checkboxSize: 22, qBtnMin: 32 },
+    compact: { paddingVertical: 5,  fontSize: 14, checkboxSize: 20, qBtnMin: 28 },
+  }[preferences.listViewMode];
 
   return useMemo(() => {
     return StyleSheet.create({
@@ -216,7 +224,7 @@ export const useAppStyles = () => {
         backgroundColor: theme.colors.surface,
         borderRadius: 12,
         paddingHorizontal: 12,
-        paddingVertical: 12,
+        paddingVertical: density.paddingVertical,
         marginBottom: 5,
         shadowColor: '#000',
         shadowOpacity: 0.07,
@@ -225,8 +233,8 @@ export const useAppStyles = () => {
         elevation: 1,
       },
       checkbox: {
-        width: 24,
-        height: 24,
+        width: density.checkboxSize,
+        height: density.checkboxSize,
         borderRadius: 7,
         borderWidth: 2,
         borderColor: theme.colors.primary,
@@ -246,7 +254,7 @@ export const useAppStyles = () => {
         flex: 1,
       },
       itemText: {
-        fontSize: 17,
+        fontSize: density.fontSize,
         fontFamily: theme.fonts.medium,
         color: theme.colors.text,
       },
@@ -269,8 +277,8 @@ export const useAppStyles = () => {
         paddingVertical: 1,
       },
       quantityButton: {
-        minWidth: 36,
-        minHeight: 36,
+        minWidth: density.qBtnMin,
+        minHeight: density.qBtnMin,
         alignItems: 'center' as const,
         justifyContent: 'center' as const,
         paddingHorizontal: 6,
@@ -701,5 +709,5 @@ export const useAppStyles = () => {
         color: theme.colors.primary,
       },
     });
-  }, [theme, isRTL]);
+  }, [theme, isRTL, density]);
 };

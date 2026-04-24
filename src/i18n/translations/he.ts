@@ -34,6 +34,10 @@ export const he: Record<TranslationKey, string> = {
   'settings.silenceCompleteMs': 'סף שתיקה מלאה (Android)',
   'settings.silencePossiblyCompleteMs': 'סף שתיקה אפשרית (Android)',
   'settings.resetDefaults': 'איפוס לברירות מחדל',
+  'settings.listView': 'תצוגת רשימה',
+  'settings.listView.compact': 'צפוף',
+  'settings.listView.normal': 'רגיל',
+  'settings.listView.wide': 'רחב',
 
   // Lists screen
   'lists.title': 'רשימות',

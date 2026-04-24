@@ -28,6 +28,7 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
     const styles = useAppStyles();
     const { theme, isDark, setThemeType } = useTheme();
     const { preferences, setPreference, resetPreferences } = usePreferences();
+    const listViewModes = ['compact', 'normal', 'wide'] as const;
     const { user } = useAuth();
     const { t, locale, setLocale, isRTL } = useLocale();
     const [isToSOpen, setIsToSOpen] = useState(false);
@@ -96,6 +97,37 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                             thumbColor={isDark ? theme.colors.primaryText : '#f4f3f4'}
                             ios_backgroundColor={theme.colors.surfaceHighlight}
                         />
+                    </View>
+                    <View style={styles.settingsRow}>
+                        <Text style={styles.settingsLabel}>{t('settings.listView')}</Text>
+                        <View style={{ flexDirection: 'row', gap: 6 }}>
+                            {listViewModes.map((mode) => {
+                                const isActive = preferences.listViewMode === mode;
+                                return (
+                                    <Pressable
+                                        key={mode}
+                                        onPress={() => setPreference('listViewMode', mode)}
+                                        style={({ pressed }) => ({
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 6,
+                                            borderRadius: 8,
+                                            backgroundColor: isActive ? theme.colors.primary : theme.colors.surfaceHighlight,
+                                            opacity: pressed ? 0.7 : 1,
+                                        })}
+                                        accessibilityRole="button"
+                                        accessibilityState={{ selected: isActive }}
+                                    >
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: theme.fonts.medium,
+                                            color: isActive ? theme.colors.primaryText : theme.colors.textSecondary,
+                                        }}>
+                                            {t(`settings.listView.${mode}`)}
+                                        </Text>
+                                    </Pressable>
+                                );
+                            })}
+                        </View>
                     </View>
                     <View style={[styles.settingsRow, styles.settingsRowLast]}>
                         <Text style={styles.settingsLabel}>{t('settings.language')}</Text>

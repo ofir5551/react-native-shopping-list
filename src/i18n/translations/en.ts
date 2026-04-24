@@ -32,6 +32,10 @@ export const en = {
   'settings.silenceCompleteMs': 'Complete silence threshold (Android)',
   'settings.silencePossiblyCompleteMs': 'Possibly-complete silence threshold (Android)',
   'settings.resetDefaults': 'Reset to defaults',
+  'settings.listView': 'List View',
+  'settings.listView.compact': 'Compact',
+  'settings.listView.normal': 'Normal',
+  'settings.listView.wide': 'Wide',
 
   // Lists screen
   'lists.title': 'Lists',
