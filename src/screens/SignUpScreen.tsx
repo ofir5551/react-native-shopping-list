@@ -19,6 +19,7 @@ import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { useLocale } from '../i18n/LocaleContext';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
 
 type AuthError = {
@@ -37,6 +38,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess }: SignUpScr
     const { theme, isDark } = useTheme();
     const { showToast } = useToast();
     const { t, isRTL } = useLocale();
+    const { user } = useAuth();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -124,22 +126,42 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess }: SignUpScr
         }
 
         setIsLoading(true);
-        const { data, error } = await supabase.auth.signUp({
-            email: email.trim(),
-            password,
-            options: { data: { display_name: name.trim() } },
-        });
 
-        if (error) {
-            setIsLoading(false);
-            setAuthError({ field: 'general', message: error.message });
-            return;
+        // When the user is anonymous, convert the existing anonymous account to a
+        // permanent one using updateUser(). This preserves the user ID so that any
+        // locally-created lists (ownerId = anonymous user.id) remain valid after sign-up.
+        // Falls back to signUp() only if anonymous sign-in previously failed (user is null).
+        let userId: string | undefined;
+        if (user?.is_anonymous) {
+            const { data, error } = await supabase.auth.updateUser({
+                email: email.trim(),
+                password,
+                data: { display_name: name.trim() },
+            });
+            if (error) {
+                setIsLoading(false);
+                setAuthError({ field: 'general', message: error.message });
+                return;
+            }
+            userId = data.user?.id;
+        } else {
+            const { data, error } = await supabase.auth.signUp({
+                email: email.trim(),
+                password,
+                options: { data: { display_name: name.trim() } },
+            });
+            if (error) {
+                setIsLoading(false);
+                setAuthError({ field: 'general', message: error.message });
+                return;
+            }
+            userId = data.user?.id;
         }
 
         // Upload avatar if selected (best-effort: silently skipped on failure)
-        if (data.user && avatarUri) {
+        if (userId && avatarUri) {
             try {
-                const avatarUrl = await uploadAvatar(data.user.id, avatarUri);
+                const avatarUrl = await uploadAvatar(userId, avatarUri);
                 if (avatarUrl) {
                     await supabase.auth.updateUser({ data: { avatar_url: avatarUrl } });
                 }
