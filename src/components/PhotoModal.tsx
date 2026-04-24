@@ -76,14 +76,18 @@ export const PhotoModal = ({ visible, onClose, onAdd, onSignUp }: PhotoModalProp
             });
 
             if (fnError) {
-                try {
-                    const body = await (fnError as any).context?.json?.();
-                    if (body?.error === 'rate_limit_exceeded') {
-                        setRateLimit({ isAnonymous: body.isAnonymous ?? false, limit: body.limit ?? 5 });
-                        setState('rate_limit');
-                        return;
-                    }
-                } catch {}
+                let errorBody: any = data;
+                if (!errorBody) {
+                    try {
+                        const ctx = (fnError as any).context;
+                        if (ctx) errorBody = await ctx.json();
+                    } catch {}
+                }
+                if (errorBody?.error === 'rate_limit_exceeded') {
+                    setRateLimit({ isAnonymous: errorBody.isAnonymous ?? false, limit: errorBody.limit ?? 5 });
+                    setState('rate_limit');
+                    return;
+                }
                 throw new Error(fnError.message || 'Failed to parse photo');
             }
 
