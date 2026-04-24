@@ -22,5 +22,8 @@
       "Write(.env)",
       "Write(.env.*)"
     ]
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true
   }
 }

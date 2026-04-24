@@ -1,2 +1,8 @@
 .agents/
 .claude/
+node_modules/
+builds/
+android/.gradle/
+android/build/
+android/app/build/
+android/app/.cxx/
