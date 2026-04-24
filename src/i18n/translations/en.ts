@@ -24,6 +24,8 @@ export const en = {
   'settings.signIn': 'Sign In / Create Account',
   'settings.about': 'About',
   'settings.termsOfService': 'Terms of Service',
+  'settings.privacyPolicy': 'Privacy Policy',
+  'settings.aiUsageToday': 'AI uses today',
   'settings.restartTitle': 'Restart required',
   'settings.restartMessage': 'Please restart the app for the language change to take full effect.',
   'settings.developerOptions': 'Developer Options',
@@ -246,6 +248,13 @@ export const en = {
   'toast.itemsAdded': 'Items added: {{count}}',
   'toast.itemsRemoved': 'Items removed: {{count}}',
   'toast.signInRequired': 'Sign in to use AI features.',
+
+  // AI rate limit
+  'aiRateLimit.guestTitle': 'Daily limit reached',
+  'aiRateLimit.guestMessage': "You've used your {{limit}} free AI suggestions for today. Sign up for a full daily allowance.",
+  'aiRateLimit.authTitle': 'Daily limit reached',
+  'aiRateLimit.authMessage': "You've reached your daily AI limit. It resets at midnight.",
+  'aiRateLimit.signUpButton': 'Sign Up — It\'s Free',
 } as const;
 
 export type TranslationKey = keyof typeof en;

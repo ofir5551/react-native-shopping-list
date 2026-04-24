@@ -20,20 +20,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        supabase.auth.getSession()
-            .then(({ data: { session } }) => {
-                setSession(session);
-                setUser(session?.user ?? null);
+        const init = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    setSession(session);
+                    setUser(session.user);
+                } else {
+                    // No existing session — sign in anonymously so every user
+                    // has a valid JWT (needed for AI rate limiting).
+                    // The resulting session arrives via onAuthStateChange below.
+                    await supabase.auth.signInAnonymously();
+                }
+            } catch {
+                // Supabase unreachable — continue without a session
+            } finally {
                 setIsLoading(false);
-            })
-            .catch(() => {
-                // Supabase unreachable — continue as unauthenticated
-                setIsLoading(false);
-            });
+            }
+        };
+        init();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
+
+            // After a real sign-out, get a fresh anonymous session so the user
+            // always has a JWT for AI features even without an account.
+            if (event === 'SIGNED_OUT') {
+                supabase.auth.signInAnonymously().catch(() => {});
+            }
         });
 
         return () => {

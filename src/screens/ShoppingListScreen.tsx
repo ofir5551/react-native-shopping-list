@@ -384,6 +384,7 @@ export const ShoppingListScreen = ({
           setIsSuggestModalOpen(false);
           setSuggestPrompt('');
         }}
+        onSignUp={goToLogin}
       />
 
       {/* Saved sets list modal */}
@@ -605,6 +606,7 @@ export const ShoppingListScreen = ({
           handleQuickAddMultiple(items);
           setIsPhotoModalOpen(false);
         }}
+        onSignUp={goToLogin}
       />
 
       {/* Add from other lists modal */}

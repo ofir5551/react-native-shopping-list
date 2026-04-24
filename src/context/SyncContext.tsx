@@ -46,7 +46,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         if (isLoading) return;
 
-        if (user) {
+        if (user && !user.is_anonymous) {
             const apiClient = new SupabaseApiClient(user.id);
             const engine = new SyncEngine(user.id, apiClient, (mergedLists) => {
                 // When remote data arrives, notify the subscribe callback
@@ -67,9 +67,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 syncEngineRef.current = null;
             };
         } else {
-            // Clear queued sync data so a future sign-in (possibly a different user)
-            // does not attempt to push stale list ids.
-            AsyncStorage.multiRemove([DIRTY_IDS_KEY, PENDING_DELETES_KEY]);
+            // No user or anonymous user — local storage only, no cloud sync.
+            // Clear queued sync data when fully signed out so a future sign-in
+            // (possibly a different user) does not push stale list ids.
+            if (!user) {
+                AsyncStorage.multiRemove([DIRTY_IDS_KEY, PENDING_DELETES_KEY]);
+            }
             syncEngineRef.current = null;
             setIsInitializing(false);
         }

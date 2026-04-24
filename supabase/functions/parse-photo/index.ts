@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import { createClient } from "jsr:@supabase/supabase-js@2"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,16 +11,50 @@ Deno.serve(async (req: Request) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // MVP: allow any request with a valid Supabase JWT (including anonymous sessions),
-  // so guests can use AI features during the friends-and-family testing phase.
-  // To restrict to signed-in users only, replace this block with a getUser() check:
-  //   const { data: { user }, error } = await supabase.auth.getUser(token)
-  //   if (error || !user) return 401
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 401,
+    })
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+    auth: { persistSession: false },
+  })
+
+  const { data: { user }, error: userError } = await userClient.auth.getUser()
+  if (userError || !user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 401,
+    })
+  }
+
+  const { data: usage, error: usageError } = await userClient.rpc('check_and_increment_ai_usage', {
+    p_is_anonymous: user.is_anonymous ?? false,
+  })
+
+  if (usageError) {
+    console.error('Rate limit check error:', usageError)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
+  }
+
+  if (!usage.allowed) {
+    return new Response(JSON.stringify({
+      error: 'rate_limit_exceeded',
+      isAnonymous: user.is_anonymous ?? false,
+      limit: usage.limit,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 429,
     })
   }
 
@@ -78,7 +113,6 @@ Deno.serve(async (req: Request) => {
 
     const data = await response.json()
     const content = data.choices[0].message.content
-
     const parsed = JSON.parse(content)
 
     return new Response(JSON.stringify(parsed), {

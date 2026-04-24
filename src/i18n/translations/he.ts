@@ -26,6 +26,8 @@ export const he: Record<TranslationKey, string> = {
   'settings.signIn': 'התחברות / יצירת חשבון',
   'settings.about': 'אודות',
   'settings.termsOfService': 'תנאי שימוש',
+  'settings.privacyPolicy': 'מדיניות פרטיות',
+  'settings.aiUsageToday': 'שימוש AI היום',
   'settings.restartTitle': 'נדרשת הפעלה מחדש',
   'settings.restartMessage': 'אנא הפעל מחדש את האפליקציה כדי שהשינוי בשפה ייכנס לתוקף.',
   'settings.developerOptions': 'אפשרויות מפתח',
@@ -248,4 +250,11 @@ export const he: Record<TranslationKey, string> = {
   'toast.itemsAdded': 'פריטים נוספו: {{count}}',
   'toast.itemsRemoved': 'פריטים הוסרו: {{count}}',
   'toast.signInRequired': 'יש להתחבר כדי להשתמש בתכונות AI.',
+
+  // AI rate limit
+  'aiRateLimit.guestTitle': 'הגעת למגבלה היומית',
+  'aiRateLimit.guestMessage': 'השתמשת ב-{{limit}} הצעות AI החינמיות שלך להיום. הירשם לקבלת מכסה יומית מלאה.',
+  'aiRateLimit.authTitle': 'הגעת למגבלה היומית',
+  'aiRateLimit.authMessage': 'הגעת למגבלת ה-AI היומית שלך. המגבלה מתאפסת בחצות.',
+  'aiRateLimit.signUpButton': 'הרשמה — חינם',
 };

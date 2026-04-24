@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Image,
     Modal,
@@ -17,6 +17,7 @@ import { usePreferences } from '../context/PreferencesContext';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../i18n/LocaleContext';
 import { supabase } from '../supabase';
+import Constants from 'expo-constants';
 
 type SettingsScreenProps = {
     onBack: () => void;
@@ -30,6 +31,8 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
     const { user } = useAuth();
     const { t, locale, setLocale, isRTL } = useLocale();
     const [isToSOpen, setIsToSOpen] = useState(false);
+    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+    const [aiUsage, setAiUsage] = useState<{ count: number; limit: number } | null>(null);
 
     const toggleTheme = (value: boolean) => {
         setThemeType(value ? 'dark' : 'light');
@@ -47,6 +50,19 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
     const handleSignOut = async () => {
         await supabase.auth.signOut();
     };
+
+    useEffect(() => {
+        if (!user) return;
+        const today = new Date().toISOString().split('T')[0];
+        supabase
+            .from('ai_usage')
+            .select('call_count')
+            .eq('call_date', today)
+            .maybeSingle()
+            .then(({ data }) => {
+                setAiUsage({ count: data?.call_count ?? 0, limit: user.is_anonymous ? 5 : 20 });
+            });
+    }, [user]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -101,7 +117,7 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
 
                 <View style={styles.settingsSection}>
                     <Text style={styles.settingsSectionTitle}>{t('settings.account')}</Text>
-                    {user ? (
+                    {user && !user.is_anonymous ? (
                         <View style={styles.authPlaceholder}>
                             {user.user_metadata?.avatar_url ? (
                                 <Image
@@ -156,7 +172,7 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                     )}
                 </View>
 
-                <View style={styles.settingsSection}>
+                {__DEV__ && <View style={styles.settingsSection}>
                     <Text style={styles.settingsSectionTitle}>{t('settings.developerOptions')}</Text>
                     <View style={styles.settingsRow}>
                         <Text style={styles.settingsLabel}>{t('settings.autoFocusKeyboard')}</Text>
@@ -224,19 +240,36 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                     >
                         <Text style={[styles.settingsLabel, { color: theme.colors.danger }]}>{t('settings.resetDefaults')}</Text>
                     </Pressable>
-                </View>
+                </View>}
 
                 <View style={styles.settingsSection}>
                     <Text style={styles.settingsSectionTitle}>{t('settings.about')}</Text>
                     <View style={styles.settingsRow}>
                         <Text style={styles.settingsLabel}>{t('common.version')}</Text>
-                        <Text style={styles.settingsValue}>1.0.0</Text>
+                        <Text style={styles.settingsValue}>{Constants.expoConfig?.version ?? '1.0.0'}</Text>
                     </View>
+                    {aiUsage !== null && (
+                        <View style={styles.settingsRow}>
+                            <Text style={styles.settingsLabel}>{t('settings.aiUsageToday')}</Text>
+                            <Text style={styles.settingsValue}>{aiUsage.count} / {aiUsage.limit}</Text>
+                        </View>
+                    )}
                     <Pressable
-                        style={[styles.settingsRow, styles.settingsRowLast]}
+                        style={styles.settingsRow}
                         onPress={() => setIsToSOpen(true)}
                     >
                         <Text style={styles.settingsLabel}>{t('settings.termsOfService')}</Text>
+                        <Ionicons
+                            name={isRTL ? 'chevron-back' : 'chevron-forward'}
+                            size={20}
+                            color={theme.colors.textSecondary}
+                        />
+                    </Pressable>
+                    <Pressable
+                        style={[styles.settingsRow, styles.settingsRowLast]}
+                        onPress={() => setIsPrivacyOpen(true)}
+                    >
+                        <Text style={styles.settingsLabel}>{t('settings.privacyPolicy')}</Text>
                         <Ionicons
                             name={isRTL ? 'chevron-back' : 'chevron-forward'}
                             size={20}
@@ -265,11 +298,50 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                         </View>
                         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
                             <Text style={{ fontSize: 14, color: theme.colors.text, lineHeight: 22 }}>
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.{'\n\n'}
-                                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.{'\n\n'}
-                                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.{'\n\n'}
-                                Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est qui dolorem ipsum quia dolor sit amet.{'\n\n'}
-                                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+                                {'By using Shoppy, you agree to these terms.\n\n'}
+                                {'Shoppy is a personal shopping list app provided for your individual use. You may use it only for lawful purposes.\n\n'}
+                                {'AI Features: When you use AI features (Smart Suggestions, Scan Photo), your input is sent to OpenAI for processing. AI-generated content is provided as-is without any guarantee of accuracy.\n\n'}
+                                {'Data: If you create an account, your lists are synced to our servers via Supabase. Guest users’ data stays on their device only.\n\n'}
+                                {'No Warranty: Shoppy is provided “as is” without warranties of any kind. We are not liable for any loss of data or damages arising from your use of the app.\n\n'}
+                                {'Changes: We may update these terms at any time. Continued use of the app constitutes acceptance of the updated terms.\n\n'}
+                                {'Contact: ofirbenyamin3@gmail.com'}
+                            </Text>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                transparent
+                visible={isPrivacyOpen}
+                animationType="fade"
+                onRequestClose={() => setIsPrivacyOpen(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <Pressable style={styles.modalBackdrop} onPress={() => setIsPrivacyOpen(false)} />
+                    <View style={[styles.modalPanel, { maxHeight: '75%' }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>{t('settings.privacyPolicy')}</Text>
+                            <Pressable onPress={() => setIsPrivacyOpen(false)} style={styles.modalCloseButton}>
+                                <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
+                            </Pressable>
+                        </View>
+                        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+                            <Text style={{ fontSize: 14, color: theme.colors.text, lineHeight: 22 }}>
+                                {'What We Collect\n'}
+                                {'• Email address (if you create an account)\n'}
+                                {'• Shopping list contents you enter\n'}
+                                {'• Text or images sent to AI features\n\n'}
+                                {'How We Use It\n'}
+                                {'We use your data solely to provide the Shoppy service — syncing your lists across devices and generating AI suggestions. We do not sell your data.\n\n'}
+                                {'Third-Party Services\n'}
+                                {'• Supabase — handles authentication and data storage (supabase.com)\n'}
+                                {'• OpenAI — processes AI feature requests; prompts and images you submit are sent to their servers (openai.com/privacy)\n\n'}
+                                {'Guest Users\n'}
+                                {'If you use Shoppy without an account, all data stays on your device and is never sent to our servers (AI features still send input to OpenAI).\n\n'}
+                                {'Your Rights\n'}
+                                {'You may delete your account at any time from Settings, which removes all your data from our servers.\n\n'}
+                                {'Contact: ofirbenyamin3@gmail.com'}
                             </Text>
                         </ScrollView>
                     </View>

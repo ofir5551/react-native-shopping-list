@@ -20,11 +20,14 @@ type SuggestionItem = {
     selected: boolean;
 };
 
+type RateLimitInfo = { isAnonymous: boolean; limit: number };
+
 type SmartSuggestionsModalProps = {
     visible: boolean;
     prompt: string;
     onClose: () => void;
     onQuickAdd: (items: { name: string; quantity: number }[]) => void;
+    onSignUp?: () => void;
 };
 
 const triggerHaptic = () => {
@@ -38,6 +41,7 @@ export const SmartSuggestionsModal = ({
     prompt,
     onClose,
     onQuickAdd,
+    onSignUp,
 }: SmartSuggestionsModalProps) => {
     const styles = useAppStyles();
     const { theme } = useTheme();
@@ -45,6 +49,7 @@ export const SmartSuggestionsModal = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [items, setItems] = useState<SuggestionItem[]>([]);
+    const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null);
 
     useEffect(() => {
         if (visible && prompt) {
@@ -52,6 +57,7 @@ export const SmartSuggestionsModal = ({
         } else {
             setItems([]);
             setError(null);
+            setRateLimit(null);
         }
     }, [visible, prompt]);
 
@@ -65,6 +71,13 @@ export const SmartSuggestionsModal = ({
             });
 
             if (fnError) {
+                try {
+                    const body = await (fnError as any).context?.json?.();
+                    if (body?.error === 'rate_limit_exceeded') {
+                        setRateLimit({ isAnonymous: body.isAnonymous ?? false, limit: body.limit ?? 5 });
+                        return;
+                    }
+                } catch {}
                 throw new Error(fnError.message || 'Failed to generate suggestions');
             }
 
@@ -128,7 +141,37 @@ export const SmartSuggestionsModal = ({
                         </Text>
                     </View>
 
-                    {loading ? (
+                    {rateLimit ? (
+                        <View style={{ padding: 32, alignItems: 'center', gap: 12 }}>
+                            <Ionicons name="sparkles" size={36} color={theme.colors.primary} />
+                            <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.text, textAlign: 'center' }}>
+                                {rateLimit.isAnonymous ? t('aiRateLimit.guestTitle') : t('aiRateLimit.authTitle')}
+                            </Text>
+                            <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 }}>
+                                {rateLimit.isAnonymous
+                                    ? t('aiRateLimit.guestMessage', { limit: rateLimit.limit })
+                                    : t('aiRateLimit.authMessage')}
+                            </Text>
+                            {rateLimit.isAnonymous && onSignUp && (
+                                <Pressable
+                                    style={({ pressed }) => ({
+                                        marginTop: 4,
+                                        paddingHorizontal: 24,
+                                        paddingVertical: 12,
+                                        borderRadius: 12,
+                                        backgroundColor: theme.colors.primary,
+                                        opacity: pressed ? 0.8 : 1,
+                                    })}
+                                    onPress={() => { onClose(); onSignUp(); }}
+                                    accessibilityRole="button"
+                                >
+                                    <Text style={{ fontSize: 15, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>
+                                        {t('aiRateLimit.signUpButton')}
+                                    </Text>
+                                </Pressable>
+                            )}
+                        </View>
+                    ) : loading ? (
                         <View style={{ padding: 40, alignItems: 'center' }}>
                             <ActivityIndicator size="large" color={theme.colors.primary} />
                             <Text style={{ marginTop: 16, color: theme.colors.textSecondary }}>{t('smartSuggestions.generating')}</Text>
@@ -216,47 +259,49 @@ export const SmartSuggestionsModal = ({
                         </ScrollView>
                     )}
 
-                    <View style={{ padding: 16, paddingBottom: 20, borderTopWidth: 1, borderColor: theme.colors.border }}>
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
-                            <Pressable
-                                style={({ pressed }) => ({
-                                    flex: 1,
-                                    padding: 14,
-                                    borderRadius: 12,
-                                    backgroundColor: theme.colors.surfaceHighlight,
-                                    alignItems: 'center' as const,
-                                    opacity: pressed ? 0.7 : 1,
-                                })}
-                                onPress={onClose}
-                                accessibilityRole="button"
-                                accessibilityLabel={t('smartSuggestions.cancelLabel')}
-                            >
-                                <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.danger }}>{t('smartSuggestions.cancel')}</Text>
-                            </Pressable>
+                    {!rateLimit && (
+                        <View style={{ padding: 16, paddingBottom: 20, borderTopWidth: 1, borderColor: theme.colors.border }}>
+                            <View style={{ flexDirection: 'row', gap: 8 }}>
+                                <Pressable
+                                    style={({ pressed }) => ({
+                                        flex: 1,
+                                        padding: 14,
+                                        borderRadius: 12,
+                                        backgroundColor: theme.colors.surfaceHighlight,
+                                        alignItems: 'center' as const,
+                                        opacity: pressed ? 0.7 : 1,
+                                    })}
+                                    onPress={onClose}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={t('smartSuggestions.cancelLabel')}
+                                >
+                                    <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.danger }}>{t('smartSuggestions.cancel')}</Text>
+                                </Pressable>
 
-                            <Pressable
-                                style={({ pressed }) => ({
-                                    flex: 1,
-                                    padding: 14,
-                                    borderRadius: 12,
-                                    backgroundColor: selectedCount === 0 || loading ? theme.colors.surfaceHighlight : theme.colors.primary,
-                                    alignItems: 'center' as const,
-                                    opacity: pressed ? 0.7 : 1,
-                                })}
-                                disabled={selectedCount === 0 || loading}
-                                onPress={() => {
-                                    triggerHaptic();
-                                    onQuickAdd(getSelectedItems());
-                                }}
-                                accessibilityRole="button"
-                                accessibilityLabel={t('smartSuggestions.addLabel', { count: selectedCount })}
-                            >
-                                <Text style={{ fontSize: 16, fontWeight: '600', color: selectedCount === 0 || loading ? theme.colors.textSecondary : theme.colors.primaryText }}>
-                                    {t('smartSuggestions.addToList', { count: selectedCount })}
-                                </Text>
-                            </Pressable>
+                                <Pressable
+                                    style={({ pressed }) => ({
+                                        flex: 1,
+                                        padding: 14,
+                                        borderRadius: 12,
+                                        backgroundColor: selectedCount === 0 || loading ? theme.colors.surfaceHighlight : theme.colors.primary,
+                                        alignItems: 'center' as const,
+                                        opacity: pressed ? 0.7 : 1,
+                                    })}
+                                    disabled={selectedCount === 0 || loading}
+                                    onPress={() => {
+                                        triggerHaptic();
+                                        onQuickAdd(getSelectedItems());
+                                    }}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={t('smartSuggestions.addLabel', { count: selectedCount })}
+                                >
+                                    <Text style={{ fontSize: 16, fontWeight: '600', color: selectedCount === 0 || loading ? theme.colors.textSecondary : theme.colors.primaryText }}>
+                                        {t('smartSuggestions.addToList', { count: selectedCount })}
+                                    </Text>
+                                </Pressable>
+                            </View>
                         </View>
-                    </View>
+                    )}
 
                 </View>
             </View>
