@@ -65,7 +65,7 @@ type ShoppingListScreenProps = {
   onBack: () => void;
   onShareList: () => void;
   currentUserId: string | undefined;
-  goToLogin: () => void;
+  goToAuth: () => void;
 };
 
 export const ShoppingListScreen = ({
@@ -105,7 +105,7 @@ export const ShoppingListScreen = ({
   onBack,
   onShareList,
   currentUserId,
-  goToLogin,
+  goToAuth,
 }: ShoppingListScreenProps) => {
   const styles = useAppStyles();
   const { theme, isDark } = useTheme();
@@ -384,7 +384,7 @@ export const ShoppingListScreen = ({
           setIsSuggestModalOpen(false);
           setSuggestPrompt('');
         }}
-        onSignUp={goToLogin}
+        onSignUp={goToAuth}
       />
 
       {/* Saved sets list modal */}
@@ -606,7 +606,7 @@ export const ShoppingListScreen = ({
           handleQuickAddMultiple(items);
           setIsPhotoModalOpen(false);
         }}
-        onSignUp={goToLogin}
+        onSignUp={goToAuth}
       />
 
       {/* Add from other lists modal */}

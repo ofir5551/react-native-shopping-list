@@ -57,9 +57,11 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
         supabase
             .from('ai_usage')
             .select('call_count')
+            .eq('user_id', user.id)
             .eq('call_date', today)
             .maybeSingle()
-            .then(({ data }) => {
+            .then(({ data, error }) => {
+                if (error) console.warn('ai_usage fetch error:', error);
                 setAiUsage({ count: data?.call_count ?? 0, limit: user.is_anonymous ? 5 : 20 });
             });
     }, [user]);

@@ -184,7 +184,7 @@ export const HomeScreen = () => {
         onBack={goToLists}
         onShareList={() => openShareListModal(currentList.id)}
         currentUserId={currentUserId}
-        goToLogin={goToLogin}
+        goToAuth={goToAuth}
       />
       {/* We need to render the Modal here so it can overlay ShoppingListScreen too */}
       <ListsScreen
