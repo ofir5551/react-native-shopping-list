@@ -249,7 +249,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess }: SignUpScr
 
                     {/* Name field */}
                     <View style={{ marginBottom: 12 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '500', color: theme.colors.textSecondary, marginBottom: 6 }}>
+                        <Text style={{ fontSize: 14, fontFamily: theme.fonts.medium, color: theme.colors.textSecondary, marginBottom: 6 }}>
                             {t('signup.nameLabel')}
                         </Text>
                         <TextInput
@@ -270,7 +270,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess }: SignUpScr
 
                     {/* Email field */}
                     <View style={{ marginBottom: 12 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '500', color: theme.colors.textSecondary, marginBottom: 6 }}>
+                        <Text style={{ fontSize: 14, fontFamily: theme.fonts.medium, color: theme.colors.textSecondary, marginBottom: 6 }}>
                             {t('signup.emailLabel')}
                         </Text>
                         <TextInput
@@ -291,7 +291,7 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess }: SignUpScr
 
                     {/* Password field */}
                     <View style={{ marginBottom: 20 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '500', color: theme.colors.textSecondary, marginBottom: 6 }}>
+                        <Text style={{ fontSize: 14, fontFamily: theme.fonts.medium, color: theme.colors.textSecondary, marginBottom: 6 }}>
                             {t('signup.passwordLabel')}
                         </Text>
                         <View style={[styles.nameModalInput, { flexDirection: 'row', alignItems: 'center', paddingVertical: 0 }]}>
@@ -344,9 +344,9 @@ export const SignUpScreen = ({ onBack, onGoToLogin, onSignUpSuccess }: SignUpScr
                         style={{ marginTop: 32, alignItems: 'center' }}
                         onPress={onGoToLogin}
                     >
-                        <Text style={{ color: theme.colors.textSecondary, fontSize: 15 }}>
+                        <Text style={{ color: theme.colors.textSecondary, fontSize: 15, fontFamily: theme.fonts.regular }}>
                             {t('signup.alreadyHaveAccount')}{' '}
-                            <Text style={{ color: theme.colors.primary, fontWeight: '600' }}>
+                            <Text style={{ color: theme.colors.primary, fontFamily: theme.fonts.semibold }}>
                                 {t('signup.signIn')}
                             </Text>
                         </Text>

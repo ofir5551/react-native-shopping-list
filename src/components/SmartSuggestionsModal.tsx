@@ -194,7 +194,7 @@ export const SmartSuggestionsModal = ({
                                 accessibilityRole="button"
                                 accessibilityLabel={t('smartSuggestions.retryLabel')}
                             >
-                                <Text style={{ color: theme.colors.primary, fontWeight: 'bold' }}>{t('smartSuggestions.tryAgain')}</Text>
+                                <Text style={{ color: theme.colors.primary, fontFamily: theme.fonts.bold }}>{t('smartSuggestions.tryAgain')}</Text>
                             </Pressable>
                         </View>
                     ) : (
@@ -240,11 +240,9 @@ export const SmartSuggestionsModal = ({
                                             >
                                                 <Feather name="minus" size={16} color={theme.colors.primary} />
                                             </Pressable>
-                                            <Pressable onPress={() => {}}>
-                                                <Text style={{ fontWeight: '600', minWidth: 20, textAlign: 'center', color: theme.colors.text }}>
-                                                    {item.quantity}
-                                                </Text>
-                                            </Pressable>
+                                            <Text style={{ fontFamily: theme.fonts.semibold, minWidth: 20, textAlign: 'center', color: theme.colors.text }}>
+                                                {item.quantity}
+                                            </Text>
                                             <Pressable
                                                 style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                                                 onPress={() => handleUpdateQuantity(index, 1)}
@@ -275,7 +273,7 @@ export const SmartSuggestionsModal = ({
                                     accessibilityRole="button"
                                     accessibilityLabel={t('smartSuggestions.cancelLabel')}
                                 >
-                                    <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.danger }}>{t('smartSuggestions.cancel')}</Text>
+                                    <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.danger }}>{t('smartSuggestions.cancel')}</Text>
                                 </Pressable>
 
                                 <Pressable
@@ -295,7 +293,7 @@ export const SmartSuggestionsModal = ({
                                     accessibilityRole="button"
                                     accessibilityLabel={t('smartSuggestions.addLabel', { count: selectedCount })}
                                 >
-                                    <Text style={{ fontSize: 16, fontWeight: '600', color: selectedCount === 0 || loading ? theme.colors.textSecondary : theme.colors.primaryText }}>
+                                    <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: selectedCount === 0 || loading ? theme.colors.textSecondary : theme.colors.primaryText }}>
                                         {t('smartSuggestions.addToList', { count: selectedCount })}
                                     </Text>
                                 </Pressable>

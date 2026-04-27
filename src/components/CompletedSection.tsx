@@ -1,7 +1,9 @@
 import React, { useCallback } from 'react';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ShoppingItem } from '../types';
 import { useAppStyles } from '../styles/appStyles';
+import { useTheme } from '../context/ThemeContext';
 import { ItemRow } from './ItemRow';
 import { useLocale } from '../i18n/LocaleContext';
 
@@ -27,6 +29,7 @@ export const CompletedSection = ({
   onDecrementItem,
 }: CompletedSectionProps) => {
   const styles = useAppStyles();
+  const { theme } = useTheme();
   const { t } = useLocale();
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<ShoppingItem>) => (
@@ -43,7 +46,11 @@ export const CompletedSection = ({
     <View style={styles.completedSection}>
       <Pressable style={styles.completedHeader} onPress={onToggleExpanded}>
         <Text style={styles.completedTitle}>{t('completed.header', { count: items.length })}</Text>
-        <Text style={styles.completedChevron}>{isExpanded ? '▾' : '▸'}</Text>
+        <Ionicons
+          name={isExpanded ? 'chevron-down' : 'chevron-forward'}
+          size={16}
+          color={theme.colors.textSecondary}
+        />
       </Pressable>
 
       {isExpanded && (

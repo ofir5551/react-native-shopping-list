@@ -293,6 +293,8 @@ export const ShoppingListScreen = ({
         onUpdateRecentQuantity={handleUpdateRecentQuantity}
         onDismissSuggestion={handleDismissSuggestion}
         onClose={closeOverlay}
+        onRecord={() => { closeOverlay(); setIsRecordModalOpen(true); }}
+        onFromPhoto={() => { closeOverlay(); setIsPhotoModalOpen(true); }}
       />
 
       {/* Caret popover */}

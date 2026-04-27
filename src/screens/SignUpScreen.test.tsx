@@ -27,6 +27,12 @@ jest.mock('../context/ThemeContext', () => ({
         text: '#000', textSecondary: '#666', primary: '#007bff',
         background: '#fff', surfaceHighlight: '#f0f0f0', border: '#ccc',
       },
+      fonts: {
+        regular: 'DMSans_400Regular',
+        medium: 'DMSans_500Medium',
+        semibold: 'DMSans_600SemiBold',
+        bold: 'DMSans_700Bold',
+      },
     },
     isDark: false,
   }),

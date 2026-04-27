@@ -78,7 +78,7 @@ export const ItemRow = memo(function ItemRow({ item, onToggle, onDelete, onIncre
             <Pressable style={styles.quantityButton} onPress={handleDecrement}>
               <Feather name="minus" size={14} color={theme.colors.textSecondary} />
             </Pressable>
-            <Pressable onPress={() => {}}><Text style={styles.quantityText}>{item.quantity}</Text></Pressable>
+            <Text style={styles.quantityText}>{item.quantity}</Text>
             <Pressable style={styles.quantityButton} onPress={handleIncrement}>
               <Feather name="plus" size={14} color={theme.colors.textSecondary} />
             </Pressable>
@@ -87,7 +87,7 @@ export const ItemRow = memo(function ItemRow({ item, onToggle, onDelete, onIncre
 
         {item.purchased && (item.quantity > 1) && (
           <View style={styles.quantityWrap}>
-            <Pressable onPress={() => {}}><Text style={styles.quantityText}>{item.quantity}</Text></Pressable>
+            <Text style={styles.quantityText}>{item.quantity}</Text>
           </View>
         )}
 

@@ -214,10 +214,6 @@ export const useAppStyles = () => {
         fontFamily: theme.fonts.semibold,
         color: theme.colors.textSecondary,
       },
-      completedChevron: {
-        fontSize: 18,
-        color: theme.colors.textSecondary,
-      },
       listItem: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -263,7 +259,10 @@ export const useAppStyles = () => {
         textDecorationLine: 'line-through',
       },
       deleteButton: {
-        paddingVertical: 4,
+        minWidth: 44,
+        minHeight: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
         paddingHorizontal: 4,
         opacity: 0.6,
       },
@@ -694,7 +693,6 @@ export const useAppStyles = () => {
         backgroundColor: theme.colors.surfaceHighlight,
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: 0.5,
       },
       // Save as set link
       saveAsSetLink: {

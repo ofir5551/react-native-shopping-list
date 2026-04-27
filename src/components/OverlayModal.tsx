@@ -28,6 +28,8 @@ type OverlayModalProps = {
   onUpdateRecentQuantity: (name: string, delta: number) => void;
   onDismissSuggestion: (name: string) => void;
   onClose: () => void;
+  onRecord: () => void;
+  onFromPhoto: () => void;
 };
 
 type TabKey = 'suggestions' | 'catalog';
@@ -49,6 +51,8 @@ export const OverlayModal = ({
   onUpdateRecentQuantity,
   onDismissSuggestion,
   onClose,
+  onRecord,
+  onFromPhoto,
 }: OverlayModalProps) => {
   const styles = useAppStyles();
   const { theme } = useTheme();
@@ -161,10 +165,10 @@ export const OverlayModal = ({
   const renderCatalogTab = () => (
     <View style={{ alignItems: 'center', paddingVertical: 40 }}>
       <Ionicons name="grid-outline" size={40} color={theme.colors.textSecondary} />
-      <Text style={{ fontSize: 16, color: theme.colors.textSecondary, marginTop: 12, fontWeight: '600' }}>
+      <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.textSecondary, marginTop: 12 }}>
         {t('overlay.comingSoon')}
       </Text>
-      <Text style={{ fontSize: 13, color: theme.colors.textSecondary, marginTop: 4, textAlign: 'center' }}>
+      <Text style={{ fontSize: 13, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary, marginTop: 4, textAlign: 'center' }}>
         {t('overlay.browseByCategory')}
       </Text>
     </View>
@@ -210,11 +214,20 @@ export const OverlayModal = ({
           )}
         </View>
 
-        {/* Mic + Camera placeholders */}
-        <Pressable style={styles.overlayActionIcon} disabled>
+        <Pressable
+          style={({ pressed }) => [styles.overlayActionIcon, pressed && { opacity: 0.7 }]}
+          onPress={onRecord}
+          accessibilityRole="button"
+          accessibilityLabel={t('caret.record')}
+        >
           <Ionicons name="mic-outline" size={22} color={theme.colors.textSecondary} />
         </Pressable>
-        <Pressable style={styles.overlayActionIcon} disabled>
+        <Pressable
+          style={({ pressed }) => [styles.overlayActionIcon, pressed && { opacity: 0.7 }]}
+          onPress={onFromPhoto}
+          accessibilityRole="button"
+          accessibilityLabel={t('caret.fromPhoto')}
+        >
           <Ionicons name="camera-outline" size={22} color={theme.colors.textSecondary} />
         </Pressable>
       </View>

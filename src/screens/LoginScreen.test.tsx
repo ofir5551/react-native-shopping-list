@@ -49,6 +49,12 @@ const mockTheme = {
       border: '#ccc',
       textSecondary: '#666',
     },
+    fonts: {
+      regular: 'DMSans_400Regular',
+      medium: 'DMSans_500Medium',
+      semibold: 'DMSans_600SemiBold',
+      bold: 'DMSans_700Bold',
+    },
   },
   isDark: false,
 };
