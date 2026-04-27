@@ -84,7 +84,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const { t, locale } = useLocale();
-  const currentUserId = user?.id;
+  const currentUserId = user?.is_anonymous ? undefined : user?.id;
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [route, setRoute] = useState<AppRoute>(DEFAULT_ROUTE);
   const [isHydrated, setIsHydrated] = useState(false);

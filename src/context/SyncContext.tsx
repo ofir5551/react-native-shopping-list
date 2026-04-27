@@ -86,10 +86,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const leaveList = async (listId: string): Promise<void> => {
-        if (!syncEngineRef.current) {
-            throw new Error('You need to be signed in to leave a list.');
+        if (syncEngineRef.current) {
+            await syncEngineRef.current.leaveList(listId);
         }
-        await syncEngineRef.current.leaveList(listId);
+        // No engine (anonymous) → no-op; anonymous users can't have genuine shared lists.
     };
 
     const deleteListFromServer = async (listId: string): Promise<void> => {

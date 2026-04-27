@@ -60,11 +60,12 @@ describe('Guest mode (user=null)', () => {
     await expect(result.current.joinList('CODE')).rejects.toThrow(/signed in/i);
   });
 
-  it('leaveList throws "signed in" error', async () => {
+  it('leaveList resolves without error (no-op, does not require sign-in)', async () => {
     const { result } = renderHook(() => useSync(), { wrapper });
     await waitFor(() => expect(result.current.isInitializing).toBe(false));
 
-    await expect(result.current.leaveList('list1')).rejects.toThrow(/signed in/i);
+    await expect(result.current.leaveList('list1')).resolves.not.toThrow();
+    expect(MockSyncEngine.prototype.leaveList).not.toHaveBeenCalled();
   });
 
   it('deleteListFromServer is a no-op (no error)', async () => {
