@@ -191,15 +191,16 @@ export class SyncEngine {
         const localLists = await LocalStorageProvider.loadLists();
         const localMap = new Map(localLists.map(l => [l.id, l]));
         const failedIds: string[] = [];
+        const shareCodeUpdates = new Map<string, string>();
 
         for (const id of this.dirtyIds) {
             const list = localMap.get(id);
-            if (!list) {
-                // List was deleted locally, no need to push
-                continue;
-            }
+            if (!list) continue;
             try {
-                await this.apiClient.upsertList(list);
+                const shareCode = await this.apiClient.upsertList(list);
+                if (shareCode && !list.shareCode) {
+                    shareCodeUpdates.set(id, shareCode);
+                }
             } catch {
                 failedIds.push(id);
             }
@@ -207,6 +208,21 @@ export class SyncEngine {
 
         this.dirtyIds = new Set(failedIds);
         await this.persistQueue();
+
+        if (shareCodeUpdates.size > 0) {
+            const updatedLists = localLists.map(l => {
+                const code = shareCodeUpdates.get(l.id);
+                return code ? { ...l, shareCode: code } : l;
+            });
+            this.isMergingRemote = true;
+            try {
+                await LocalStorageProvider.saveLists(updatedLists);
+                this.lastSavedUpdatedAt = new Map(updatedLists.map(l => [l.id, l.updatedAt]));
+                this.onRemoteUpdate(updatedLists);
+            } finally {
+                this.isMergingRemote = false;
+            }
+        }
 
         if (failedIds.length > 0) {
             throw new Error('Some lists failed to push');

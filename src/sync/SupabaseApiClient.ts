@@ -28,11 +28,11 @@ export class SupabaseApiClient {
         }));
     }
 
-    async upsertList(list: ShoppingList): Promise<void> {
+    async upsertList(list: ShoppingList): Promise<string | undefined> {
         const isOwned = !list.ownerId || list.ownerId === this.userId;
 
         if (isOwned) {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('lists')
                 .upsert({
                     id: list.id,
@@ -43,12 +43,15 @@ export class SupabaseApiClient {
                     updated_at: list.updatedAt,
                     items: list.items,
                     recents: list.recents,
-                }, { onConflict: 'id' });
+                }, { onConflict: 'id' })
+                .select('share_code')
+                .single();
 
             if (error) {
                 console.error('Error upserting owned list:', list.id, error);
                 throw error;
             }
+            return (data as any)?.share_code ?? undefined;
         } else {
             const { error } = await supabase
                 .from('lists')
@@ -63,6 +66,7 @@ export class SupabaseApiClient {
                 console.error('Error updating shared list:', list.id, error);
                 throw error;
             }
+            return undefined;
         }
     }
 

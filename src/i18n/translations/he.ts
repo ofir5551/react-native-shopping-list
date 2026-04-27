@@ -112,7 +112,7 @@ export const he: Record<TranslationKey, string> = {
   'listModal.createButton': 'יצירה',
   'listModal.saveButton': 'שמירה',
   'listModal.joinButton': 'הצטרפות',
-  'listModal.copyButton': 'העתקת מזהה',
+  'listModal.copyButton': 'העתק',
 
   // Caret popover (speed dial)
   'caret.savedSets': 'סטים שמורים',

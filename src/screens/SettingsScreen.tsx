@@ -285,7 +285,7 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
                     {aiUsage !== null && (
                         <View style={styles.settingsRow}>
                             <Text style={styles.settingsLabel}>{t('settings.aiUsageToday')}</Text>
-                            <Text style={styles.settingsValue}>{aiUsage.count} / {aiUsage.limit}</Text>
+                            <Text style={styles.settingsValue}>{`‎${aiUsage.count} / ${aiUsage.limit}`}</Text>
                         </View>
                     )}
                     <Pressable

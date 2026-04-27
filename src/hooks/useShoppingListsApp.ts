@@ -303,7 +303,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     const list = lists.find((item) => item.id === listId);
     setListNameMode('share');
     setEditingListId(listId);
-    setListNameInput(list?.shareCode ?? listId); // Show shareCode, fallback to id
+    setListNameInput(list?.shareCode ?? '');
     setListNameError('');
     setIsListNameModalOpen(true);
   };

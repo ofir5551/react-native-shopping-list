@@ -227,8 +227,9 @@ export const ShoppingListScreen = ({
           />
           <View style={styles.settingsPopover}>
             <Pressable
-              style={styles.settingsPopoverButton}
-              onPress={() => { setIsSettingsOpen(false); onShareList(); }}
+              style={[styles.settingsPopoverButton, !currentUserId && { opacity: 0.4 }]}
+              onPress={() => { if (!currentUserId) return; setIsSettingsOpen(false); onShareList(); }}
+              disabled={!currentUserId}
             >
               <Text style={styles.settingsPopoverButtonText}>{t('shoppingList.shareList')}</Text>
             </Pressable>

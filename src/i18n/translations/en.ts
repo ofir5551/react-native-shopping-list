@@ -110,7 +110,7 @@ export const en = {
   'listModal.createButton': 'Create',
   'listModal.saveButton': 'Save',
   'listModal.joinButton': 'Join',
-  'listModal.copyButton': 'Copy ID',
+  'listModal.copyButton': 'Copy',
 
   // Caret popover (speed dial)
   'caret.savedSets': 'Saved Sets',

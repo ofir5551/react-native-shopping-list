@@ -76,18 +76,21 @@ describe('fetchLists', () => {
 // ─── upsertList ──────────────────────────────────────────────────────────────
 
 describe('upsertList', () => {
-  it('uses upsert for an owned list', async () => {
-    const mockUpsert = jest.fn().mockResolvedValue({ error: null });
+  it('uses upsert for an owned list and returns shareCode', async () => {
+    const mockSingle = jest.fn().mockResolvedValue({ data: { share_code: '123456' }, error: null });
+    const mockSelect = jest.fn().mockReturnValue({ single: mockSingle });
+    const mockUpsert = jest.fn().mockReturnValue({ select: mockSelect });
     (mockSupabase.from as jest.Mock).mockReturnValue({ upsert: mockUpsert });
 
     const client = new SupabaseApiClient(USER_ID);
     const list = makeList({ id: 'l1', ownerId: USER_ID });
-    await client.upsertList(list);
+    const shareCode = await client.upsertList(list);
 
     expect(mockUpsert).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'l1', user_id: USER_ID }),
       expect.any(Object),
     );
+    expect(shareCode).toBe('123456');
   });
 
   it('uses update for a shared (non-owned) list', async () => {
@@ -106,7 +109,9 @@ describe('upsertList', () => {
   });
 
   it('throws when upsert returns an error', async () => {
-    const mockUpsert = jest.fn().mockResolvedValue({ error: new Error('conflict') });
+    const mockSingle = jest.fn().mockResolvedValue({ data: null, error: new Error('conflict') });
+    const mockSelect = jest.fn().mockReturnValue({ single: mockSingle });
+    const mockUpsert = jest.fn().mockReturnValue({ select: mockSelect });
     (mockSupabase.from as jest.Mock).mockReturnValue({ upsert: mockUpsert });
 
     const client = new SupabaseApiClient(USER_ID);
