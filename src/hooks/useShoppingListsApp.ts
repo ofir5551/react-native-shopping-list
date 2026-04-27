@@ -96,6 +96,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const [overlayInput, setOverlayInput] = useState('');
   const [selectedRecent, setSelectedRecent] = useState<SelectedRecentItem[]>([]);
   const preExistingNamesRef = useRef<Set<string>>(new Set());
+  const preExistingQuantitiesRef = useRef<Map<string, string | undefined>>(new Map());
   const [isListNameModalOpen, setIsListNameModalOpen] = useState(false);
   const [listNameMode, setListNameMode] = useState<ListNameModalMode>('create');
   const [editingListId, setEditingListId] = useState<string | null>(null);
@@ -439,6 +440,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setOverlayInput('');
     const currentActive = currentList.items.filter((item) => !item.purchased);
     preExistingNamesRef.current = new Set(currentActive.map((item) => normalizeName(item.name)));
+    preExistingQuantitiesRef.current = new Map(currentActive.map((item) => [normalizeName(item.name), item.quantity]));
     setSelectedRecent(currentActive.map((item) => ({ name: item.name, quantity: item.quantity })));
   };
 
@@ -547,7 +549,11 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     const hasNew = selectedRecent.some((item) => !preExistingNamesRef.current.has(normalizeName(item.name)));
     let hasRemoved = false;
     preExistingNamesRef.current.forEach((name) => { if (!selectedNames.has(name)) hasRemoved = true; });
-    return hasNew || hasRemoved;
+    const hasQuantityChange = selectedRecent.some((item) => {
+      const key = normalizeName(item.name);
+      return preExistingNamesRef.current.has(key) && preExistingQuantitiesRef.current.get(key) !== item.quantity;
+    });
+    return hasNew || hasRemoved || hasQuantityChange;
   }, [isOverlayOpen, selectedRecent]);
 
   const handleAddSelected = () => {
