@@ -66,6 +66,9 @@ type ShoppingListScreenProps = {
   onShareList: () => void;
   currentUserId: string | undefined;
   goToAuth: () => void;
+  isArchived: boolean;
+  onArchiveList: () => void;
+  onRestoreList: () => void;
 };
 
 export const ShoppingListScreen = ({
@@ -106,6 +109,9 @@ export const ShoppingListScreen = ({
   onShareList,
   currentUserId,
   goToAuth,
+  isArchived,
+  onArchiveList,
+  onRestoreList,
 }: ShoppingListScreenProps) => {
   const styles = useAppStyles();
   const { theme, isDark } = useTheme();
@@ -208,6 +214,57 @@ export const ShoppingListScreen = ({
     setIsSavedSetsListOpen(true);
   };
 
+  const archiveNudge =
+    !isArchived && activeItems.length === 0 && completedItems.length > 0 ? (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          backgroundColor: theme.colors.surfaceHighlight,
+          borderRadius: 12,
+          marginHorizontal: 16,
+          marginBottom: 8,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: theme.fonts.regular,
+            fontSize: 14,
+            color: theme.colors.textSecondary,
+            flex: 1,
+          }}
+        >
+          {t('lists.archiveNudge')}
+        </Text>
+        <Pressable
+          onPress={onArchiveList}
+          style={({ pressed }) => ({
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 8,
+            backgroundColor: theme.colors.primary,
+            opacity: pressed ? 0.7 : 1,
+            marginLeft: 12,
+          })}
+          accessibilityRole="button"
+          accessibilityLabel={t('lists.archiveList')}
+        >
+          <Text
+            style={{
+              fontFamily: theme.fonts.semibold,
+              fontSize: 14,
+              color: theme.colors.primaryText,
+            }}
+          >
+            {t('lists.archiveList')}
+          </Text>
+        </Pressable>
+      </View>
+    ) : undefined;
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -232,6 +289,19 @@ export const ShoppingListScreen = ({
               disabled={!currentUserId}
             >
               <Text style={styles.settingsPopoverButtonText}>{t('shoppingList.shareList')}</Text>
+            </Pressable>
+            <View style={styles.settingsPopoverDivider} />
+            <Pressable
+              style={styles.settingsPopoverButton}
+              onPress={() => {
+                setIsSettingsOpen(false);
+                if (isArchived) onRestoreList();
+                else onArchiveList();
+              }}
+            >
+              <Text style={styles.settingsPopoverButtonText}>
+                {isArchived ? t('lists.restoreList') : t('lists.archiveList')}
+              </Text>
             </Pressable>
             <View style={styles.settingsPopoverDivider} />
             <Pressable
@@ -279,6 +349,7 @@ export const ShoppingListScreen = ({
           onDeleteItem={handleDelete}
           onIncrementItem={handleIncrementQuantity}
           onDecrementItem={handleDecrementQuantity}
+          archiveNudge={archiveNudge}
         />
       )}
 
