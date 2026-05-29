@@ -1,20 +1,10 @@
-import { Theme } from './theme';
+import { Theme, fonts, spacing, borderRadius } from './theme';
 
 export type ThemeId =
   | 'natural' | 'ocean' | 'sunset' | 'lavender'
   | 'midnight' | 'navy' | 'charcoal' | 'plum';
 
 export type Palette = Theme & { id: ThemeId; isDark: boolean };
-
-const fonts = {
-  regular: 'DMSans_400Regular',
-  medium: 'DMSans_500Medium',
-  semibold: 'DMSans_600SemiBold',
-  bold: 'DMSans_700Bold',
-};
-
-const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 };
-const borderRadius = { sm: 8, md: 12, lg: 16, round: 999 };
 
 export const PALETTES: Record<ThemeId, Palette> = {
   natural: {
