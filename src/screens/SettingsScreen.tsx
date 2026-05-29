@@ -22,11 +22,12 @@ import Constants from 'expo-constants';
 type SettingsScreenProps = {
     onBack: () => void;
     onSignIn: () => void;
+    onTheme: () => void;
 };
 
-export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
+export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProps) => {
     const styles = useAppStyles();
-    const { theme, isDark, setThemeType } = useTheme();
+    const { theme, themeId, isDark } = useTheme();
     const { preferences, setPreference, resetPreferences } = usePreferences();
     const listViewModes = ['compact', 'normal', 'wide'] as const;
     const { user } = useAuth();
@@ -34,10 +35,6 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
     const [isToSOpen, setIsToSOpen] = useState(false);
     const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
     const [aiUsage, setAiUsage] = useState<{ count: number; limit: number } | null>(null);
-
-    const toggleTheme = (value: boolean) => {
-        setThemeType(value ? 'dark' : 'light');
-    };
 
     const toggleLocale = () => {
         setLocale(locale === 'en' ? 'he' : 'en');
@@ -88,16 +85,21 @@ export const SettingsScreen = ({ onBack, onSignIn }: SettingsScreenProps) => {
             <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
                 <View style={styles.settingsSection}>
                     <Text style={styles.settingsSectionTitle}>{t('settings.appearance')}</Text>
-                    <View style={styles.settingsRow}>
-                        <Text style={styles.settingsLabel}>{t('settings.darkMode')}</Text>
-                        <Switch
-                            value={isDark}
-                            onValueChange={toggleTheme}
-                            trackColor={{ false: theme.colors.surfaceHighlight, true: theme.colors.primary }}
-                            thumbColor={isDark ? theme.colors.primaryText : '#f4f3f4'}
-                            ios_backgroundColor={theme.colors.surfaceHighlight}
-                        />
-                    </View>
+                    <Pressable
+                        style={styles.settingsRow}
+                        onPress={onTheme}
+                        accessibilityRole="button"
+                    >
+                        <Text style={styles.settingsLabel}>{t('settings.theme')}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text style={styles.settingsValue}>{t(`theme.${themeId}` as any)}</Text>
+                            <Ionicons
+                                name={isRTL ? 'chevron-back' : 'chevron-forward'}
+                                size={20}
+                                color={theme.colors.textSecondary}
+                            />
+                        </View>
+                    </Pressable>
                     <View style={styles.settingsRow}>
                         <Text style={styles.settingsLabel}>{t('settings.listView')}</Text>
                         <View style={{ flexDirection: 'row', gap: 6 }}>
