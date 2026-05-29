@@ -25,6 +25,7 @@ export type AppRoute =
   | { name: 'list'; listId: string }
   | { name: 'archive' }
   | { name: 'settings' }
+  | { name: 'theme' }
   | { name: 'auth' }
   | { name: 'login' }
   | { name: 'signup' };

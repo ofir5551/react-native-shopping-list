@@ -10,6 +10,7 @@ import { ShoppingListScreen } from './ShoppingListScreen';
 import { SignUpScreen } from './SignUpScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { ArchiveScreen } from './ArchiveScreen';
+import { ThemeScreen } from './ThemeScreen';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 
@@ -24,6 +25,7 @@ export const HomeScreen = () => {
     openList,
     goToLists,
     goToSettings,
+    goToTheme,
     goToAuth,
     goToLogin,
     goToSignup,
@@ -127,8 +129,12 @@ export const HomeScreen = () => {
     return <SignUpScreen onBack={goToAuth} onGoToLogin={goToLogin} onSignUpSuccess={goToSettings} />;
   }
 
+  if (route.name === 'theme') {
+    return <ThemeScreen onBack={goToSettings} />;
+  }
+
   if (route.name === 'settings') {
-    return <SettingsScreen onBack={goToLists} onSignIn={goToAuth} />;
+    return <SettingsScreen onBack={goToLists} onSignIn={goToAuth} onTheme={goToTheme} />;
   }
 
   if (route.name === 'archive') {

@@ -68,6 +68,7 @@ export type ShoppingListsAppState = {
   isCurrentListArchived: boolean;
   currentUserId: string | undefined;
   goToSettings: () => void;
+  goToTheme: () => void;
   goToAuth: () => void;
   goToLogin: () => void;
   goToSignup: () => void;
@@ -448,6 +449,10 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setRoute({ name: 'settings' });
   };
 
+  const goToTheme = () => {
+    setRoute({ name: 'theme' });
+  };
+
   const goToAuth = () => {
     setRoute({ name: 'auth' });
   };
@@ -818,6 +823,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     isCurrentListArchived,
     currentUserId,
     goToSettings,
+    goToTheme,
     goToAuth,
     goToLogin,
     goToSignup,
