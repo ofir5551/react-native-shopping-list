@@ -8,6 +8,7 @@ export const he: Record<TranslationKey, string> = {
   'common.create': 'יצירה',
   'common.or': 'או',
   'common.goBack': 'חזרה',
+  'common.pressBackAgainToExit': 'לחץ שוב לצאת',
   'common.version': 'גרסה',
 
   // Settings screen

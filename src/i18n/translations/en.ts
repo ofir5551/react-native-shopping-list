@@ -6,6 +6,7 @@ export const en = {
   'common.create': 'Create',
   'common.or': 'or',
   'common.goBack': 'Go back',
+  'common.pressBackAgainToExit': 'Press back again to exit',
   'common.version': 'Version',
 
   // Settings screen

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, BackHandler, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useShoppingListsApp } from '../hooks/useShoppingListsApp';
@@ -13,10 +13,15 @@ import { ArchiveScreen } from './ArchiveScreen';
 import { ThemeScreen } from './ThemeScreen';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
+import { useLocale } from '../i18n/LocaleContext';
 
 export const HomeScreen = () => {
   const styles = useAppStyles();
   const { theme, isDark } = useTheme();
+  const { showToast } = useToast();
+  const { t } = useLocale();
+  const lastBackPressRef = useRef<number>(0);
   const {
     isHydrated,
     route,
@@ -82,29 +87,51 @@ export const HomeScreen = () => {
   } = useShoppingListsApp();
 
   useEffect(() => {
-    const subscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      () => {
-        if (route.name === 'list') {
-          if (isOverlayOpen) return false;
-          if (isCurrentListArchived) goToArchive();
-          else goToLists();
-          return true;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (route.name === 'lists') {
+        const now = Date.now();
+        if (now - lastBackPressRef.current < 2000) {
+          return false; // allow exit
         }
-        if (route.name === 'archive') {
-          goToLists();
-          return true;
-        }
-        if (route.name === 'settings') {
-          goToLists();
-          return true;
-        }
-        return false;
+        lastBackPressRef.current = now;
+        showToast(t('common.pressBackAgainToExit'));
+        return true;
       }
-    );
+      if (route.name === 'list') {
+        if (isOverlayOpen) return false;
+        if (isCurrentListArchived) goToArchive();
+        else goToLists();
+        return true;
+      }
+      if (route.name === 'archive') {
+        goToLists();
+        return true;
+      }
+      if (route.name === 'settings') {
+        goToLists();
+        return true;
+      }
+      if (route.name === 'theme') {
+        goToSettings();
+        return true;
+      }
+      if (route.name === 'auth') {
+        goToSettings();
+        return true;
+      }
+      if (route.name === 'login') {
+        goToAuth();
+        return true;
+      }
+      if (route.name === 'signup') {
+        goToAuth();
+        return true;
+      }
+      return false;
+    });
 
     return () => subscription.remove();
-  }, [route.name, isOverlayOpen, goToLists, goToArchive, isCurrentListArchived]);
+  }, [route.name, isOverlayOpen, goToLists, goToArchive, goToSettings, goToAuth, isCurrentListArchived, showToast, t]);
 
   if (!isHydrated) {
     return (
