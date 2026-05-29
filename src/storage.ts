@@ -121,6 +121,7 @@ export const parseRoute = (raw: string | null): AppRoute | null => {
     if (parsed?.name === 'list' && typeof parsed.listId === 'string') {
       return { name: 'list', listId: parsed.listId };
     }
+    if (parsed?.name === 'archive') return { name: 'archive' };
     return null;
   } catch {
     return null;

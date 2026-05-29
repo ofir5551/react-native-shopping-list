@@ -136,7 +136,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
         setRoute(storedRoute as AppRoute);
       } else {
         setRoute(DEFAULT_ROUTE);
-        if (storedRoute?.name === 'list' || storedRoute?.name === 'login' || storedRoute?.name === 'signup') {
+        if (storedRoute?.name === 'list' || storedRoute?.name === 'login' || storedRoute?.name === 'signup' || storedRoute?.name === 'archive') {
           saveRoute(DEFAULT_ROUTE);
         }
       }

@@ -247,7 +247,6 @@ export const ShoppingListScreen = ({
             borderRadius: 8,
             backgroundColor: theme.colors.primary,
             opacity: pressed ? 0.7 : 1,
-            marginLeft: 12,
           })}
           accessibilityRole="button"
           accessibilityLabel={t('lists.archiveList')}
