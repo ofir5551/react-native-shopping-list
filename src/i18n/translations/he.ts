@@ -57,6 +57,11 @@ export const he: Record<TranslationKey, string> = {
   'lists.renameLabel': 'שינוי שם {{name}}',
   'lists.deleteLabel': 'מחיקת {{name}}',
   'lists.exitLabel': 'יציאה מ-{{name}}',
+  'lists.archiveTitle': 'רשימות בארכיון',
+  'lists.noArchived': 'אין רשימות בארכיון',
+  'lists.archiveList': 'העבר לארכיון',
+  'lists.restoreList': 'שחזר',
+  'lists.archiveNudge': 'סיימת הכל! רוצה להעביר לארכיון?',
 
   // Shopping list screen
   'shoppingList.shareList': 'שיתוף רשימה',

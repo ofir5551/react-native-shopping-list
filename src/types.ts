@@ -17,11 +17,13 @@ export type ShoppingList = {
   dismissedSuggestions: string[];
   ownerId?: string;
   shareCode?: string;
+  isArchived?: boolean;
 };
 
 export type AppRoute =
   | { name: 'lists' }
   | { name: 'list'; listId: string }
+  | { name: 'archive' }
   | { name: 'settings' }
   | { name: 'auth' }
   | { name: 'login' }

@@ -55,6 +55,11 @@ export const en = {
   'lists.renameLabel': 'Rename {{name}}',
   'lists.deleteLabel': 'Delete {{name}}',
   'lists.exitLabel': 'Exit {{name}}',
+  'lists.archiveTitle': 'Archived Lists',
+  'lists.noArchived': 'No archived lists',
+  'lists.archiveList': 'Archive List',
+  'lists.restoreList': 'Restore',
+  'lists.archiveNudge': 'All done! Want to archive this list?',
 
   // Shopping list screen
   'shoppingList.shareList': 'Share list',
