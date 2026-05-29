@@ -60,6 +60,8 @@ export const en = {
   'lists.archiveList': 'Archive List',
   'lists.restoreList': 'Restore',
   'lists.archiveNudge': 'All done! Want to archive this list?',
+  'lists.allDoneTitle': 'All done!',
+  'lists.allDoneSubtitle': 'Every item is checked off. Archive this list to keep things tidy.',
 
   // Shopping list screen
   'shoppingList.shareList': 'Share list',

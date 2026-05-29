@@ -62,6 +62,8 @@ export const he: Record<TranslationKey, string> = {
   'lists.archiveList': 'העבר לארכיון',
   'lists.restoreList': 'שחזר',
   'lists.archiveNudge': 'סיימת הכל! רוצה להעביר לארכיון?',
+  'lists.allDoneTitle': 'הכל הושלם!',
+  'lists.allDoneSubtitle': 'כל הפריטים סומנו כבוצע. העבר את הרשימה לארכיון כדי לשמור על סדר.',
 
   // Shopping list screen
   'shoppingList.shareList': 'שיתוף רשימה',

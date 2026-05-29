@@ -5,12 +5,14 @@ import {
   KeyboardAvoidingView,
   Modal,
   Pressable,
+  StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { CompletedSection } from '../components/CompletedSection';
 import { EmptyState } from '../components/EmptyState';
 import { Fab } from '../components/Fab';
 import { CaretPopover } from '../components/CaretPopover';
@@ -214,55 +216,7 @@ export const ShoppingListScreen = ({
     setIsSavedSetsListOpen(true);
   };
 
-  const archiveNudge =
-    !isArchived && activeItems.length === 0 && completedItems.length > 0 ? (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          backgroundColor: theme.colors.surfaceHighlight,
-          borderRadius: 12,
-          marginHorizontal: 16,
-          marginBottom: 8,
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: theme.fonts.regular,
-            fontSize: 14,
-            color: theme.colors.textSecondary,
-            flex: 1,
-          }}
-        >
-          {t('lists.archiveNudge')}
-        </Text>
-        <Pressable
-          onPress={onArchiveList}
-          style={({ pressed }) => ({
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 8,
-            backgroundColor: theme.colors.primary,
-            opacity: pressed ? 0.7 : 1,
-          })}
-          accessibilityRole="button"
-          accessibilityLabel={t('lists.archiveList')}
-        >
-          <Text
-            style={{
-              fontFamily: theme.fonts.semibold,
-              fontSize: 14,
-              color: theme.colors.primaryText,
-            }}
-          >
-            {t('lists.archiveList')}
-          </Text>
-        </Pressable>
-      </View>
-    ) : undefined;
+  const allDone = !isArchived && activeItems.length === 0 && completedItems.length > 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -338,7 +292,49 @@ export const ShoppingListScreen = ({
         />
       )}
 
-      {hasItems && (
+      {hasItems && allDone && (
+        <>
+          <View style={allDoneStyles.container}>
+            <View style={[allDoneStyles.ring1, { backgroundColor: `${theme.colors.primary}12` }]}>
+              <View style={[allDoneStyles.ring2, { backgroundColor: `${theme.colors.primary}20` }]}>
+                <View style={[allDoneStyles.ring3, { backgroundColor: `${theme.colors.primary}38` }]}>
+                  <Ionicons name="checkmark" size={52} color={theme.colors.primary} />
+                </View>
+              </View>
+            </View>
+            <Text style={[allDoneStyles.title, { color: theme.colors.text, fontFamily: theme.fonts.semibold }]}>
+              {t('lists.allDoneTitle')}
+            </Text>
+            <Text style={[allDoneStyles.subtitle, { color: theme.colors.textSecondary, fontFamily: theme.fonts.regular }]}>
+              {t('lists.allDoneSubtitle')}
+            </Text>
+            <Pressable
+              onPress={onArchiveList}
+              style={({ pressed }) => [allDoneStyles.archiveButton, { backgroundColor: theme.colors.primary, opacity: pressed ? 0.8 : 1 }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('lists.archiveList')}
+            >
+              <Ionicons name="archive-outline" size={18} color={theme.colors.primaryText} />
+              <Text style={[allDoneStyles.archiveButtonText, { color: theme.colors.primaryText, fontFamily: theme.fonts.semibold }]}>
+                {t('lists.archiveList')}
+              </Text>
+            </Pressable>
+          </View>
+          <View style={allDoneStyles.completedFooter}>
+            <CompletedSection
+              items={completedItems}
+              isExpanded={showCompleted}
+              onToggleExpanded={() => setShowCompleted(!showCompleted)}
+              onToggleItem={handleToggle}
+              onDeleteItem={handleDelete}
+              onIncrementItem={handleIncrementQuantity}
+              onDecrementItem={handleDecrementQuantity}
+            />
+          </View>
+        </>
+      )}
+
+      {hasItems && !allDone && (
         <ShoppingList
           activeItems={activeItems}
           completedItems={completedItems}
@@ -348,7 +344,6 @@ export const ShoppingListScreen = ({
           onDeleteItem={handleDelete}
           onIncrementItem={handleIncrementQuantity}
           onDecrementItem={handleDecrementQuantity}
-          archiveNudge={archiveNudge}
         />
       )}
 
@@ -699,3 +694,60 @@ export const ShoppingListScreen = ({
     </SafeAreaView>
   );
 };
+
+const allDoneStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    paddingBottom: 24,
+  },
+  ring1: {
+    width: 152,
+    height: 152,
+    borderRadius: 76,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+  },
+  ring2: {
+    width: 116,
+    height: 116,
+    borderRadius: 58,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ring3: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 36,
+  },
+  archiveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 28,
+    paddingVertical: 15,
+    borderRadius: 14,
+  },
+  archiveButtonText: {
+    fontSize: 16,
+  },
+  completedFooter: {
+    paddingBottom: 96,
+  },
+});
