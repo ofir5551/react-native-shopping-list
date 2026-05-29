@@ -56,3 +56,4 @@ npm-debug.log*
 builds/
 .playwright-mcp
 *.png
+.superpowers
