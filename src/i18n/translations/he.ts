@@ -38,6 +38,7 @@ export const he: Record<TranslationKey, string> = {
   'settings.listView.compact': 'צפוף',
   'settings.listView.normal': 'רגיל',
   'settings.listView.wide': 'רחב',
+  'settings.theme': 'ערכת נושא',
 
   // Lists screen
   'lists.title': 'רשימות',
@@ -268,4 +269,17 @@ export const he: Record<TranslationKey, string> = {
   'aiRateLimit.authTitle': 'הגעת למגבלה היומית',
   'aiRateLimit.authMessage': 'הגעת למגבלת ה-AI היומית שלך. המגבלה מתאפסת בחצות.',
   'aiRateLimit.signUpButton': 'הרשמה — חינם',
+
+  // Theme selection screen
+  'theme.title': 'ערכת נושא',
+  'theme.lightThemes': 'ערכות בהירות',
+  'theme.darkThemes': 'ערכות כהות',
+  'theme.natural': 'טבעי',
+  'theme.ocean': 'אוקיינוס',
+  'theme.sunset': 'שקיעה',
+  'theme.lavender': 'לבנדר',
+  'theme.midnight': 'חצות',
+  'theme.navy': 'נייבי',
+  'theme.charcoal': 'פחם',
+  'theme.plum': 'שזיף',
 };

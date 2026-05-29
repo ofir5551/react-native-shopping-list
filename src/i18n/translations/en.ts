@@ -36,6 +36,7 @@ export const en = {
   'settings.listView.compact': 'Compact',
   'settings.listView.normal': 'Normal',
   'settings.listView.wide': 'Wide',
+  'settings.theme': 'Theme',
 
   // Lists screen
   'lists.title': 'Lists',
@@ -266,6 +267,19 @@ export const en = {
   'aiRateLimit.authTitle': 'Daily limit reached',
   'aiRateLimit.authMessage': "You've reached your daily AI limit. It resets at midnight.",
   'aiRateLimit.signUpButton': 'Sign Up — It\'s Free',
+
+  // Theme selection screen
+  'theme.title': 'Theme',
+  'theme.lightThemes': 'Light Themes',
+  'theme.darkThemes': 'Dark Themes',
+  'theme.natural': 'Natural',
+  'theme.ocean': 'Ocean',
+  'theme.sunset': 'Sunset',
+  'theme.lavender': 'Lavender',
+  'theme.midnight': 'Midnight',
+  'theme.navy': 'Navy',
+  'theme.charcoal': 'Charcoal',
+  'theme.plum': 'Plum',
 } as const;
 
 export type TranslationKey = keyof typeof en;
