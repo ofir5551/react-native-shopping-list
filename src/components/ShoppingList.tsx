@@ -14,6 +14,7 @@ type ShoppingListProps = {
   onDeleteItem: (id: string) => void;
   onIncrementItem: (id: string) => void;
   onDecrementItem: (id: string) => void;
+  archiveNudge?: React.ReactNode;
 };
 
 const keyExtractor = (item: ShoppingItem) => item.id;
@@ -27,6 +28,7 @@ export const ShoppingList = ({
   onDeleteItem,
   onIncrementItem,
   onDecrementItem,
+  archiveNudge,
 }: ShoppingListProps) => {
   const styles = useAppStyles();
 
@@ -40,19 +42,35 @@ export const ShoppingList = ({
     />
   ), [onToggleItem, onDeleteItem, onIncrementItem, onDecrementItem]);
 
-  const footer = useMemo(() =>
-    completedItems.length > 0 ? (
-      <CompletedSection
-        items={completedItems}
-        isExpanded={showCompleted}
-        onToggleExpanded={onToggleCompleted}
-        onToggleItem={onToggleItem}
-        onDeleteItem={onDeleteItem}
-        onIncrementItem={onIncrementItem}
-        onDecrementItem={onDecrementItem}
-      />
-    ) : null,
-  [completedItems, showCompleted, onToggleCompleted, onToggleItem, onDeleteItem, onIncrementItem, onDecrementItem]);
+  const footer = useMemo(
+    () =>
+      archiveNudge || completedItems.length > 0 ? (
+        <>
+          {archiveNudge}
+          {completedItems.length > 0 ? (
+            <CompletedSection
+              items={completedItems}
+              isExpanded={showCompleted}
+              onToggleExpanded={onToggleCompleted}
+              onToggleItem={onToggleItem}
+              onDeleteItem={onDeleteItem}
+              onIncrementItem={onIncrementItem}
+              onDecrementItem={onDecrementItem}
+            />
+          ) : null}
+        </>
+      ) : null,
+    [
+      archiveNudge,
+      completedItems,
+      showCompleted,
+      onToggleCompleted,
+      onToggleItem,
+      onDeleteItem,
+      onIncrementItem,
+      onDecrementItem,
+    ]
+  );
 
   return (
     <FlatList
