@@ -61,6 +61,11 @@ export type ShoppingListsAppState = {
   submitListName: () => void;
   deleteList: (listId: string) => void;
   leaveList: (listId: string) => void;
+  archivedLists: ShoppingList[];
+  archiveList: (listId: string) => void;
+  restoreList: (listId: string) => void;
+  goToArchive: () => void;
+  isCurrentListArchived: boolean;
   currentUserId: string | undefined;
   goToSettings: () => void;
   goToAuth: () => void;
@@ -221,7 +226,12 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   }, [currentList]);
 
   const sortedLists = useMemo(
-    () => [...lists].sort((a, b) => b.updatedAt - a.updatedAt),
+    () => [...lists].filter((l) => !l.isArchived).sort((a, b) => b.updatedAt - a.updatedAt),
+    [lists]
+  );
+
+  const archivedLists = useMemo(
+    () => [...lists].filter((l) => l.isArchived === true).sort((a, b) => b.updatedAt - a.updatedAt),
     [lists]
   );
 
@@ -411,6 +421,22 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       showToast(t('toast.leaveError'));
     }
   };
+
+  const archiveList = (listId: string) => {
+    updateListById(listId, (list) => ({ ...list, isArchived: true }));
+    setRoute(DEFAULT_ROUTE);
+  };
+
+  const restoreList = (listId: string) => {
+    updateListById(listId, (list) => ({ ...list, isArchived: false }));
+    setRoute(DEFAULT_ROUTE);
+  };
+
+  const goToArchive = () => {
+    setRoute({ name: 'archive' });
+  };
+
+  const isCurrentListArchived = currentList?.isArchived === true;
 
   const goToSettings = () => {
     setRoute({ name: 'settings' });
@@ -779,6 +805,11 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     submitListName,
     deleteList,
     leaveList,
+    archivedLists,
+    archiveList,
+    restoreList,
+    goToArchive,
+    isCurrentListArchived,
     currentUserId,
     goToSettings,
     goToAuth,
