@@ -211,6 +211,12 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setSelectedRecent([]);
   }, [route]);
 
+  useEffect(() => {
+    if (activeItems.length === 0 && completedItems.length > 0) {
+      setShowCompleted(false);
+    }
+  }, [activeItems.length, completedItems.length]);
+
   const currentList = useMemo(() => {
     if (route.name !== 'list') return null;
     return lists.find((list) => list.id === route.listId) ?? null;

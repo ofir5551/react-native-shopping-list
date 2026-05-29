@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -320,7 +321,11 @@ export const ShoppingListScreen = ({
               </Text>
             </Pressable>
           </View>
-          <View style={allDoneStyles.completedFooter}>
+          <ScrollView
+            style={allDoneStyles.completedScrollArea}
+            contentContainerStyle={allDoneStyles.completedScrollContent}
+            scrollEnabled={showCompleted}
+          >
             <CompletedSection
               items={completedItems}
               isExpanded={showCompleted}
@@ -330,7 +335,7 @@ export const ShoppingListScreen = ({
               onIncrementItem={handleIncrementQuantity}
               onDecrementItem={handleDecrementQuantity}
             />
-          </View>
+          </ScrollView>
         </>
       )}
 
@@ -698,6 +703,7 @@ export const ShoppingListScreen = ({
 const allDoneStyles = StyleSheet.create({
   container: {
     flex: 1,
+    minHeight: 260,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
@@ -747,7 +753,11 @@ const allDoneStyles = StyleSheet.create({
   archiveButtonText: {
     fontSize: 16,
   },
-  completedFooter: {
+  completedScrollArea: {
+    maxHeight: 280,
+    flexShrink: 1,
+  },
+  completedScrollContent: {
     paddingBottom: 96,
   },
 });
