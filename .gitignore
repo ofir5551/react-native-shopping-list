@@ -49,9 +49,10 @@ yarn-error.*
 
 # Claude local settings (machine-specific)
 .claude/settings.local.json
-.superpowers
 
 # logs
 *.log
 npm-debug.log*
 builds/
+.playwright-mcp
+*.png
