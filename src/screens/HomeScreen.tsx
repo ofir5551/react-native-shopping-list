@@ -9,6 +9,7 @@ import { LoginScreen } from './LoginScreen';
 import { ShoppingListScreen } from './ShoppingListScreen';
 import { SignUpScreen } from './SignUpScreen';
 import { SettingsScreen } from './SettingsScreen';
+import { ArchiveScreen } from './ArchiveScreen';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 
@@ -71,6 +72,11 @@ export const HomeScreen = () => {
     handleClearAll,
     handleIncrementQuantity,
     handleDecrementQuantity,
+    archivedLists,
+    archiveList,
+    restoreList,
+    goToArchive,
+    isCurrentListArchived,
   } = useShoppingListsApp();
 
   useEffect(() => {
@@ -79,6 +85,11 @@ export const HomeScreen = () => {
       () => {
         if (route.name === 'list') {
           if (isOverlayOpen) return false;
+          if (isCurrentListArchived) goToArchive();
+          else goToLists();
+          return true;
+        }
+        if (route.name === 'archive') {
           goToLists();
           return true;
         }
@@ -91,7 +102,7 @@ export const HomeScreen = () => {
     );
 
     return () => subscription.remove();
-  }, [route.name, isOverlayOpen, goToLists]);
+  }, [route.name, isOverlayOpen, goToLists, goToArchive, isCurrentListArchived]);
 
   if (!isHydrated) {
     return (
@@ -120,6 +131,16 @@ export const HomeScreen = () => {
     return <SettingsScreen onBack={goToLists} onSignIn={goToAuth} />;
   }
 
+  if (route.name === 'archive') {
+    return (
+      <ArchiveScreen
+        archivedLists={archivedLists}
+        onOpenList={openList}
+        onBack={goToLists}
+      />
+    );
+  }
+
   if (route.name === 'lists' || !currentList) {
     return (
       <ListsScreen
@@ -141,6 +162,7 @@ export const HomeScreen = () => {
         onCloseListNameModal={closeListNameModal}
         onSubmitListName={submitListName}
         onOpenSettings={goToSettings}
+        onOpenArchive={goToArchive}
       />
     );
   }
@@ -181,7 +203,10 @@ export const HomeScreen = () => {
         handleIncrementQuantity={handleIncrementQuantity}
         handleDecrementQuantity={handleDecrementQuantity}
         allLists={lists}
-        onBack={goToLists}
+        isArchived={isCurrentListArchived}
+        onArchiveList={() => archiveList(currentList!.id)}
+        onRestoreList={() => restoreList(currentList!.id)}
+        onBack={isCurrentListArchived ? goToArchive : goToLists}
         onShareList={() => openShareListModal(currentList.id)}
         currentUserId={currentUserId}
         goToAuth={goToAuth}
@@ -206,6 +231,7 @@ export const HomeScreen = () => {
         onCloseListNameModal={closeListNameModal}
         onSubmitListName={submitListName}
         onOpenSettings={goToSettings}
+        onOpenArchive={goToArchive}
         hidden={true}
       />
     </>
