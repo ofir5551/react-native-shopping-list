@@ -211,12 +211,6 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
     setSelectedRecent([]);
   }, [route]);
 
-  useEffect(() => {
-    if (activeItems.length === 0 && completedItems.length > 0) {
-      setShowCompleted(false);
-    }
-  }, [activeItems.length, completedItems.length]);
-
   const currentList = useMemo(() => {
     if (route.name !== 'list') return null;
     return lists.find((list) => list.id === route.listId) ?? null;
@@ -230,6 +224,12 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
       completedItems: sorted.filter((item) => item.purchased),
     };
   }, [currentList]);
+
+  useEffect(() => {
+    if (activeItems.length === 0 && completedItems.length > 0) {
+      setShowCompleted(false);
+    }
+  }, [activeItems.length, completedItems.length]);
 
   const sortedLists = useMemo(
     () => [...lists].filter((l) => !l.isArchived).sort((a, b) => b.updatedAt - a.updatedAt),
