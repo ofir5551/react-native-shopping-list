@@ -43,7 +43,7 @@ export const he: Record<TranslationKey, string> = {
   'lists.title': 'רשימות',
   'lists.subtitle': 'בחרו רשימה או צרו חדשה',
   'lists.joinShared': 'הצטרפות לרשימה משותפת',
-  'lists.emptyTitle': 'אין רשימות עדיין',
+  'lists.emptyTitle': 'מוכנים לקנות?',
   'lists.emptySubtitle': 'לחצו + כדי ליצור את הרשימה הראשונה שלכם.',
   'lists.itemCount.one': 'פריט אחד',
   'lists.itemCount.other': '{{count}} פריטים',

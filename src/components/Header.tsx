@@ -56,6 +56,7 @@ export const Header = ({
           ) : null}
         </View>
       </View>
+      <View style={styles.headerDivider} />
     </View>
   );
 };

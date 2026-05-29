@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useState } from 'react';
-import { FlatList, ListRenderItemInfo, Modal, Pressable, Text, View } from 'react-native';
+import { FlatList, ListRenderItemInfo, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Fab } from '../components/Fab';
 import { ListNameModal } from '../components/ListNameModal';
@@ -32,10 +33,34 @@ type ListsScreenProps = {
   onCloseListNameModal: () => void;
   onSubmitListName: () => void;
   onOpenSettings: () => void;
+  onOpenArchive: () => void;
   hidden?: boolean;
 };
 
 const keyExtractor = (item: ShoppingList) => item.id;
+
+const listsEmptyStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    paddingBottom: 80,
+  },
+  icon: {
+    marginBottom: 28,
+  },
+  title: {
+    fontSize: 22,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginTop: 10,
+    lineHeight: 22,
+  },
+});
 
 type ListCardProps = {
   item: ShoppingList;
@@ -146,6 +171,7 @@ export const ListsScreen = ({
   onCloseListNameModal,
   onSubmitListName,
   onOpenSettings,
+  onOpenArchive,
   hidden,
 }: ListsScreenProps) => {
   const styles = useAppStyles();
@@ -193,6 +219,14 @@ export const ListsScreen = ({
         subtitle={t('lists.subtitle')}
         onOpenSettings={onOpenSettings}
       >
+        <Pressable
+          style={styles.iconButton}
+          onPress={onOpenArchive}
+          accessibilityRole="button"
+          accessibilityLabel={t('lists.archiveTitle')}
+        >
+          <Ionicons name="archive-outline" size={20} color={theme.colors.textSecondary} />
+        </Pressable>
         {currentUserId && (
           <Pressable
             style={styles.iconButton}
@@ -206,9 +240,22 @@ export const ListsScreen = ({
       </Header>
 
       {lists.length === 0 ? (
-        <View style={styles.listsEmptyState}>
-          <Text style={styles.emptyTitle}>{t('lists.emptyTitle')}</Text>
-          <Text style={styles.emptySubtitle}>{t('lists.emptySubtitle')}</Text>
+        <View style={listsEmptyStyles.container}>
+          <Svg width={72} height={72} viewBox="0 0 24 24" fill="none" style={listsEmptyStyles.icon}>
+            <Path
+              d="M11 6L21 6.00072M11 12L21 12.0007M11 18L21 18.0007M3 11.9444L4.53846 13.5L8 10M3 5.94444L4.53846 7.5L8 4M4.5 18H4.51M5 18C5 18.2761 4.77614 18.5 4.5 18.5C4.22386 18.5 4 18.2761 4 18C4 17.7239 4.22386 17.5 4.5 17.5C4.77614 17.5 5 17.7239 5 18Z"
+              stroke={theme.colors.primary}
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </Svg>
+          <Text style={[listsEmptyStyles.title, { color: theme.colors.text, fontFamily: theme.fonts.semibold }]}>
+            {t('lists.emptyTitle')}
+          </Text>
+          <Text style={[listsEmptyStyles.subtitle, { color: theme.colors.textSecondary, fontFamily: theme.fonts.regular }]}>
+            {t('lists.emptySubtitle')}
+          </Text>
         </View>
       ) : (
         <FlatList

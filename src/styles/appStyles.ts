@@ -28,6 +28,11 @@ export const useAppStyles = () => {
         paddingTop: theme.spacing.sm,
         paddingBottom: theme.spacing.md,
       },
+      headerDivider: {
+        height: 1,
+        backgroundColor: theme.colors.border,
+        marginTop: theme.spacing.sm,
+      },
       headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
