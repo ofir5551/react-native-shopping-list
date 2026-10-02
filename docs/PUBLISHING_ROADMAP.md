@@ -1,10 +1,17 @@
 # Play Store Publishing Checklist
 
-Status legend: `[ ]` todo, `[x]` done. Items marked **(verify)** are things I noticed but did not confirm in code or in the console.
+Status legend: `[ ]` todo, `[~]` partly done, `[x]` done. Items marked **(verify)** are things I noticed but did not confirm in code or in the console.
+
+## Done so far
+
+- [x] Expo SDK 54 packages bumped to the expected patch versions (`expo` 54.0.37, `expo-updates` 29.0.20, `expo-font` 14.0.12, `jest-expo` 54.0.18); `expo install --check` is clean and tests pass. Not yet run on a device or in a production build.
+- [x] Account deletion backend and UI built, deployed and tested (details in section 1).
+
+Known open item: `npm audit` reports 28 vulnerabilities (1 critical, 9 high). Not triaged yet; avoid `npm audit fix --force`. Work out which ones reach the shipped app.
 
 ## 1. Blockers (Play Store will reject, or the app is unsafe without these)
 
-- [ ] **In-app account deletion.** Code written (edge function, `src/utils/deleteAccount.ts`, Settings button + confirm modal, en/he strings, tests). Still to do: deploy `delete-account`, test it end to end with a throwaway account, and add the web deletion-request page.
+- [~] **In-app account deletion.** Done: `delete-account` edge function (deployed, JWT-verified), `src/utils/deleteAccount.ts` + tests, Settings button with confirm sheet, en/he strings. Verified end to end in a browser against the live project (cancel does nothing; confirm deletes the user and cascades their rows; app falls back to guest mode). Still to do: RTL visual check of the confirm sheet, a test with a list shared between two users, the web deletion-request page, and updating the privacy policy text to match.
   - Add an edge function (e.g. `supabase/functions/delete-account`) that verifies the caller's JWT, then calls `auth.admin.deleteUser`. `ON DELETE CASCADE` (as on `ai_usage`) removes related rows; confirm every user-owned table cascades, including `lists` and `list_shares`.
   - Add a "Delete account" button in `SettingsScreen.tsx` with a confirmation dialog, plus en/he strings.
   - Clear local lists after deletion and fall back to a fresh anonymous session.
@@ -60,7 +67,7 @@ Status legend: `[ ]` todo, `[x]` done. Items marked **(verify)** are things I no
 - [ ] Anonymous-to-account upgrade: create lists as a guest, sign up, confirm lists migrate (`SyncContext`) and nothing is lost if the migration is interrupted.
 - [ ] If `signInAnonymously` fails (offline first launch), confirm the app still works fully in local mode and retries later.
 - [ ] RTL/Hebrew pass on every screen, including new Settings controls (per CLAUDE.md).
-- [ ] Accessibility pass: TalkBack labels on icon-only buttons (Fab, Header, ItemRow actions), touch targets of at least 48dp, contrast across all palettes, large font scaling.
+- [ ] Accessibility pass: TalkBack labels on icon-only buttons (Fab, Header, ItemRow actions), touch targets of at least 48dp, contrast across all palettes, large font scaling. Known gap: the Settings gear in `Header.tsx` has no `accessibilityLabel`; the Archive and Join buttons on the Lists screen may be the same.
 - [ ] Test on at least: a small low-end Android device, a large phone, a tablet (`supportsTablet` is true for iOS), and Android 10 through 15.
 - [ ] Performance check with a large list (hundreds of items) and many lists.
 - [ ] Remove or gate leftover dev features. Developer options are already behind `__DEV__`; confirm `parserDevMode` has no effect in release builds.
