@@ -16,6 +16,8 @@ import { useTheme } from '../context/ThemeContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../i18n/LocaleContext';
+import { useToast } from '../context/ToastContext';
+import { deleteAccount } from '../utils/deleteAccount';
 import { supabase } from '../supabase';
 import Constants from 'expo-constants';
 
@@ -34,6 +36,9 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
     const { t, locale, setLocale, isRTL } = useLocale();
     const [isToSOpen, setIsToSOpen] = useState(false);
     const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const { showToast } = useToast();
     const [aiUsage, setAiUsage] = useState<{ count: number; limit: number } | null>(null);
 
     const toggleLocale = () => {
@@ -47,6 +52,19 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
+    };
+
+    const handleDeleteAccount = async () => {
+        setIsDeleting(true);
+        try {
+            await deleteAccount();
+            setIsDeleteOpen(false);
+            showToast(t('settings.deleteAccountSuccess'));
+        } catch {
+            showToast(t('settings.deleteAccountError'));
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     useEffect(() => {
@@ -179,6 +197,11 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
                             </Text>
                             <Pressable style={styles.authButtonSecondary} onPress={handleSignOut}>
                                 <Text style={styles.authButtonTextSecondary}>{t('settings.signOut')}</Text>
+                            </Pressable>
+                            <Pressable onPress={() => setIsDeleteOpen(true)} accessibilityRole="button">
+                                <Text style={[styles.settingsValue, { color: theme.colors.danger, marginTop: 8 }]}>
+                                    {t('settings.deleteAccount')}
+                                </Text>
                             </Pressable>
                         </View>
                     ) : (
@@ -316,6 +339,39 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
             </ScrollView>
 
             <StatusBar style={isDark ? 'light' : 'dark'} />
+
+            <Modal
+                transparent
+                visible={isDeleteOpen}
+                animationType="fade"
+                onRequestClose={() => !isDeleting && setIsDeleteOpen(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <Pressable style={styles.modalBackdrop} onPress={() => !isDeleting && setIsDeleteOpen(false)} />
+                    <View style={[styles.modalPanel, { height: undefined, paddingBottom: 24 }]}>
+                        <Text style={[styles.modalTitle, { marginBottom: 12 }]}>{t('settings.deleteAccountTitle')}</Text>
+                        <Text style={{ fontSize: 14, color: theme.colors.text, lineHeight: 22, marginBottom: 16 }}>
+                            {t('settings.deleteAccountMessage')}
+                        </Text>
+                        <Pressable
+                            style={[styles.authButton, { backgroundColor: theme.colors.danger, opacity: isDeleting ? 0.6 : 1 }]}
+                            onPress={handleDeleteAccount}
+                            disabled={isDeleting}
+                            accessibilityRole="button"
+                        >
+                            <Text style={styles.authButtonText}>{t('settings.deleteAccountConfirm')}</Text>
+                        </Pressable>
+                        <Pressable
+                            style={styles.authButtonSecondary}
+                            onPress={() => setIsDeleteOpen(false)}
+                            disabled={isDeleting}
+                            accessibilityRole="button"
+                        >
+                            <Text style={styles.authButtonTextSecondary}>{t('common.cancel')}</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
 
             <Modal
                 transparent
