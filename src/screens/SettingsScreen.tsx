@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
     Image,
+    Linking,
     Modal,
     ScrollView,
     Switch,
@@ -21,6 +22,8 @@ import { deleteAccount } from '../utils/deleteAccount';
 import { supabase } from '../supabase';
 import Constants from 'expo-constants';
 
+const SITE_URL = 'https://ofir5551.github.io/react-native-shopping-list';
+
 type SettingsScreenProps = {
     onBack: () => void;
     onSignIn: () => void;
@@ -34,8 +37,6 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
     const listViewModes = ['compact', 'normal', 'wide'] as const;
     const { user } = useAuth();
     const { t, locale, setLocale, isRTL } = useLocale();
-    const [isToSOpen, setIsToSOpen] = useState(false);
-    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const { showToast } = useToast();
@@ -315,7 +316,7 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
                     )}
                     <Pressable
                         style={styles.settingsRow}
-                        onPress={() => setIsToSOpen(true)}
+                        onPress={() => Linking.openURL(`${SITE_URL}/terms.html`)}
                     >
                         <Text style={styles.settingsLabel}>{t('settings.termsOfService')}</Text>
                         <Ionicons
@@ -326,7 +327,7 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
                     </Pressable>
                     <Pressable
                         style={[styles.settingsRow, styles.settingsRowLast]}
-                        onPress={() => setIsPrivacyOpen(true)}
+                        onPress={() => Linking.openURL(`${SITE_URL}/privacy.html`)}
                     >
                         <Text style={styles.settingsLabel}>{t('settings.privacyPolicy')}</Text>
                         <Ionicons
@@ -369,73 +370,6 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
                         >
                             <Text style={styles.authButtonTextSecondary}>{t('common.cancel')}</Text>
                         </Pressable>
-                    </View>
-                </View>
-            </Modal>
-
-            <Modal
-                transparent
-                visible={isToSOpen}
-                animationType="fade"
-                onRequestClose={() => setIsToSOpen(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <Pressable style={styles.modalBackdrop} onPress={() => setIsToSOpen(false)} />
-                    <View style={[styles.modalPanel, { maxHeight: '75%' }]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>{t('settings.termsOfService')}</Text>
-                            <Pressable onPress={() => setIsToSOpen(false)} style={styles.modalCloseButton}>
-                                <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
-                            </Pressable>
-                        </View>
-                        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
-                            <Text style={{ fontSize: 14, color: theme.colors.text, lineHeight: 22 }}>
-                                {'By using Shoppy, you agree to these terms.\n\n'}
-                                {'Shoppy is a personal shopping list app provided for your individual use. You may use it only for lawful purposes.\n\n'}
-                                {'AI Features: When you use AI features (Smart Suggestions, Scan Photo), your input is sent to OpenAI for processing. AI-generated content is provided as-is without any guarantee of accuracy.\n\n'}
-                                {'Data: If you create an account, your lists are synced to our servers via Supabase. Guest users’ data stays on their device only.\n\n'}
-                                {'No Warranty: Shoppy is provided “as is” without warranties of any kind. We are not liable for any loss of data or damages arising from your use of the app.\n\n'}
-                                {'Changes: We may update these terms at any time. Continued use of the app constitutes acceptance of the updated terms.\n\n'}
-                                {'Contact: ofirbenyamin3@gmail.com'}
-                            </Text>
-                        </ScrollView>
-                    </View>
-                </View>
-            </Modal>
-
-            <Modal
-                transparent
-                visible={isPrivacyOpen}
-                animationType="fade"
-                onRequestClose={() => setIsPrivacyOpen(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <Pressable style={styles.modalBackdrop} onPress={() => setIsPrivacyOpen(false)} />
-                    <View style={[styles.modalPanel, { maxHeight: '75%' }]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>{t('settings.privacyPolicy')}</Text>
-                            <Pressable onPress={() => setIsPrivacyOpen(false)} style={styles.modalCloseButton}>
-                                <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
-                            </Pressable>
-                        </View>
-                        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
-                            <Text style={{ fontSize: 14, color: theme.colors.text, lineHeight: 22 }}>
-                                {'What We Collect\n'}
-                                {'• Email address (if you create an account)\n'}
-                                {'• Shopping list contents you enter\n'}
-                                {'• Text or images sent to AI features\n\n'}
-                                {'How We Use It\n'}
-                                {'We use your data solely to provide the Shoppy service — syncing your lists across devices and generating AI suggestions. We do not sell your data.\n\n'}
-                                {'Third-Party Services\n'}
-                                {'• Supabase — handles authentication and data storage (supabase.com)\n'}
-                                {'• OpenAI — processes AI feature requests; prompts and images you submit are sent to their servers (openai.com/privacy)\n\n'}
-                                {'Guest Users\n'}
-                                {'If you use Shoppy without an account, all data stays on your device and is never sent to our servers (AI features still send input to OpenAI).\n\n'}
-                                {'Your Rights\n'}
-                                {'You may delete your account at any time from Settings, which removes all your data from our servers.\n\n'}
-                                {'Contact: ofirbenyamin3@gmail.com'}
-                            </Text>
-                        </ScrollView>
                     </View>
                 </View>
             </Modal>
