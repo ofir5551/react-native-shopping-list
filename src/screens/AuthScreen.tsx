@@ -1,24 +1,12 @@
-import React, { useState } from 'react';
-import {
-    ActivityIndicator,
-    Platform,
-    Text,
-    Pressable,
-    View,
-} from 'react-native';
+import React from 'react';
+import { Text, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Ionicons, AntDesign } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri } from 'expo-auth-session';
-import * as QueryParams from 'expo-auth-session/build/QueryParams';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
-import { useToast } from '../context/ToastContext';
 import { useLocale } from '../i18n/LocaleContext';
-import { supabase } from '../supabase';
-
-WebBrowser.maybeCompleteAuthSession();
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
 
 type AuthScreenProps = {
     onBack: () => void;
@@ -30,48 +18,7 @@ type AuthScreenProps = {
 export const AuthScreen = ({ onBack, onGoToLogin, onGoToSignup, onAuthSuccess }: AuthScreenProps) => {
     const styles = useAppStyles();
     const { theme, isDark } = useTheme();
-    const { showToast } = useToast();
     const { t, isRTL } = useLocale();
-
-    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const handleGoogleSignIn = async () => {
-        setIsGoogleLoading(true);
-        setError(null);
-        try {
-            if (Platform.OS === 'web') {
-                const { error } = await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: window.location.origin },
-                });
-                if (error) throw error;
-            } else {
-                const redirectUrl = makeRedirectUri();
-                const { data, error } = await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: redirectUrl, skipBrowserRedirect: true },
-                });
-                if (error) throw error;
-                if (data.url) {
-                    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
-                    if (result.type === 'success') {
-                        const { params, errorCode } = QueryParams.getQueryParams(result.url);
-                        if (errorCode) throw new Error(errorCode);
-                        const { access_token, refresh_token } = params;
-                        const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
-                        if (sessionError) throw sessionError;
-                        showToast(t('login.signedIn'));
-                        onAuthSuccess();
-                    }
-                }
-            }
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setIsGoogleLoading(false);
-        }
-    };
 
     return (
         <SafeAreaView style={[styles.container, { paddingHorizontal: 0 }]}>
@@ -111,38 +58,7 @@ export const AuthScreen = ({ onBack, onGoToLogin, onGoToSignup, onAuthSuccess }:
                 </View>
 
                 {/* Google button */}
-                <Pressable
-                    style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 10,
-                        backgroundColor: theme.colors.surface,
-                        borderWidth: 1.5,
-                        borderColor: theme.colors.border,
-                        borderRadius: 14,
-                        paddingVertical: 14,
-                        marginBottom: 14,
-                        shadowColor: '#000',
-                        shadowOpacity: 0.06,
-                        shadowRadius: 6,
-                        shadowOffset: { width: 0, height: 2 },
-                        elevation: 2,
-                    }}
-                    onPress={handleGoogleSignIn}
-                    disabled={isGoogleLoading}
-                >
-                    {isGoogleLoading ? (
-                        <ActivityIndicator color={theme.colors.textSecondary} />
-                    ) : (
-                        <>
-                            <AntDesign name="google" size={20} color="#DB4437" />
-                            <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.text }}>
-                                {t('auth.continueWithGoogle')}
-                            </Text>
-                        </>
-                    )}
-                </Pressable>
+                <GoogleSignInButton onSuccess={onAuthSuccess} />
 
                 {/* Divider */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
@@ -157,7 +73,6 @@ export const AuthScreen = ({ onBack, onGoToLogin, onGoToSignup, onAuthSuccess }:
                 <Pressable
                     style={[styles.authButtonSecondary, { borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }]}
                     onPress={onGoToLogin}
-                    disabled={isGoogleLoading}
                 >
                     <Ionicons name="mail-outline" size={18} color={theme.colors.text} />
                     <Text style={[styles.authButtonTextSecondary, { fontSize: 16 }]}>
@@ -169,7 +84,6 @@ export const AuthScreen = ({ onBack, onGoToLogin, onGoToSignup, onAuthSuccess }:
                 <Pressable
                     style={{ alignItems: 'center', paddingVertical: 10 }}
                     onPress={onGoToSignup}
-                    disabled={isGoogleLoading}
                 >
                     <Text style={{ color: theme.colors.textSecondary, fontSize: 15 }}>
                         {t('login.newHere')}{' '}
@@ -178,13 +92,6 @@ export const AuthScreen = ({ onBack, onGoToLogin, onGoToSignup, onAuthSuccess }:
                         </Text>
                     </Text>
                 </Pressable>
-
-                {/* Error */}
-                {error && (
-                    <Text style={[styles.nameModalError, { marginTop: 16, textAlign: 'center' }]}>
-                        {error}
-                    </Text>
-                )}
             </View>
         </SafeAreaView>
     );
