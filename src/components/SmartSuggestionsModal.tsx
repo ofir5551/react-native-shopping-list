@@ -20,14 +20,11 @@ type SuggestionItem = {
     selected: boolean;
 };
 
-type RateLimitInfo = { isAnonymous: boolean };
-
 type SmartSuggestionsModalProps = {
     visible: boolean;
     prompt: string;
     onClose: () => void;
     onQuickAdd: (items: { name: string; quantity: number }[]) => void;
-    onSignUp?: () => void;
 };
 
 const triggerHaptic = () => {
@@ -41,7 +38,6 @@ export const SmartSuggestionsModal = ({
     prompt,
     onClose,
     onQuickAdd,
-    onSignUp,
 }: SmartSuggestionsModalProps) => {
     const styles = useAppStyles();
     const { theme } = useTheme();
@@ -49,7 +45,7 @@ export const SmartSuggestionsModal = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [items, setItems] = useState<SuggestionItem[]>([]);
-    const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null);
+    const [isRateLimited, setIsRateLimited] = useState(false);
 
     useEffect(() => {
         if (visible && prompt) {
@@ -57,7 +53,7 @@ export const SmartSuggestionsModal = ({
         } else {
             setItems([]);
             setError(null);
-            setRateLimit(null);
+            setIsRateLimited(false);
         }
     }, [visible, prompt]);
 
@@ -74,7 +70,7 @@ export const SmartSuggestionsModal = ({
                 try {
                     const body = await (fnError as any).context?.json?.();
                     if (body?.error === 'rate_limit_exceeded') {
-                        setRateLimit({ isAnonymous: body.isAnonymous ?? false });
+                        setIsRateLimited(true);
                         return;
                     }
                 } catch {}
@@ -141,35 +137,15 @@ export const SmartSuggestionsModal = ({
                         </Text>
                     </View>
 
-                    {rateLimit ? (
+                    {isRateLimited ? (
                         <View style={{ padding: 32, alignItems: 'center', gap: 12 }}>
                             <Ionicons name="sparkles" size={36} color={theme.colors.primary} />
                             <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.text, textAlign: 'center' }}>
-                                {rateLimit.isAnonymous ? t('aiRateLimit.guestTitle') : t('aiRateLimit.authTitle')}
+                                {t('aiRateLimit.authTitle')}
                             </Text>
                             <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 }}>
-                                {rateLimit.isAnonymous
-                                    ? t('aiRateLimit.guestMessage')
-                                    : t('aiRateLimit.authMessage')}
+                                {t('aiRateLimit.authMessage')}
                             </Text>
-                            {rateLimit.isAnonymous && onSignUp && (
-                                <Pressable
-                                    style={({ pressed }) => ({
-                                        marginTop: 4,
-                                        paddingHorizontal: 24,
-                                        paddingVertical: 12,
-                                        borderRadius: 12,
-                                        backgroundColor: theme.colors.primary,
-                                        opacity: pressed ? 0.8 : 1,
-                                    })}
-                                    onPress={() => { onClose(); onSignUp(); }}
-                                    accessibilityRole="button"
-                                >
-                                    <Text style={{ fontSize: 15, fontFamily: theme.fonts.semibold, color: theme.colors.primaryText }}>
-                                        {t('aiRateLimit.signUpButton')}
-                                    </Text>
-                                </Pressable>
-                            )}
                         </View>
                     ) : loading ? (
                         <View style={{ padding: 40, alignItems: 'center' }}>
@@ -257,7 +233,7 @@ export const SmartSuggestionsModal = ({
                         </ScrollView>
                     )}
 
-                    {!rateLimit && (
+                    {!isRateLimited && (
                         <View style={{ padding: 16, paddingBottom: 20, borderTopWidth: 1, borderColor: theme.colors.border }}>
                             <View style={{ flexDirection: 'row', gap: 8 }}>
                                 <Pressable

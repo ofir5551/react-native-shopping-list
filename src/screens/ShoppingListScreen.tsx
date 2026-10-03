@@ -24,6 +24,7 @@ import { SmartSuggestionsModal } from '../components/SmartSuggestionsModal';
 import { SavedSetModal } from '../components/SavedSetModal';
 import { RecordModal } from '../components/RecordModal';
 import { PhotoModal } from '../components/PhotoModal';
+import { FeaturePromptReason } from '../hooks/useSignUpPrompt';
 import { useAppStyles } from '../styles/appStyles';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
@@ -68,7 +69,7 @@ type ShoppingListScreenProps = {
   onBack: () => void;
   onShareList: () => void;
   currentUserId: string | undefined;
-  goToAuth: () => void;
+  promptSignUp: (reason: FeaturePromptReason) => void;
   isArchived: boolean;
   onArchiveList: () => void;
   onRestoreList: () => void;
@@ -111,7 +112,7 @@ export const ShoppingListScreen = ({
   onBack,
   onShareList,
   currentUserId,
-  goToAuth,
+  promptSignUp,
   isArchived,
   onArchiveList,
   onRestoreList,
@@ -200,9 +201,20 @@ export const ShoppingListScreen = ({
   };
 
   const handleOpenAiSuggestions = () => {
-    // MVP: available to guests; re-add auth check here when restricting to signed-in users only
+    if (!currentUserId) {
+      promptSignUp('ai');
+      return;
+    }
     setSuggestPrompt('');
     setIsSuggestPromptOpen(true);
+  };
+
+  const handleOpenPhotoModal = () => {
+    if (!currentUserId) {
+      promptSignUp('ai');
+      return;
+    }
+    setIsPhotoModalOpen(true);
   };
 
   const handleSubmitSuggestPrompt = () => {
@@ -238,9 +250,15 @@ export const ShoppingListScreen = ({
           />
           <View style={styles.settingsPopover}>
             <Pressable
-              style={[styles.settingsPopoverButton, !currentUserId && { opacity: 0.4 }]}
-              onPress={() => { if (!currentUserId) return; setIsSettingsOpen(false); onShareList(); }}
-              disabled={!currentUserId}
+              style={styles.settingsPopoverButton}
+              onPress={() => {
+                setIsSettingsOpen(false);
+                if (!currentUserId) {
+                  promptSignUp('share');
+                  return;
+                }
+                onShareList();
+              }}
             >
               <Text style={styles.settingsPopoverButtonText}>{t('shoppingList.shareList')}</Text>
             </Pressable>
@@ -365,7 +383,7 @@ export const ShoppingListScreen = ({
         onDismissSuggestion={handleDismissSuggestion}
         onClose={closeOverlay}
         onRecord={() => { closeOverlay(); setIsRecordModalOpen(true); }}
-        onFromPhoto={() => { closeOverlay(); setIsPhotoModalOpen(true); }}
+        onFromPhoto={() => { closeOverlay(); handleOpenPhotoModal(); }}
       />
 
       {/* Caret popover */}
@@ -374,10 +392,7 @@ export const ShoppingListScreen = ({
           onAiSuggestions={handleOpenAiSuggestions}
           onSavedSets={handleOpenSavedSetsList}
           onRecord={() => setIsRecordModalOpen(true)}
-          onFromPhoto={() => {
-            // MVP: available to guests; re-add auth check here when restricting to signed-in users only
-            setIsPhotoModalOpen(true);
-          }}
+          onFromPhoto={handleOpenPhotoModal}
           onAddFromOtherLists={() => {
             setIsCaretOpen(false);
             setIsAddFromOtherListsOpen(true);
@@ -457,7 +472,6 @@ export const ShoppingListScreen = ({
           setIsSuggestModalOpen(false);
           setSuggestPrompt('');
         }}
-        onSignUp={goToAuth}
       />
 
       {/* Saved sets list modal */}
@@ -679,7 +693,6 @@ export const ShoppingListScreen = ({
           handleQuickAddMultiple(items);
           setIsPhotoModalOpen(false);
         }}
-        onSignUp={goToAuth}
       />
 
       {/* Add from other lists modal */}

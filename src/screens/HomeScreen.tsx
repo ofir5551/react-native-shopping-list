@@ -3,6 +3,8 @@ import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, BackHandler, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useShoppingListsApp } from '../hooks/useShoppingListsApp';
+import { useSignUpPrompt } from '../hooks/useSignUpPrompt';
+import { SignUpPromptModal } from '../components/SignUpPromptModal';
 import { AuthScreen } from './AuthScreen';
 import { ListsScreen } from './ListsScreen';
 import { LoginScreen } from './LoginScreen';
@@ -85,6 +87,9 @@ export const HomeScreen = () => {
     goToArchive,
     isCurrentListArchived,
   } = useShoppingListsApp();
+
+  const { reason: signUpPromptReason, promptSignUp, dismiss: dismissSignUpPrompt } = useSignUpPrompt(isHydrated);
+  const handleOpenJoinListModal = currentUserId ? openJoinListModal : () => promptSignUp('join');
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -174,15 +179,26 @@ export const HomeScreen = () => {
     );
   }
 
+  // Only rendered over the Lists and List screens, so it never covers the auth/settings flows.
+  const signUpPrompt = (
+    <SignUpPromptModal
+      reason={signUpPromptReason}
+      onClose={dismissSignUpPrompt}
+      onEmailSignUp={() => { dismissSignUpPrompt(); goToSignup(); }}
+      onSignIn={() => { dismissSignUpPrompt(); goToLogin(); }}
+    />
+  );
+
   if (route.name === 'lists' || !currentList) {
     return (
+      <>
       <ListsScreen
         lists={lists}
         currentUserId={currentUserId}
         onOpenList={openList}
         onOpenCreateListModal={openCreateListModal}
         onOpenRenameListModal={openRenameListModal}
-        onOpenJoinListModal={openJoinListModal}
+        onOpenJoinListModal={handleOpenJoinListModal}
         onDeleteList={deleteList}
         onLeaveList={leaveList}
         isListNameModalOpen={isListNameModalOpen}
@@ -197,6 +213,8 @@ export const HomeScreen = () => {
         onOpenSettings={goToSettings}
         onOpenArchive={goToArchive}
       />
+      {signUpPrompt}
+      </>
     );
   }
 
@@ -242,7 +260,7 @@ export const HomeScreen = () => {
         onBack={isCurrentListArchived ? goToArchive : goToLists}
         onShareList={() => openShareListModal(currentList.id)}
         currentUserId={currentUserId}
-        goToAuth={goToAuth}
+        promptSignUp={promptSignUp}
       />
       {/* We need to render the Modal here so it can overlay ShoppingListScreen too */}
       <ListsScreen
@@ -251,7 +269,7 @@ export const HomeScreen = () => {
         onOpenList={openList}
         onOpenCreateListModal={openCreateListModal}
         onOpenRenameListModal={openRenameListModal}
-        onOpenJoinListModal={openJoinListModal}
+        onOpenJoinListModal={handleOpenJoinListModal}
         onDeleteList={deleteList}
         onLeaveList={leaveList}
         isListNameModalOpen={isListNameModalOpen}
@@ -267,6 +285,7 @@ export const HomeScreen = () => {
         onOpenArchive={goToArchive}
         hidden={true}
       />
+      {signUpPrompt}
     </>
   );
 };

@@ -271,11 +271,8 @@ export const he: Record<TranslationKey, string> = {
   'toast.signInRequired': 'יש להתחבר כדי להשתמש בתכונות AI.',
 
   // AI rate limit
-  'aiRateLimit.guestTitle': 'הירשם כדי להשתמש ב-AI',
-  'aiRateLimit.guestMessage': 'תכונות ה-AI זמינות עם חשבון חינמי.',
   'aiRateLimit.authTitle': 'הגעת למגבלה היומית',
   'aiRateLimit.authMessage': 'הגעת למגבלת ה-AI היומית שלך. המגבלה מתאפסת בחצות.',
-  'aiRateLimit.signUpButton': 'הרשמה — חינם',
 
   // Theme selection screen
   'theme.title': 'ערכת נושא',

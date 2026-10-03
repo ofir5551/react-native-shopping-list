@@ -227,16 +227,14 @@ export const ListsScreen = ({
         >
           <Ionicons name="archive-outline" size={20} color={theme.colors.textSecondary} />
         </Pressable>
-        {currentUserId && (
-          <Pressable
-            style={styles.iconButton}
-            onPress={onOpenJoinListModal}
-            accessibilityRole="button"
-            accessibilityLabel={t('lists.joinShared')}
-          >
-            <Ionicons name="link-outline" size={20} color={theme.colors.textSecondary} />
-          </Pressable>
-        )}
+        <Pressable
+          style={styles.iconButton}
+          onPress={onOpenJoinListModal}
+          accessibilityRole="button"
+          accessibilityLabel={t('lists.joinShared')}
+        >
+          <Ionicons name="link-outline" size={20} color={theme.colors.textSecondary} />
+        </Pressable>
       </Header>
 
       {lists.length === 0 ? (

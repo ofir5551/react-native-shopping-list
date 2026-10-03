@@ -269,11 +269,8 @@ export const en = {
   'toast.signInRequired': 'Sign in to use AI features.',
 
   // AI rate limit
-  'aiRateLimit.guestTitle': 'Sign up to use AI',
-  'aiRateLimit.guestMessage': 'AI features are available with a free account.',
   'aiRateLimit.authTitle': 'Daily limit reached',
   'aiRateLimit.authMessage': "You've reached your daily AI limit. It resets at midnight.",
-  'aiRateLimit.signUpButton': 'Sign Up — It\'s Free',
 
   // Theme selection screen
   'theme.title': 'Theme',
