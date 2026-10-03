@@ -287,6 +287,30 @@ export const en = {
   'theme.navy': 'Navy',
   'theme.charcoal': 'Charcoal',
   'theme.plum': 'Plum',
+
+  // Sign-up prompt
+  'signUpPrompt.close': 'Close',
+  'signUpPrompt.titleDefault': 'Get more from Shoppy',
+  'signUpPrompt.subtitleDefault': 'Create a free account in seconds',
+  'signUpPrompt.titleAi': 'AI features need a free account',
+  'signUpPrompt.subtitleAi': 'Get smart suggestions and turn photos into lists',
+  'signUpPrompt.titleShare': 'Share lists with a free account',
+  'signUpPrompt.titleJoin': 'Join shared lists with a free account',
+  'signUpPrompt.subtitleShared': 'Shop together and see changes live',
+  'signUpPrompt.benefitBackupTitle': 'Never lose a list',
+  'signUpPrompt.benefitBackupText': 'Backed up to the cloud',
+  'signUpPrompt.benefitShareTitle': 'Shop together',
+  'signUpPrompt.benefitShareText': 'Share lists with family, see updates live',
+  'signUpPrompt.benefitAiTitle': 'AI shopping assistant',
+  'signUpPrompt.benefitAiText': 'Smart suggestions and photo-to-list',
+  'signUpPrompt.benefitDevicesTitle': 'All your devices',
+  'signUpPrompt.benefitDevicesText': 'Phone, tablet and web',
+  'signUpPrompt.listsComeAlong': 'Your current lists come with you',
+  'signUpPrompt.signUpWithEmail': 'Sign up with email',
+  'signUpPrompt.haveAccount': 'Already have an account?',
+  'signUpPrompt.signIn': 'Sign in',
+  'signUpPrompt.continueAsGuest': 'Continue as guest',
+  'signUpPrompt.maybeLater': 'Maybe later',
 } as const;
 
 export type TranslationKey = keyof typeof en;
