@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
+import { DEFAULT_MODEL, SUGGEST_SYSTEM_PROMPT, generateItems } from "../_shared/gemini.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,43 +69,18 @@ Deno.serve(async (req: Request) => {
       })
     }
 
-    const openAiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openAiKey) {
-      throw new Error("OpenAI API key not configured")
+    const apiKey = Deno.env.get('GEMINI_API_KEY')
+    if (!apiKey) {
+      throw new Error("Gemini API key not configured")
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant that generates shopping list items based on user prompts. Output ONLY valid JSON in the specific format requested. Format: {"items": [{"name": "Item Name", "quantity": 1}]}. The items should be typical grocery or shopping items. Keep quantities reasonable.',
-          },
-          {
-            role: 'user',
-            content: `Create a shopping list for: ${prompt}. Return ONLY the JSON response.`,
-          }
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 500,
-      }),
+    const { result: parsed } = await generateItems({
+      apiKey,
+      model: Deno.env.get('AI_MODEL') ?? DEFAULT_MODEL,
+      system: SUGGEST_SYSTEM_PROMPT,
+      parts: [{ text: `Create a shopping list for: ${prompt}. Return ONLY the JSON response.` }],
+      maxOutputTokens: 1000,
     })
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("OpenAI Error:", errorText);
-      throw new Error(`OpenAI API Error: ${errorText}`)
-    }
-
-    const data = await response.json()
-    const content = data.choices[0].message.content
-    const parsed = JSON.parse(content)
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
