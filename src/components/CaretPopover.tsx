@@ -18,8 +18,6 @@ type CaretPopoverProps = {
   onFromPhoto: () => void;
   onAddFromOtherLists: () => void;
   onClose: () => void;
-  // MVP: isSignedIn removed — AI features are open to guests during testing phase.
-  // Re-add `isSignedIn: boolean` here and pass it from ShoppingListScreen to restore the gate.
 };
 
 export const CaretPopover = ({
