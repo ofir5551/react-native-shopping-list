@@ -77,7 +77,7 @@ The prompt closes and the user stays on the screen they were on. Local lists car
 - `ShoppingListScreen.tsx` — smart-suggestions, photo and share actions call `promptSignUp('ai' | 'share')` when `!currentUserId`; share button no longer disabled for guests. `goToAuth` prop removed (it was only used for the AI modals' `onSignUp`).
 - `ListsScreen.tsx` — join button always rendered; guests get `promptSignUp('join')`.
 - `AuthScreen.tsx` — uses `useGoogleSignIn` instead of its inline copy.
-- `PhotoModal.tsx`, `SmartSuggestionsModal.tsx` — remove the guest rate-limit branch and the `onSignUp` prop; the signed-in "daily limit reached" message stays. Server-side refusal of anonymous AI calls (`20261003000000_disable_guest_ai.sql`) remains the real enforcement.
+- `PhotoModal.tsx`, `SmartSuggestionsModal.tsx` — remove the guest rate-limit branch and the `onSignUp` prop; the signed-in "daily limit reached" message stays. Server-side refusal of anonymous AI calls (`20261003212720_disable_guest_ai.sql`) remains the real enforcement.
 - `en.ts`, `he.ts` — add prompt strings; remove `aiRateLimit.guestTitle`, `aiRateLimit.guestMessage`, `aiRateLimit.signUpButton`.
 
 ## Testing

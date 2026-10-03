@@ -25,7 +25,7 @@ Known open item: `npm audit` reports 28 vulnerabilities (1 critical, 9 high). No
 ## 2. Cost and abuse protection (AI features)
 
 - [ ] Enable billing on the Gemini API key (the free tier throttles with 429s and lets Google train on user content), and set a hard monthly spending limit in Google Cloud billing.
-- [x] Guests get no AI (`20261003000000_disable_guest_ai.sql`). Anonymous sessions are free to create, so a per-user guest allowance was unlimited in practice.
+- [x] Guests get no AI (`20261003212720_disable_guest_ai.sql`). Anonymous sessions are free to create, so a per-user guest allowance was unlimited in practice.
 - [ ] **Global daily AI cap.** The 20/day limit is per account, and accounts can still be created by script. Add a global daily counter inside `check_and_increment_ai_usage` that refuses calls above a fixed total.
 - [ ] Consider CAPTCHA on sign-up (Supabase Auth setting).
 - [ ] `parse-photo`: reject oversized `imageBase64` before forwarding. The app should also downscale images before upload.
