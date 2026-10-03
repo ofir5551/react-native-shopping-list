@@ -23,7 +23,7 @@ type PhotoItem = {
 
 type PhotoModalState = 'idle' | 'loading' | 'results' | 'error' | 'rate_limit';
 
-type RateLimitInfo = { isAnonymous: boolean; limit: number };
+type RateLimitInfo = { isAnonymous: boolean };
 
 type PhotoModalProps = {
     visible: boolean;
@@ -79,7 +79,7 @@ export const PhotoModal = ({ visible, onClose, onAdd, onSignUp }: PhotoModalProp
                 try {
                     const body = await (fnError as any).context?.json?.();
                     if (body?.error === 'rate_limit_exceeded') {
-                        setRateLimit({ isAnonymous: body.isAnonymous ?? false, limit: body.limit ?? 5 });
+                        setRateLimit({ isAnonymous: body.isAnonymous ?? false });
                         setState('rate_limit');
                         return;
                     }
@@ -245,7 +245,7 @@ export const PhotoModal = ({ visible, onClose, onAdd, onSignUp }: PhotoModalProp
                             </Text>
                             <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 }}>
                                 {rateLimit.isAnonymous
-                                    ? t('aiRateLimit.guestMessage', { limit: rateLimit.limit })
+                                    ? t('aiRateLimit.guestMessage')
                                     : t('aiRateLimit.authMessage')}
                             </Text>
                             {rateLimit.isAnonymous && onSignUp && (

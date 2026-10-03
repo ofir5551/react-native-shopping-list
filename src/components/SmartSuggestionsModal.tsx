@@ -20,7 +20,7 @@ type SuggestionItem = {
     selected: boolean;
 };
 
-type RateLimitInfo = { isAnonymous: boolean; limit: number };
+type RateLimitInfo = { isAnonymous: boolean };
 
 type SmartSuggestionsModalProps = {
     visible: boolean;
@@ -74,7 +74,7 @@ export const SmartSuggestionsModal = ({
                 try {
                     const body = await (fnError as any).context?.json?.();
                     if (body?.error === 'rate_limit_exceeded') {
-                        setRateLimit({ isAnonymous: body.isAnonymous ?? false, limit: body.limit ?? 5 });
+                        setRateLimit({ isAnonymous: body.isAnonymous ?? false });
                         return;
                     }
                 } catch {}
@@ -149,7 +149,7 @@ export const SmartSuggestionsModal = ({
                             </Text>
                             <Text style={{ fontSize: 14, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 }}>
                                 {rateLimit.isAnonymous
-                                    ? t('aiRateLimit.guestMessage', { limit: rateLimit.limit })
+                                    ? t('aiRateLimit.guestMessage')
                                     : t('aiRateLimit.authMessage')}
                             </Text>
                             {rateLimit.isAnonymous && onSignUp && (

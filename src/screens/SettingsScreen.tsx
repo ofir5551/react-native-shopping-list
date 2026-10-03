@@ -69,7 +69,10 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
     };
 
     useEffect(() => {
-        if (!user) return;
+        if (!user || user.is_anonymous) {
+            setAiUsage(null);
+            return;
+        }
         const today = new Date().toISOString().split('T')[0];
         supabase
             .from('ai_usage')
@@ -79,7 +82,7 @@ export const SettingsScreen = ({ onBack, onSignIn, onTheme }: SettingsScreenProp
             .maybeSingle()
             .then(({ data, error }) => {
                 if (error) console.warn('ai_usage fetch error:', error);
-                setAiUsage({ count: data?.call_count ?? 0, limit: user.is_anonymous ? 5 : 20 });
+                setAiUsage({ count: data?.call_count ?? 0, limit: 20 });
             });
     }, [user]);
 
