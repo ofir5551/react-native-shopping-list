@@ -11,27 +11,27 @@ Known open item: `npm audit` reports 28 vulnerabilities (1 critical, 9 high). No
 
 ## 1. Blockers (Play Store will reject, or the app is unsafe without these)
 
-- [~] **In-app account deletion.** Done: `delete-account` edge function (deployed, JWT-verified), `src/utils/deleteAccount.ts` + tests, Settings button with confirm sheet, en/he strings. Verified end to end in a browser against the live project (cancel does nothing; confirm deletes the user and cascades their rows; app falls back to guest mode). Still to do: RTL visual check of the confirm sheet, a test with a list shared between two users, the web deletion-request page, and updating the privacy policy text to match.
+- [~] **In-app account deletion.** Done: `delete-account` edge function (deployed, JWT-verified), `src/utils/deleteAccount.ts` + tests, Settings button with confirm sheet, en/he strings. Verified end to end in a browser against the live project (cancel does nothing; confirm deletes the user and cascades their rows; app falls back to guest mode). Still to do: RTL visual check of the confirm sheet and a test with a list shared between two users. The web deletion page and privacy text are done (see below).
   - Add an edge function (e.g. `supabase/functions/delete-account`) that verifies the caller's JWT, then calls `auth.admin.deleteUser`. `ON DELETE CASCADE` (as on `ai_usage`) removes related rows; confirm every user-owned table cascades, including `lists` and `list_shares`.
   - Add a "Delete account" button in `SettingsScreen.tsx` with a confirmation dialog, plus en/he strings.
   - Clear local lists after deletion and fall back to a fresh anonymous session.
   - Google also requires a **web URL** for deletion requests (Play Console, Data safety). A page on the privacy site explaining how to delete is enough.
-- [~] **Public privacy policy, terms and deletion pages.** Written in `site/` (privacy, terms, delete-account) with a GitHub Pages workflow (`.github/workflows/pages.yml`); Settings now links to them instead of hard-coded English modals. Still to do: push, enable Pages (`gh api -X POST repos/ofir5551/react-native-shopping-list/pages -f build_type=workflow`), confirm the URLs load, and paste them into the Play Console. Hebrew versions are not written. Review the text first, including the "deleted within 30 days" promise for email requests.
-- [ ] **Data safety form** (Play Console). Declare: email address, user-generated content (lists), photos and voice input (sent to OpenAI for AI features), user IDs. State that data is encrypted in transit and that users can request deletion.
+- [x] **Public privacy policy, terms and deletion pages.** Live at https://ofir5551.github.io/react-native-shopping-list/ (`privacy.html`, `terms.html`, `delete-account.html`), built from `site/` by `.github/workflows/pages.yml`. Settings links to them. Still to do outside the repo: paste the privacy and deletion URLs into the Play Console. Optional: Hebrew versions.
+- [ ] **Data safety form** (Play Console). Declare: email address, user-generated content (lists), photos and voice input (sent to Google for AI features), user IDs. State that data is encrypted in transit and that users can request deletion.
 - [ ] **Versioning.** Add `"appVersionSource": "remote"` under `cli` in `eas.json` and `"autoIncrement": true` on the `production` profile. Otherwise every upload after the first is rejected for a repeated `versionCode`.
 - [ ] **Closed testing requirement.** If the developer account is a personal account created after Nov 2023, run a closed test with at least 12 testers opted in for 14 continuous days before applying for production access. Start recruiting early; this is usually the longest wait.
 - [ ] **Production build env vars.** `.env` is gitignored, so EAS cloud builds will not see `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `src/supabase.ts` throws at startup without them. Add them as EAS environment variables for the `production` profile and confirm a production build launches. **(verify)**
 
 ## 2. Cost and abuse protection (AI features)
 
-- [ ] Set a hard monthly spending limit in the OpenAI dashboard.
+- [ ] Enable billing on the Gemini API key (the free tier throttles with 429s and lets Google train on user content), and set a hard monthly spending limit in Google Cloud billing.
 - [ ] **Global daily AI cap.** Anonymous sessions are free to create, so the per-user limit (5/day anonymous, 20/day signed in) can be bypassed by scripting new sessions. Add a global daily counter inside `check_and_increment_ai_usage` that refuses calls above a fixed total.
 - [ ] Consider CAPTCHA on anonymous sign-ins (Supabase Auth setting) or requiring a real account for photo parsing.
 - [ ] `parse-photo`: reject oversized `imageBase64` before forwarding. The app should also downscale images before upload.
-- [ ] `suggest-items` / `parse-photo`: return a generic error message to the client instead of OpenAI's raw error text (`throw new Error(\`OpenAI API Error: ${errorText}\`)`), and keep the detail in server logs only.
+- [ ] `suggest-items` / `parse-photo`: return a generic error message to the client instead of Google's raw error text (`throw new Error(\`Gemini API Error: ...\`)` in `supabase/functions/_shared/gemini.ts`), and keep the detail in server logs only.
 - [ ] Restrict CORS on the edge functions if no web client uses them (currently `*`). Low risk because JWT auth is required.
 - [ ] Add a way for users to report bad AI output (Google's generative-AI policy). A small "Report" action on AI results is enough.
-- [ ] Disclose in the privacy policy and Data safety form that prompts and images go to OpenAI (the in-app text already says this; keep it in the public version).
+- [ ] Disclose in the privacy policy and Data safety form that prompts and images go to Google (the in-app text already says this; keep it in the public version).
 
 ## 3. Supabase hardening (from the security advisor, 2026-10-02)
 
@@ -43,7 +43,7 @@ Known open item: `npm audit` reports 28 vulnerabilities (1 critical, 9 high). No
 - [ ] Production auth config (Dashboard, not `config.toml`): decide on email confirmation, set the Site URL and redirect URLs for the `shopping-list://` scheme, and confirm password-reset flows work end to end.
 - [ ] **Custom SMTP.** The built-in Supabase mailer is heavily rate-limited and meant for testing only. Connect a real provider (Resend, Postmark, etc.) before inviting real users.
 - [ ] Plan for the Supabase free tier: projects pause after about a week of inactivity, and limits apply. Move to Pro before a real launch, and enable backups.
-- [ ] Rotate any keys that were ever shared. Keep `OPENAI_API_KEY` only in Supabase secrets.
+- [ ] Rotate any keys that were ever shared. Keep `GEMINI_API_KEY` only in Supabase secrets.
 
 ## 4. App configuration (`app.json`, `eas.json`)
 
@@ -90,7 +90,7 @@ Known open item: `npm audit` reports 28 vulnerabilities (1 critical, 9 high). No
 4. Run the **Closed testing** period (section 1) with 12+ testers; collect feedback.
 5. Complete the Play Console **"Set up your app"** checklist until every item shows done.
 6. Apply for production access, then do a staged rollout (e.g. 10% then 50% then 100%).
-7. Monitor crashes, Supabase usage and OpenAI spend during the first weeks.
+7. Monitor crashes, Supabase usage and Gemini spend during the first weeks.
 
 ## 8. Post-launch / nice to have
 
@@ -98,4 +98,4 @@ Known open item: `npm audit` reports 28 vulnerabilities (1 critical, 9 high). No
 - [ ] Aisle or category auto-sort, using a local lookup first and AI only for unknown items.
 - [ ] Shared-list indicators (see `docs/ROADMAP.md`).
 - [ ] Home-screen widget and notifications for shared-list changes.
-- [ ] Monitoring: Supabase log alerts and an OpenAI usage alert.
+- [ ] Monitoring: Supabase log alerts and a Google Cloud billing alert for the Gemini key.
