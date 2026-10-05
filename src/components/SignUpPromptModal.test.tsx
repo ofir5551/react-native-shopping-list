@@ -53,7 +53,7 @@ describe('SignUpPromptModal', () => {
     expect(queryByText('Get more from Shoppy')).toBeNull();
   });
 
-  it('shows the default headline, all benefits and "Continue as guest" on first launch', () => {
+  it('shows the default headline and all benefits on first launch', () => {
     const { getByText } = render(<SignUpPromptModal reason="first" {...props} />);
     expect(getByText('Get more from Shoppy')).toBeTruthy();
     expect(getByText('Never lose a list')).toBeTruthy();
@@ -61,13 +61,6 @@ describe('SignUpPromptModal', () => {
     expect(getByText('AI shopping assistant')).toBeTruthy();
     expect(getByText('All your devices')).toBeTruthy();
     expect(getByText('Your current lists come with you')).toBeTruthy();
-    expect(getByText('Continue as guest')).toBeTruthy();
-  });
-
-  it('shows "Maybe later" for periodic prompts', () => {
-    const { getByText, queryByText } = render(<SignUpPromptModal reason="periodic" {...props} />);
-    expect(getByText('Maybe later')).toBeTruthy();
-    expect(queryByText('Continue as guest')).toBeNull();
   });
 
   it.each([
@@ -89,21 +82,20 @@ describe('SignUpPromptModal', () => {
     fireEvent.press(getByText('Sign in'));
     expect(props.onSignIn).toHaveBeenCalledTimes(1);
 
-    fireEvent.press(getByText('Maybe later'));
     fireEvent.press(getByLabelText('Close'));
     fireEvent.press(getByText('google-button'));
-    expect(props.onClose).toHaveBeenCalledTimes(3);
+    expect(props.onClose).toHaveBeenCalledTimes(2);
     expect(props.onClose).toHaveBeenCalledWith(false);
   });
 
   it('passes the "don\'t show again" choice when closed from an automatic prompt', () => {
-    const { getByText, getByRole } = render(<SignUpPromptModal reason="periodic" {...props} />);
+    const { getByText, getByRole, getByLabelText } = render(<SignUpPromptModal reason="periodic" {...props} />);
 
     expect(getByRole('checkbox').props.accessibilityState).toEqual({ checked: false });
     fireEvent.press(getByText("Don't show this again"));
     expect(getByRole('checkbox').props.accessibilityState).toEqual({ checked: true });
 
-    fireEvent.press(getByText('Maybe later'));
+    fireEvent.press(getByLabelText('Close'));
     expect(props.onClose).toHaveBeenCalledWith(true);
   });
 

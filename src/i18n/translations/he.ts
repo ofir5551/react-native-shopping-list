@@ -308,7 +308,5 @@ export const he: Record<TranslationKey, string> = {
   'signUpPrompt.signUpWithEmail': 'הרשמה עם אימייל',
   'signUpPrompt.haveAccount': 'כבר יש לכם חשבון?',
   'signUpPrompt.signIn': 'התחברות',
-  'signUpPrompt.continueAsGuest': 'המשך כאורח',
-  'signUpPrompt.maybeLater': 'אולי מאוחר יותר',
   'signUpPrompt.dontShowAgain': 'אל תציג שוב',
 };

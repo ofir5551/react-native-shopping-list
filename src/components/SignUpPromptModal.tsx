@@ -126,7 +126,7 @@ const SignUpPromptContent = ({ reason, onClose, onEmailSignUp, onSignIn }: SignU
                 </View>
 
                 {/* Actions — pinned to the bottom so they are always visible */}
-                <View style={{ paddingHorizontal: 24, paddingTop: compact ? 12 : 20, paddingBottom: 8 }}>
+                <View style={{ paddingHorizontal: 24, paddingTop: compact ? 12 : 20, paddingBottom: compact ? 8 : 16 }}>
                     <GoogleSignInButton onSuccess={() => onClose(false)} />
 
                     <Pressable
@@ -168,12 +168,6 @@ const SignUpPromptContent = ({ reason, onClose, onEmailSignUp, onSignIn }: SignU
                             </Text>
                         </Pressable>
                     )}
-
-                    <Pressable style={{ alignItems: 'center', paddingVertical: compact ? 8 : 12 }} onPress={close} accessibilityRole="button">
-                        <Text style={{ color: theme.colors.textSecondary, fontSize: 15 }}>
-                            {reason === 'first' ? t('signUpPrompt.continueAsGuest') : t('signUpPrompt.maybeLater')}
-                        </Text>
-                    </Pressable>
                 </View>
             </SafeAreaView>
         </Modal>

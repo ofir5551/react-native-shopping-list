@@ -306,8 +306,6 @@ export const en = {
   'signUpPrompt.signUpWithEmail': 'Sign up with email',
   'signUpPrompt.haveAccount': 'Already have an account?',
   'signUpPrompt.signIn': 'Sign in',
-  'signUpPrompt.continueAsGuest': 'Continue as guest',
-  'signUpPrompt.maybeLater': 'Maybe later',
   'signUpPrompt.dontShowAgain': "Don't show this again",
 } as const;
 
