@@ -91,7 +91,7 @@ export const GoogleSignInButton = ({ onSuccess }: GoogleSignInButtonProps) => {
                 ) : (
                     <>
                         <AntDesign name="google" size={20} color="#DB4437" />
-                        <Text style={{ fontSize: 16, fontWeight: '600', color: theme.colors.text }}>
+                        <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: theme.colors.text }}>
                             {t('auth.continueWithGoogle')}
                         </Text>
                     </>

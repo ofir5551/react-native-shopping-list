@@ -141,11 +141,11 @@ const SignUpPromptContent = ({ reason, onClose, onEmailSignUp, onSignIn }: SignU
                     </Pressable>
 
                     <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4, paddingVertical: compact ? 6 : 8 }}>
-                        <Text style={{ color: theme.colors.textSecondary, fontSize: 15 }}>
+                        <Text style={{ color: theme.colors.textSecondary, fontSize: 15, fontFamily: theme.fonts.regular }}>
                             {t('signUpPrompt.haveAccount')}
                         </Text>
                         <Pressable onPress={onSignIn} accessibilityRole="button">
-                            <Text style={{ color: theme.colors.primary, fontSize: 15, fontWeight: '600' }}>
+                            <Text style={{ color: theme.colors.primary, fontSize: 15, fontFamily: theme.fonts.semibold }}>
                                 {t('signUpPrompt.signIn')}
                             </Text>
                         </Pressable>
@@ -163,7 +163,7 @@ const SignUpPromptContent = ({ reason, onClose, onEmailSignUp, onSignIn }: SignU
                                 size={20}
                                 color={dontShowAgain ? theme.colors.primary : theme.colors.textSecondary}
                             />
-                            <Text style={{ color: theme.colors.textSecondary, fontSize: 14 }}>
+                            <Text style={{ color: theme.colors.textSecondary, fontSize: 14, fontFamily: theme.fonts.regular }}>
                                 {t('signUpPrompt.dontShowAgain')}
                             </Text>
                         </Pressable>
