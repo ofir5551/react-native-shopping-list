@@ -1,4 +1,5 @@
 import React from 'react';
+import { useWindowDimensions } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { SignUpPromptModal } from './SignUpPromptModal';
 import { useTheme } from '../context/ThemeContext';
@@ -24,8 +25,14 @@ const props = {
   onSignIn: jest.fn(),
 };
 
+jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
+
 beforeEach(() => {
   jest.clearAllMocks();
+  (useWindowDimensions as jest.Mock).mockReturnValue({ width: 390, height: 844, scale: 3, fontScale: 1 });
   (useTheme as jest.Mock).mockReturnValue({
     theme: {
       colors: { text: '#000', textSecondary: '#666', primary: '#007AFF', primaryText: '#fff', surface: '#fff', border: '#ccc' },
@@ -86,5 +93,40 @@ describe('SignUpPromptModal', () => {
     fireEvent.press(getByLabelText('Close'));
     fireEvent.press(getByText('google-button'));
     expect(props.onClose).toHaveBeenCalledTimes(3);
+    expect(props.onClose).toHaveBeenCalledWith(false);
+  });
+
+  it('passes the "don\'t show again" choice when closed from an automatic prompt', () => {
+    const { getByText, getByRole } = render(<SignUpPromptModal reason="periodic" {...props} />);
+
+    expect(getByRole('checkbox').props.accessibilityState).toEqual({ checked: false });
+    fireEvent.press(getByText("Don't show this again"));
+    expect(getByRole('checkbox').props.accessibilityState).toEqual({ checked: true });
+
+    fireEvent.press(getByText('Maybe later'));
+    expect(props.onClose).toHaveBeenCalledWith(true);
+  });
+
+  it('closes without opting out when the box is left unticked', () => {
+    const { getByLabelText } = render(<SignUpPromptModal reason="first" {...props} />);
+    fireEvent.press(getByLabelText('Close'));
+    expect(props.onClose).toHaveBeenCalledWith(false);
+  });
+
+  it.each(['ai', 'share', 'join'] as const)('hides "don\'t show again" on the %s prompt', (reason) => {
+    const { queryByText } = render(<SignUpPromptModal reason={reason} {...props} />);
+    expect(queryByText("Don't show this again")).toBeNull();
+  });
+
+  it('drops benefit descriptions on short screens to fit without scrolling', () => {
+    (useWindowDimensions as jest.Mock).mockReturnValue({ width: 375, height: 667, scale: 2, fontScale: 1 });
+    const { getByText, queryByText } = render(<SignUpPromptModal reason="first" {...props} />);
+    expect(getByText('Never lose a list')).toBeTruthy();
+    expect(queryByText('Backed up to the cloud')).toBeNull();
+  });
+
+  it('shows benefit descriptions on tall screens', () => {
+    const { getByText } = render(<SignUpPromptModal reason="first" {...props} />);
+    expect(getByText('Backed up to the cloud')).toBeTruthy();
   });
 });

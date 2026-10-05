@@ -308,6 +308,7 @@ export const en = {
   'signUpPrompt.signIn': 'Sign in',
   'signUpPrompt.continueAsGuest': 'Continue as guest',
   'signUpPrompt.maybeLater': 'Maybe later',
+  'signUpPrompt.dontShowAgain': "Don't show this again",
 } as const;
 
 export type TranslationKey = keyof typeof en;

@@ -7,6 +7,7 @@ export type FeaturePromptReason = 'ai' | 'share' | 'join';
 export type SignUpPromptReason = 'first' | 'periodic' | FeaturePromptReason;
 
 const SHOWN_AT_KEY = '@shopping-list/signup-prompt-shown-at';
+const OPTED_OUT_KEY = '@shopping-list/signup-prompt-opted-out';
 const PERIODIC_INTERVAL_MS = 3 * 24 * 60 * 60 * 1000;
 
 // A future timestamp means the device clock moved back — treat it as due.
@@ -20,6 +21,15 @@ const readLastShownAt = async (): Promise<number | null> => {
     return value > 0 ? value : null;
   } catch {
     return null;
+  }
+};
+
+// Unreadable storage counts as "not opted out" — showing once too often beats never.
+const readOptedOut = async (): Promise<boolean> => {
+  try {
+    return (await AsyncStorage.getItem(OPTED_OUT_KEY)) === 'true';
+  } catch {
+    return false;
   }
 };
 
@@ -38,9 +48,9 @@ export const useSignUpPrompt = (isHydrated: boolean) => {
     let cancelled = false;
 
     const check = async () => {
-      const lastShownAt = await readLastShownAt();
+      const [optedOut, lastShownAt] = await Promise.all([readOptedOut(), readLastShownAt()]);
       const now = Date.now();
-      if (cancelled || reasonRef.current !== null || !isPeriodicPromptDue(lastShownAt, now)) return;
+      if (cancelled || optedOut || reasonRef.current !== null || !isPeriodicPromptDue(lastShownAt, now)) return;
       setReason(lastShownAt === null ? 'first' : 'periodic');
       AsyncStorage.setItem(SHOWN_AT_KEY, String(now)).catch(() => {});
     };
@@ -58,6 +68,10 @@ export const useSignUpPrompt = (isHydrated: boolean) => {
   return {
     reason,
     promptSignUp: (next: FeaturePromptReason) => setReason(next),
-    dismiss: () => setReason(null),
+    // Opting out stops only the automatic prompts; feature prompts still explain why AI/share/join are locked.
+    dismiss: (dontShowAgain = false) => {
+      setReason(null);
+      if (dontShowAgain) AsyncStorage.setItem(OPTED_OUT_KEY, 'true').catch(() => {});
+    },
   };
 };

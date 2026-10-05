@@ -1,5 +1,5 @@
-import React from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStyles } from '../styles/appStyles';
@@ -26,28 +26,39 @@ const BENEFITS: { icon: IconName; title: TranslationKey; text: TranslationKey }[
     { icon: 'phone-portrait-outline', title: 'signUpPrompt.benefitDevicesTitle', text: 'signUpPrompt.benefitDevicesText' },
 ];
 
+// Below this window height the prompt switches to a tighter layout so everything fits without scrolling.
+const COMPACT_HEIGHT = 760;
+
 type SignUpPromptModalProps = {
     reason: SignUpPromptReason | null;
-    onClose: () => void;
+    onClose: (dontShowAgain: boolean) => void;
     onEmailSignUp: () => void;
     onSignIn: () => void;
 };
 
-export const SignUpPromptModal = ({ reason, onClose, onEmailSignUp, onSignIn }: SignUpPromptModalProps) => {
+export const SignUpPromptModal = ({ reason, ...props }: SignUpPromptModalProps) =>
+    reason ? <SignUpPromptContent reason={reason} {...props} /> : null;
+
+// Mounted only while the prompt is open, so the checkbox starts unticked every time.
+const SignUpPromptContent = ({ reason, onClose, onEmailSignUp, onSignIn }: SignUpPromptModalProps & { reason: SignUpPromptReason }) => {
     const styles = useAppStyles();
     const { theme } = useTheme();
     const { t } = useLocale();
+    const { height } = useWindowDimensions();
+    const [dontShowAgain, setDontShowAgain] = useState(false);
 
-    if (!reason) return null;
+    const compact = height < COMPACT_HEIGHT;
+    const isAutomatic = reason === 'first' || reason === 'periodic';
     const headline = HEADLINES[reason];
+    const close = () => onClose(isAutomatic && dontShowAgain);
 
     return (
-        <Modal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose}>
-            <SafeAreaView style={[styles.container, { paddingHorizontal: 0 }]}>
+        <Modal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={close}>
+            <SafeAreaView style={[styles.container, { paddingHorizontal: 0, paddingTop: 0 }]}>
                 <View style={{ paddingHorizontal: 20, paddingTop: 8, alignItems: 'flex-end' }}>
                     <Pressable
                         style={styles.iconButton}
-                        onPress={onClose}
+                        onPress={close}
                         accessibilityRole="button"
                         accessibilityLabel={t('signUpPrompt.close')}
                     >
@@ -55,21 +66,21 @@ export const SignUpPromptModal = ({ reason, onClose, onEmailSignUp, onSignIn }: 
                     </Pressable>
                 </View>
 
-                <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}>
-                    {/* Branding + headline */}
-                    <View style={{ alignItems: 'center', marginBottom: 28 }}>
+                {/* Pitch — takes the remaining space and centres itself in it */}
+                <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24 }}>
+                    <View style={{ alignItems: 'center', marginBottom: compact ? 16 : 28 }}>
                         <View style={{
-                            width: 72,
-                            height: 72,
-                            borderRadius: 22,
+                            width: compact ? 52 : 72,
+                            height: compact ? 52 : 72,
+                            borderRadius: compact ? 16 : 22,
                             backgroundColor: theme.colors.primary,
                             alignItems: 'center',
                             justifyContent: 'center',
-                            marginBottom: 16,
+                            marginBottom: compact ? 10 : 16,
                         }}>
-                            <Ionicons name="bag-outline" size={40} color="#ffffff" />
+                            <Ionicons name="bag-outline" size={compact ? 28 : 40} color="#ffffff" />
                         </View>
-                        <Text style={[styles.title, { textAlign: 'center', marginBottom: 8 }]}>
+                        <Text style={[styles.title, { textAlign: 'center', marginBottom: compact ? 4 : 8 }, compact && { fontSize: 22 }]}>
                             {t(headline.title)}
                         </Text>
                         <Text style={[styles.subtitle, { textAlign: 'center' }]}>
@@ -77,47 +88,49 @@ export const SignUpPromptModal = ({ reason, onClose, onEmailSignUp, onSignIn }: 
                         </Text>
                     </View>
 
-                    {/* Benefits */}
-                    <View style={{ gap: 16, marginBottom: 20 }}>
+                    <View style={{ gap: compact ? 10 : 16, marginBottom: compact ? 14 : 20 }}>
                         {BENEFITS.map((benefit) => (
                             <View key={benefit.title} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
                                 <View style={{
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: 12,
+                                    width: compact ? 34 : 40,
+                                    height: compact ? 34 : 40,
+                                    borderRadius: compact ? 10 : 12,
                                     backgroundColor: theme.colors.surface,
                                     borderWidth: 1,
                                     borderColor: theme.colors.border,
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                 }}>
-                                    <Ionicons name={benefit.icon} size={20} color={theme.colors.primary} />
+                                    <Ionicons name={benefit.icon} size={compact ? 18 : 20} color={theme.colors.primary} />
                                 </View>
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ fontSize: 15, fontFamily: theme.fonts.semibold, color: theme.colors.text }}>
                                         {t(benefit.title)}
                                     </Text>
-                                    <Text style={{ fontSize: 13, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>
-                                        {t(benefit.text)}
-                                    </Text>
+                                    {!compact && (
+                                        <Text style={{ fontSize: 13, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>
+                                            {t(benefit.text)}
+                                        </Text>
+                                    )}
                                 </View>
                             </View>
                         ))}
                     </View>
 
-                    {/* Reassurance */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 24 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                         <Ionicons name="checkmark-circle" size={18} color={theme.colors.primary} />
                         <Text style={{ fontSize: 14, fontFamily: theme.fonts.medium, color: theme.colors.textSecondary }}>
                             {t('signUpPrompt.listsComeAlong')}
                         </Text>
                     </View>
+                </View>
 
-                    {/* Actions */}
-                    <GoogleSignInButton onSuccess={onClose} />
+                {/* Actions — pinned to the bottom so they are always visible */}
+                <View style={{ paddingHorizontal: 24, paddingTop: compact ? 12 : 20, paddingBottom: 8 }}>
+                    <GoogleSignInButton onSuccess={() => onClose(false)} />
 
                     <Pressable
-                        style={[styles.authButtonSecondary, { borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }]}
+                        style={[styles.authButtonSecondary, { borderRadius: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: compact ? 4 : 12 }]}
                         onPress={onEmailSignUp}
                         accessibilityRole="button"
                     >
@@ -127,7 +140,7 @@ export const SignUpPromptModal = ({ reason, onClose, onEmailSignUp, onSignIn }: 
                         </Text>
                     </Pressable>
 
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4, paddingVertical: 8 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4, paddingVertical: compact ? 6 : 8 }}>
                         <Text style={{ color: theme.colors.textSecondary, fontSize: 15 }}>
                             {t('signUpPrompt.haveAccount')}
                         </Text>
@@ -138,12 +151,30 @@ export const SignUpPromptModal = ({ reason, onClose, onEmailSignUp, onSignIn }: 
                         </Pressable>
                     </View>
 
-                    <Pressable style={{ alignItems: 'center', paddingVertical: 12 }} onPress={onClose} accessibilityRole="button">
+                    {isAutomatic && (
+                        <Pressable
+                            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: compact ? 6 : 8 }}
+                            onPress={() => setDontShowAgain((value) => !value)}
+                            accessibilityRole="checkbox"
+                            accessibilityState={{ checked: dontShowAgain }}
+                        >
+                            <Ionicons
+                                name={dontShowAgain ? 'checkbox' : 'square-outline'}
+                                size={20}
+                                color={dontShowAgain ? theme.colors.primary : theme.colors.textSecondary}
+                            />
+                            <Text style={{ color: theme.colors.textSecondary, fontSize: 14 }}>
+                                {t('signUpPrompt.dontShowAgain')}
+                            </Text>
+                        </Pressable>
+                    )}
+
+                    <Pressable style={{ alignItems: 'center', paddingVertical: compact ? 8 : 12 }} onPress={close} accessibilityRole="button">
                         <Text style={{ color: theme.colors.textSecondary, fontSize: 15 }}>
                             {reason === 'first' ? t('signUpPrompt.continueAsGuest') : t('signUpPrompt.maybeLater')}
                         </Text>
                     </Pressable>
-                </ScrollView>
+                </View>
             </SafeAreaView>
         </Modal>
     );
