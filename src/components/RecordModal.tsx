@@ -1,22 +1,43 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, Linking, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../i18n/LocaleContext';
+import { createT, Locale, TranslationKey } from '../i18n/index';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAppStyles } from '../styles/appStyles';
-import { parseTranscript } from '../utils/itemParser';
+import { POPULAR_ITEMS } from '../data/popularItems';
+import { applyCommands, buildVocabulary, matchKey, parseCommands, ParsedItem, VoiceCommand } from '../utils/itemParser';
 
-const SILENCE_TIMEOUT_MS = 10000;
+const SILENCE_TIMEOUT_MS = 15000;
 const SILENCE_CHECK_INTERVAL_MS = 500;
+// Android ends continuous sessions after a pause; restart them transparently
+const RESTART_DELAY_MS = 250;
+const QUICK_END_MS = 1000;
+const MAX_QUICK_RESTARTS = 3;
+const MAX_CONTEXTUAL_STRINGS = 100;
+// Android can re-deliver the last phrase as the session's closing result. A deliberate repeat
+// needs a pause long enough for the recognizer to finalize the first one, so it arrives later.
+const DUPLICATE_FINAL_MS = 1000;
 
-// expo-speech-recognition requires a dev build — not available in Expo Go
+const SPEECH_LOCALES: Locale[] = ['en', 'he'];
+const SPEECH_LANG: Record<Locale, string> = { en: 'en-US', he: 'he-IL' };
+const LOCALE_LABEL_KEYS: Record<Locale, TranslationKey> = { en: 'voiceRecord.langEn', he: 'voiceRecord.langHe' };
+// Errors that only end the current session — the auto-restart picks up from there
+const TRANSIENT_ERRORS = new Set(['no-speech', 'speech-timeout', 'aborted', 'busy', 'client']);
+const ERROR_KEYS: Record<string, TranslationKey> = {
+  'language-not-supported': 'voiceRecord.errorLanguage',
+  network: 'voiceRecord.errorNetwork',
+};
+
+// expo-speech-recognition requires a dev build — not available in Expo Go.
+// Required lazily so a missing native module is caught here instead of crashing on load.
 let expoSpeechModule: any = null;
-async function getExpoSpeechModule() {
+function getExpoSpeechModule() {
   if (expoSpeechModule) return expoSpeechModule;
   try {
-    const mod = await import('expo-speech-recognition');
+    const mod = require('expo-speech-recognition');
     // Verify the native module is actually linked (not just JS shim)
     if (!mod.ExpoSpeechRecognitionModule?.requestPermissionsAsync) return null;
     expoSpeechModule = mod;
@@ -26,53 +47,111 @@ async function getExpoSpeechModule() {
   }
 }
 
+// Phrases are parsed once, when committed, in the language of the session that heard them.
+// `pending` holds chip removals made while a phrase was still being heard: they apply after that
+// phrase, so the recognizer revising its words can't bring a removed chip back.
+type Transcript = { committed: VoiceCommand[]; pending: VoiceCommand[] };
+type Phrase = { text: string; commands: VoiceCommand[] };
+const EMPTY_TRANSCRIPT: Transcript = { committed: [], pending: [] };
+const EMPTY_PHRASE: Phrase = { text: '', commands: [] };
+
+function mergeVocabulary(...lists: string[][]): string[] {
+  const seen = new Set<string>();
+  const merged: string[] = [];
+  for (const entry of lists.flat()) {
+    const key = entry.trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(entry.trim());
+  }
+  return merged;
+}
+
 type RecordModalProps = {
   visible: boolean;
   onClose: () => void;
-  onAdd: (items: { name: string; quantity: number }[]) => void;
+  onAdd: (items: ParsedItem[]) => void;
+  /** The user's own item names (list items, recents) — used to split run-on speech and bias recognition */
+  vocabulary: string[];
 };
 
-export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
+export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModalProps) => {
   const { theme } = useTheme();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { preferences } = usePreferences();
   const styles = useAppStyles();
   const [useTextFallback, setUseTextFallback] = useState(false);
   const showTextInput = preferences.parserDevMode || useTextFallback;
 
-  const [isListening, setIsListening] = useState(false);
-  const [items, setItems] = useState<{ name: string; quantity: number }[]>([]);
+  const [speechLocale, setSpeechLocale] = useState<Locale>(locale);
+  const [isActive, setIsActive] = useState(false);
+  const [transcript, setTranscript] = useState<Transcript>(EMPTY_TRANSCRIPT);
+  const [interim, setInterim] = useState<Phrase>(EMPTY_PHRASE);
+  const [lastPhrase, setLastPhrase] = useState('');
   const [devInput, setDevInput] = useState('');
+  const [errorKey, setErrorKey] = useState<TranslationKey | null>(null);
 
-  const committedRef = useRef('');
-  const processedFinalTranscriptsRef = useRef<Set<string>>(new Set());
-  const removedItemNamesRef = useRef<Set<string>>(new Set());
+  const speechModuleRef = useRef<any>(null);
+  const subscriptionsRef = useRef<{ remove: () => void }[]>([]);
+  // Bumped on every open/close so async work from a previous opening bails out
+  const generationRef = useRef(0);
+  const isStartingRef = useRef(false);
+  const wantListeningRef = useRef(false);
+  // The language picked in the toggle, and the language of the session currently running
+  const speechLocaleRef = useRef<Locale>(locale);
+  const sessionLocaleRef = useRef<Locale>(locale);
+  const interimTextRef = useRef('');
+  const lastFinalRef = useRef({ text: '', at: 0 });
+  const sessionStartedAtRef = useRef(0);
+  const quickEndsRef = useRef(0);
   const lastResultAtRef = useRef(Date.now());
   const silenceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoopRef = useRef<Animated.CompositeAnimation | null>(null);
-  const prevItemsRef = useRef<{ name: string; quantity: number }[]>([]);
+  const prevItemsRef = useRef<ParsedItem[]>([]);
   const chipAnims = useRef<Map<string, Animated.Value>>(new Map());
 
+  // Only the user's own items split run-on speech: a wrong split ("chocolate milk") can't be
+  // undone from the chips, while the catalog is safe to use for recognition bias
+  const splitVocabulary = useMemo(() => buildVocabulary(vocabulary), [vocabulary]);
+  const contextualStrings = useMemo(
+    () => ({
+      en: mergeVocabulary(vocabulary, POPULAR_ITEMS.en).slice(0, MAX_CONTEXTUAL_STRINGS),
+      he: mergeVocabulary(vocabulary, POPULAR_ITEMS.he).slice(0, MAX_CONTEXTUAL_STRINGS),
+    }),
+    [vocabulary]
+  );
+
+  const items = useMemo(
+    () =>
+      applyCommands(
+        showTextInput
+          ? [...parseCommands(devInput, speechLocale, splitVocabulary), ...transcript.committed]
+          : [...transcript.committed, ...interim.commands, ...transcript.pending]
+      ),
+    [transcript, interim, devInput, showTextInput, speechLocale, splitVocabulary]
+  );
+
+  const caption = interim.text || lastPhrase;
+
   useEffect(() => {
-    if (visible) {
-      committedRef.current = '';
-      processedFinalTranscriptsRef.current = new Set();
-      removedItemNamesRef.current = new Set();
-      lastResultAtRef.current = Date.now();
-      setItems([]);
-      setDevInput('');
-      setUseTextFallback(false);
-      if (!preferences.parserDevMode) startRecognition();
-    } else {
-      stopEverything();
-    }
-    return () => stopEverything();
+    if (!visible) return;
+    setTranscript(EMPTY_TRANSCRIPT);
+    setInterim(EMPTY_PHRASE);
+    setLastPhrase('');
+    interimTextRef.current = '';
+    setDevInput('');
+    setErrorKey(null);
+    setUseTextFallback(false);
+    setSpeechLocale(locale);
+    speechLocaleRef.current = locale;
+    if (!preferences.parserDevMode) startListening();
+    return () => teardown();
   }, [visible]);
 
   useEffect(() => {
-    if (isListening) {
+    if (isActive) {
       pulseLoopRef.current = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, { toValue: 1.2, duration: 700, useNativeDriver: true }),
@@ -85,16 +164,18 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
       pulseAnim.setValue(1);
     }
     return () => pulseLoopRef.current?.stop();
-  }, [isListening]);
+  }, [isActive]);
 
   useEffect(() => {
     const prev = prevItemsRef.current;
+    let hasNewItem = false;
     for (const item of items) {
-      const key = item.name.toLowerCase();
+      const key = matchKey(item.name);
       if (!chipAnims.current.has(key)) {
         chipAnims.current.set(key, new Animated.Value(1));
       }
-      const prevItem = prev.find((p) => p.name.toLowerCase() === key);
+      const prevItem = prev.find((p) => matchKey(p.name) === key);
+      if (!prevItem) hasNewItem = true;
       if (prevItem && prevItem.quantity !== item.quantity) {
         const anim = chipAnims.current.get(key)!;
         Animated.sequence([
@@ -103,117 +184,224 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
         ]).start();
       }
     }
+    if (hasNewItem && !showTextInput) Haptics.selectionAsync().catch(() => {});
     prevItemsRef.current = items;
   }, [items]);
 
-  const startRecognition = async () => {
-    const mod = await getExpoSpeechModule();
-    if (!mod) {
+  const setWantListening = (value: boolean) => {
+    wantListeningRef.current = value;
+    setIsActive(value);
+  };
+
+  const showPermissionAlert = () => {
+    Alert.alert(
+      t('voiceRecord.permDeniedTitle'),
+      t('voiceRecord.permDeniedMessage'),
+      [
+        { text: t('common.cancel'), onPress: onClose, style: 'cancel' },
+        { text: t('voiceRecord.openSettings'), onPress: () => { Linking.openSettings(); onClose(); } },
+      ]
+    );
+  };
+
+  const parseSpoken = (text: string) => parseCommands(text, sessionLocaleRef.current, splitVocabulary);
+
+  const commitPhrase = (text: string) => {
+    interimTextRef.current = '';
+    setInterim(EMPTY_PHRASE);
+    const now = Date.now();
+    const last = lastFinalRef.current;
+    const isDuplicate = text === last.text && now - last.at < DUPLICATE_FINAL_MS;
+    let commands: VoiceCommand[] = [];
+    if (text && !isDuplicate) {
+      lastFinalRef.current = { text, at: now };
+      commands = parseSpoken(text);
+      setLastPhrase(text);
+    }
+    setTranscript(({ committed, pending }) => ({ committed: [...committed, ...commands, ...pending], pending: [] }));
+  };
+
+  const handleResult = (event: { isFinal: boolean; results: { transcript: string }[] }) => {
+    lastResultAtRef.current = Date.now();
+    const text = event.results[0]?.transcript?.trim() ?? '';
+    if (event.isFinal) {
+      quickEndsRef.current = 0;
+      commitPhrase(text);
+    } else {
+      interimTextRef.current = text;
+      setInterim({ text, commands: parseSpoken(text) });
+    }
+  };
+
+  const handleError = (event: { error: string }) => {
+    if (TRANSIENT_ERRORS.has(event.error)) return;
+    setWantListening(false);
+    clearTimers();
+    if (event.error === 'not-allowed') {
+      showPermissionAlert();
+      return;
+    }
+    setErrorKey(ERROR_KEYS[event.error] ?? 'voiceRecord.errorGeneric');
+  };
+
+  const handleEnd = () => {
+    // Keep whatever was heard last, even if the session closed before finalizing it
+    commitPhrase(interimTextRef.current);
+    if (!wantListeningRef.current) return;
+    const endedQuickly = Date.now() - sessionStartedAtRef.current < QUICK_END_MS;
+    quickEndsRef.current = endedQuickly ? quickEndsRef.current + 1 : 0;
+    if (quickEndsRef.current > MAX_QUICK_RESTARTS) {
+      setWantListening(false);
+      clearTimers();
+      setErrorKey('voiceRecord.errorGeneric');
+      return;
+    }
+    restartTimerRef.current = setTimeout(() => {
+      restartTimerRef.current = null;
+      if (wantListeningRef.current) beginSession();
+    }, RESTART_DELAY_MS);
+  };
+
+  // Native listeners outlive any single render — they call through this ref to reach the latest
+  // handlers (and the latest `t`, `onClose` and vocabulary)
+  const handlersRef = useRef({ handleResult, handleError, handleEnd });
+  handlersRef.current = { handleResult, handleError, handleEnd };
+
+  const ensureSpeechModule = async (generation: number) => {
+    if (speechModuleRef.current) return speechModuleRef.current;
+    const mod = getExpoSpeechModule();
+    const speech = mod?.ExpoSpeechRecognitionModule;
+    if (!speech || !speech.isRecognitionAvailable()) {
       // Native module not available (e.g. Expo Go) — fall back to text input
       setUseTextFallback(true);
-      return;
+      return null;
     }
-
-    const { ExpoSpeechRecognitionModule } = mod;
-    const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    const { granted } = await speech.requestPermissionsAsync();
+    if (generation !== generationRef.current) return null;
     if (!granted) {
-      Alert.alert(
-        t('voiceRecord.permDeniedTitle'),
-        t('voiceRecord.permDeniedMessage'),
-        [
-          { text: t('common.cancel'), onPress: onClose, style: 'cancel' },
-          { text: t('voiceRecord.openSettings'), onPress: () => { Linking.openSettings(); onClose(); } },
-        ]
-      );
-      return;
+      showPermissionAlert();
+      return null;
     }
+    subscriptionsRef.current = [
+      speech.addListener('result', (event: any) => handlersRef.current.handleResult(event)),
+      speech.addListener('error', (event: any) => handlersRef.current.handleError(event)),
+      speech.addListener('end', () => handlersRef.current.handleEnd()),
+    ];
+    speechModuleRef.current = speech;
+    return speech;
+  };
 
-    const { ExpoWebSpeechRecognition } = mod;
-    const recognition = new ExpoWebSpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = true;
-    recognition.continuous = true;
-    // Reduce silence threshold so rapid consecutive items segment faster
-    recognition.androidIntentOptions = {
-      EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: preferences.silenceCompleteMs,
-      EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: preferences.silencePossiblyCompleteMs,
-    };
-    (recognition as any).iosTaskHint = 'search';
-    recognitionRef.current = recognition;
+  const beginSession = () => {
+    const speech = speechModuleRef.current;
+    if (!speech) return;
+    const sessionLocale = speechLocaleRef.current;
+    // Results from this session are parsed in its language, even after the toggle changes
+    sessionLocaleRef.current = sessionLocale;
+    sessionStartedAtRef.current = Date.now();
+    try {
+      speech.start({
+        lang: SPEECH_LANG[sessionLocale],
+        interimResults: true,
+        continuous: true,
+        contextualStrings: contextualStrings[sessionLocale],
+        // Commas between items become separators (iOS; Android only with on-device recognition)
+        addsPunctuation: true,
+        // Reduce silence threshold so rapid consecutive items segment faster
+        androidIntentOptions: {
+          EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: preferences.silenceCompleteMs,
+          EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: preferences.silencePossiblyCompleteMs,
+        },
+        iosTaskHint: 'search',
+      });
+    } catch {
+      setWantListening(false);
+      clearTimers();
+      setErrorKey('voiceRecord.errorGeneric');
+    }
+  };
 
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
-    recognition.onresult = (event: any) => {
+  const startListening = async () => {
+    if (isStartingRef.current || wantListeningRef.current) return;
+    isStartingRef.current = true;
+    const generation = generationRef.current;
+    setErrorKey(null);
+    try {
+      const speech = await ensureSpeechModule(generation);
+      if (!speech || generation !== generationRef.current) return;
+      setWantListening(true);
+      quickEndsRef.current = 0;
       lastResultAtRef.current = Date.now();
-      let interim = '';
-      // Dedup by transcript text so that:
-      // - platforms that accumulate all results don't double-count previously seen finals
-      // - platforms that reset the results array after each phrase (e.g. Android) still
-      //   pick up new finals even when the array index resets back to 0
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          const transcript = result[0].transcript;
-          if (!processedFinalTranscriptsRef.current.has(transcript)) {
-            processedFinalTranscriptsRef.current.add(transcript);
-            committedRef.current = committedRef.current
-              ? `${committedRef.current}, ${transcript}`
-              : transcript;
-          }
-        } else {
-          interim = result[0].transcript;
-        }
-      }
-      const committed = committedRef.current;
-      const full = interim
-        ? (committed ? `${committed}, ${interim}` : interim)
-        : committed;
-      setItems(parseTranscript(full).filter(
-        (item) => !removedItemNamesRef.current.has(item.name.toLowerCase())
-      ));
-    };
-
-    recognition.start();
-    lastResultAtRef.current = Date.now();
-    silenceTimerRef.current = setInterval(() => {
-      if (Date.now() - lastResultAtRef.current > SILENCE_TIMEOUT_MS) {
-        try { recognition.stop(); } catch {}
-        clearSilenceTimer();
-      }
-    }, SILENCE_CHECK_INTERVAL_MS);
+      silenceTimerRef.current = setInterval(() => {
+        if (Date.now() - lastResultAtRef.current > SILENCE_TIMEOUT_MS) stopListening();
+      }, SILENCE_CHECK_INTERVAL_MS);
+      beginSession();
+    } finally {
+      // A newer opening owns the flag once teardown has reset it
+      if (generation === generationRef.current) isStartingRef.current = false;
+    }
   };
 
-  const stopEverything = () => {
-    try { recognitionRef.current?.stop(); } catch {}
-    recognitionRef.current = null;
-    clearSilenceTimer();
-  };
-
-  const clearSilenceTimer = () => {
+  const clearTimers = () => {
     if (silenceTimerRef.current) {
       clearInterval(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
+  };
+
+  const stopListening = () => {
+    setWantListening(false);
+    clearTimers();
+    try { speechModuleRef.current?.stop(); } catch {}
+  };
+
+  const teardown = () => {
+    generationRef.current++;
+    isStartingRef.current = false;
+    stopListening();
+    subscriptionsRef.current.forEach((subscription) => subscription.remove());
+    subscriptionsRef.current = [];
+    speechModuleRef.current = null;
   };
 
   const handleManualStop = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    try { recognitionRef.current?.stop(); } catch {}
-    clearSilenceTimer();
+    stopListening();
   };
 
   const handleMicResume = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    startRecognition();
+    startListening();
   };
 
-  const handleRemoveItem = (index: number) => {
+  const handleLanguageChange = (next: Locale) => {
+    if (next === speechLocaleRef.current) return;
+    Haptics.selectionAsync().catch(() => {});
+    const hadLanguageError = errorKey === 'voiceRecord.errorLanguage';
+    speechLocaleRef.current = next;
+    setSpeechLocale(next);
+    setErrorKey(null);
+    if (wantListeningRef.current) {
+      // Ending the session commits its last phrase in the old language, then the auto-restart
+      // picks up the new one
+      lastResultAtRef.current = Date.now();
+      try { speechModuleRef.current?.stop(); } catch {}
+    } else if (hadLanguageError && !showTextInput) {
+      startListening();
+    }
+  };
+
+  const handleRemoveItem = (item: ParsedItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    setItems((prev) => {
-      removedItemNamesRef.current.add(prev[index].name.toLowerCase());
-      return prev.filter((_, i) => i !== index);
-    });
+    // Recorded as a step in the transcript, so saying the item again later re-adds it
+    const removal: VoiceCommand = { type: 'remove', name: item.name };
+    const isMidPhrase = !!interimTextRef.current;
+    setTranscript(({ committed, pending }) =>
+      isMidPhrase ? { committed, pending: [...pending, removal] } : { committed: [...committed, removal], pending }
+    );
   };
 
   const handleAdd = () => {
@@ -222,6 +410,8 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
     onClose();
   };
 
+  const speechIsRTL = speechLocale === 'he';
+
   return (
     <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalContainer}>
@@ -229,53 +419,104 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
         <View style={[styles.modalPanel, { maxHeight: '70%' }]}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{t('voiceRecord.title')}</Text>
-            <Pressable onPress={onClose} style={styles.modalCloseButton}>
-              <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
-            </Pressable>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                accessibilityRole="radiogroup"
+                accessibilityLabel={t('voiceRecord.language')}
+                style={{ flexDirection: 'row', borderRadius: 10, padding: 3, backgroundColor: theme.colors.surfaceHighlight }}
+              >
+                {SPEECH_LOCALES.map((option) => {
+                  const selected = option === speechLocale;
+                  return (
+                    <Pressable
+                      key={option}
+                      onPress={() => handleLanguageChange(option)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected }}
+                      style={{
+                        minWidth: 40,
+                        minHeight: 38,
+                        paddingHorizontal: 10,
+                        borderRadius: 8,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: selected ? theme.colors.primary : 'transparent',
+                      }}
+                    >
+                      <Text style={{ fontSize: 13, fontFamily: theme.fonts.semibold, color: selected ? theme.colors.primaryText : theme.colors.textSecondary }}>
+                        {t(LOCALE_LABEL_KEYS[option])}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Pressable onPress={onClose} style={styles.modalCloseButton}>
+                <Ionicons name="close" size={18} color={theme.colors.textSecondary} />
+              </Pressable>
+            </View>
           </View>
 
           {!showTextInput ? (
-            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+            <View style={{ alignItems: 'center', paddingVertical: 20, paddingHorizontal: 16 }}>
               <Pressable
-                onPress={isListening ? handleManualStop : handleMicResume}
+                onPress={isActive ? handleManualStop : handleMicResume}
                 accessibilityRole="button"
-                accessibilityLabel={isListening ? t('voiceRecord.tapToStop') : t('voiceRecord.stopped')}
+                accessibilityLabel={isActive ? t('voiceRecord.tapToStop') : t('voiceRecord.stopped')}
               >
                 <Animated.View
                   style={{
                     width: 72,
                     height: 72,
                     borderRadius: 36,
-                    backgroundColor: isListening ? theme.colors.primary : theme.colors.surfaceHighlight,
+                    backgroundColor: isActive ? theme.colors.primary : theme.colors.surfaceHighlight,
                     alignItems: 'center',
                     justifyContent: 'center',
                     transform: [{ scale: pulseAnim }],
                   }}
                 >
                   <Ionicons
-                    name={isListening ? 'mic' : 'mic-off'}
+                    name={isActive ? 'mic' : 'mic-off'}
                     size={32}
-                    color={isListening ? theme.colors.primaryText : theme.colors.textSecondary}
+                    color={isActive ? theme.colors.primaryText : theme.colors.textSecondary}
                   />
                 </Animated.View>
               </Pressable>
               <Text style={{ marginTop: 10, fontSize: 13, fontFamily: theme.fonts.regular, color: theme.colors.textSecondary }}>
-                {isListening ? t('voiceRecord.listening') : t('voiceRecord.stopped')}
+                {isActive ? t('voiceRecord.listening') : t('voiceRecord.stopped')}
               </Text>
+              {caption ? (
+                <Text
+                  numberOfLines={2}
+                  ellipsizeMode="head"
+                  style={{
+                    marginTop: 8,
+                    fontSize: 14,
+                    fontFamily: theme.fonts.regular,
+                    fontStyle: 'italic',
+                    color: theme.colors.text,
+                    textAlign: 'center',
+                    writingDirection: speechIsRTL ? 'rtl' : 'ltr',
+                  }}
+                >
+                  “{caption}”
+                </Text>
+              ) : null}
+              {errorKey ? (
+                <Text style={{ marginTop: 8, fontSize: 13, fontFamily: theme.fonts.medium, color: theme.colors.danger, textAlign: 'center' }}>
+                  {t(errorKey)}
+                </Text>
+              ) : null}
             </View>
           ) : (
             <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 6 }}>
               <Text style={{ fontSize: 11, fontFamily: theme.fonts.medium, color: theme.colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                Dev mode — type to test parser
+                {t('voiceRecord.textModeLabel')}
               </Text>
               <TextInput
                 autoFocus
                 value={devInput}
-                onChangeText={(text) => {
-                  setDevInput(text);
-                  setItems(parseTranscript(text));
-                }}
-                placeholder="e.g. 5 bread next 2 milk"
+                onChangeText={setDevInput}
+                placeholder={createT(speechLocale)('voiceRecord.textModePlaceholder')}
                 placeholderTextColor={theme.colors.textSecondary}
                 style={{
                   fontSize: 15,
@@ -287,6 +528,8 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
                   paddingHorizontal: 14,
                   height: 44,
                   backgroundColor: theme.colors.inputBackground,
+                  textAlign: speechIsRTL ? 'right' : 'left',
+                  writingDirection: speechIsRTL ? 'rtl' : 'ltr',
                 }}
               />
             </View>
@@ -294,20 +537,25 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
 
           <ScrollView style={{ flex: 1, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
             {items.length === 0 ? (
-              <Text style={{ textAlign: 'center', color: theme.colors.textSecondary, fontSize: 14, fontFamily: theme.fonts.regular, marginBottom: 16 }}>
-                {t('voiceRecord.noItems')}
-              </Text>
+              <View style={{ gap: 6, marginBottom: 16 }}>
+                <Text style={{ textAlign: 'center', color: theme.colors.textSecondary, fontSize: 14, fontFamily: theme.fonts.regular }}>
+                  {t('voiceRecord.noItems')}
+                </Text>
+                <Text style={{ textAlign: 'center', color: theme.colors.textSecondary, fontSize: 12, fontFamily: theme.fonts.regular, writingDirection: speechIsRTL ? 'rtl' : 'ltr' }}>
+                  {createT(speechLocale)('voiceRecord.hint')}
+                </Text>
+              </View>
             ) : (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingBottom: 16 }}>
-                {items.map((item, index) => {
-                  const key = item.name.toLowerCase();
+                {items.map((item) => {
+                  const key = matchKey(item.name);
                   if (!chipAnims.current.has(key)) {
                     chipAnims.current.set(key, new Animated.Value(1));
                   }
                   const chipScale = chipAnims.current.get(key)!;
                   return (
                   <Animated.View
-                    key={`${item.name}-${index}`}
+                    key={key}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -321,10 +569,10 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
                     }}
                   >
                     <Text style={{ color: theme.colors.primaryText, fontSize: 14, fontFamily: theme.fonts.medium }}>
-                      {item.quantity > 1 ? `${item.quantity}\u00d7 ` : ''}{item.name}
+                      {item.quantity > 1 ? `${item.quantity}× ` : ''}{item.name}
                     </Text>
                     <Pressable
-                      onPress={() => handleRemoveItem(index)}
+                      onPress={() => handleRemoveItem(item)}
                       style={{ padding: 2 }}
                       accessibilityRole="button"
                       accessibilityLabel={t('voiceRecord.removeItem', { name: item.name })}
@@ -366,7 +614,7 @@ export const RecordModal = ({ visible, onClose, onAdd }: RecordModalProps) => {
                 accessibilityRole="button"
               >
                 <Text style={{ fontSize: 16, fontFamily: theme.fonts.semibold, color: items.length === 0 ? theme.colors.textSecondary : theme.colors.primaryText }}>
-                  {t('voiceRecord.add', { count: items.length })}
+                  {items.length === 1 ? t('voiceRecord.add.one') : t('voiceRecord.add.other', { count: items.length })}
                 </Text>
               </Pressable>
             </View>
