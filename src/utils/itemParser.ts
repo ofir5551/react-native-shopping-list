@@ -19,7 +19,7 @@ type CompiledLexicon = {
   splittingNumbers: Set<string>;
 };
 
-const DIGITS_RE = /^\d+$/;
+const DIGITS_RE = /^\d+(\.\d+)?$/;
 const DIGITS_X_RE = /^(\d+)x$/;
 const X_DIGITS_RE = /^x(\d+)$/;
 const SEP_TOKEN = ',';
@@ -52,11 +52,11 @@ function compile(locale: Locale): CompiledLexicon {
   return compiled;
 }
 
-function tokenize(text: string, lex: SpeechLexicon): string[] {
+function tokenize(text: string, lex: SpeechLexicon, vocab: Vocabulary | null): string[] {
   const normalized = text
     .toLowerCase()
-    .replace(/[\n,،;:]/g, ` ${SEP_TOKEN} `)
-    .replace(/[.?!]/g, ' ')
+    // Sentence punctuation separates items too, but not the point in decimals: "1.5 liters"
+    .replace(/[\n,،;:?!]|\.(?!\d)/g, ` ${SEP_TOKEN} `)
     .replace(/[-־]/g, ' ');
   const tokens: string[] = [];
   for (const token of normalized.split(/\s+/).filter(Boolean)) {
@@ -66,7 +66,8 @@ function tokenize(text: string, lex: SpeechLexicon): string[] {
       token.startsWith('ו') &&
       !token.startsWith('וו') &&
       !lex.vavExceptions.includes(token) &&
-      !lex.separators.includes(token)
+      !lex.separators.includes(token) &&
+      !vocab?.keys.has(matchKey(token))
     ) {
       tokens.push(SEP_TOKEN, token.slice(1));
     } else {
@@ -175,9 +176,11 @@ function extractQuantity(units: Unit[], lex: SpeechLexicon): { name: string; qua
   const first = units[0];
   if (first?.kind === 'number') {
     const digits = first.text.match(DIGITS_X_RE)?.[1] ?? (DIGITS_RE.test(first.text) ? first.text : null);
-    const value = digits !== null ? parseInt(digits, 10) : lex.numbers[first.text];
+    const value = digits !== null ? parseFloat(digits) : lex.numbers[first.text];
     const rest = tokens.slice(first.text.split(' ').length);
-    if (value !== undefined && rest.length > 0) {
+    // A bare number ("2" while the item is still being spoken) is not an item
+    if (rest.length === 0) return { name: '', quantity: 1, hasQuantity: false };
+    if (value !== undefined) {
       quantity = value;
       hasQuantity = true;
       tokens = rest;
@@ -205,8 +208,8 @@ function extractQuantity(units: Unit[], lex: SpeechLexicon): { name: string; qua
     }
   }
 
-  // Measure units keep the amount in the name: "500 grams of cheese"
-  if (hasQuantity && lex.measures.includes(tokens[0])) {
+  // Measure units keep the amount in the name: "500 grams of cheese", and so do fractions: "1.5 milk"
+  if (hasQuantity && (lex.measures.includes(tokens[0]) || !Number.isInteger(quantity))) {
     return { name: [String(quantity), ...tokens].join(' '), quantity: 1, hasQuantity: false };
   }
 
@@ -220,8 +223,11 @@ function extractQuantity(units: Unit[], lex: SpeechLexicon): { name: string; qua
 const EN_ARTICLES = new Set(['the', 'a', 'an', 'my', 'some']);
 
 function singular(word: string): string {
+  // "-ies" plurals come from both "-y" and "-ie" singulars, so map all three to "-y":
+  // berries/berry, cookies/cookie, pies/pie
+  if (word.endsWith('ies') && word.length > 3) return word.slice(0, -3) + 'y';
+  if (word.endsWith('ie')) return word.slice(0, -2) + 'y';
   if (word.length <= 3) return word;
-  if (word.endsWith('ies')) return word.slice(0, -3) + 'y';
   if (/(oes|ches|shes|xes|sses)$/.test(word)) return word.slice(0, -2);
   if (word.endsWith('s') && !word.endsWith('ss')) return word.slice(0, -1);
   return word;
@@ -238,9 +244,10 @@ export function matchKey(name: string): string {
   return words.join(' ');
 }
 
-type Vocabulary = { keys: Set<string>; maxTokens: number };
+export type Vocabulary = { keys: Set<string>; maxTokens: number };
 
-function buildVocabulary(vocabulary: string[] | undefined): Vocabulary | null {
+/** Build once and reuse — parseCommands runs on every interim speech result */
+export function buildVocabulary(vocabulary: string[] | undefined): Vocabulary | null {
   if (!vocabulary?.length) return null;
   const keys = new Set<string>();
   let maxTokens = 1;
@@ -286,13 +293,12 @@ function stripHebrewArticleAfterEt(name: string, lastFiller: string | undefined)
   return name;
 }
 
-export function parseCommands(text: string, locale: Locale, vocabulary?: string[]): VoiceCommand[] {
+export function parseCommands(text: string, locale: Locale, vocab: Vocabulary | null = null): VoiceCommand[] {
   if (!text.trim()) return [];
   const compiled = compile(locale);
-  const vocab = buildVocabulary(vocabulary);
   const commands: VoiceCommand[] = [];
 
-  for (const seg of segment(toUnits(tokenize(text, compiled.lex), compiled), compiled)) {
+  for (const seg of segment(toUnits(tokenize(text, compiled.lex, vocab), compiled), compiled)) {
     const head = seg[0];
     if (head.kind === 'undo') {
       commands.push({ type: 'undo' });
@@ -365,8 +371,4 @@ export function applyCommands(commands: VoiceCommand[]): ParsedItem[] {
     }
   }
   return items;
-}
-
-export function parseTranscript(transcript: string, locale: Locale = 'en', vocabulary?: string[]): ParsedItem[] {
-  return applyCommands(parseCommands(transcript, locale, vocabulary));
 }

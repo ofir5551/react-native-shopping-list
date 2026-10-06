@@ -1,4 +1,28 @@
-import { applyCommands, matchKey, parseCommands, parseTranscript } from './itemParser';
+import { Locale } from '../i18n/index';
+import { applyCommands, buildVocabulary, matchKey, parseCommands } from './itemParser';
+
+const parseTranscript = (transcript: string, locale: Locale = 'en', vocabulary?: string[]) =>
+  applyCommands(parseCommands(transcript, locale, buildVocabulary(vocabulary)));
+
+describe('parseTranscript — edge cases', () => {
+  it('keeps decimal amounts whole', () => {
+    expect(parseTranscript('1.5 liters of milk')).toEqual([{ name: '1.5 liters of milk', quantity: 1 }]);
+    expect(parseTranscript('Milk. Eggs?')).toEqual([
+      { name: 'milk', quantity: 1 },
+      { name: 'eggs', quantity: 1 },
+    ]);
+  });
+
+  it('ignores a bare number while the item is still being spoken', () => {
+    expect(parseTranscript('2')).toEqual([]);
+    expect(parseTranscript('milk and 3')).toEqual([{ name: 'milk', quantity: 1 }]);
+  });
+
+  it('keeps a known Hebrew word that starts with ו whole', () => {
+    expect(parseTranscript('וילון', 'he')).toEqual([{ name: 'ילון', quantity: 1 }]);
+    expect(parseTranscript('וילון', 'he', ['וילון'])).toEqual([{ name: 'וילון', quantity: 1 }]);
+  });
+});
 
 describe('parseTranscript', () => {
   it('returns empty array for empty input', () => {
@@ -218,6 +242,10 @@ describe('parseTranscript — English fluency', () => {
     ]);
   });
 
+  it('removes a "-ie" item said in plural', () => {
+    expect(parseTranscript('cookie and milk, remove the cookies')).toEqual([{ name: 'milk', quantity: 1 }]);
+  });
+
   it('keeps unknown multi-word items whole', () => {
     expect(parseTranscript('chocolate milk', 'en', ['Milk'])).toEqual([{ name: 'chocolate milk', quantity: 1 }]);
   });
@@ -372,6 +400,8 @@ describe('matchKey', () => {
     expect(matchKey('The Apples')).toBe('apple');
     expect(matchKey('tomatoes')).toBe(matchKey('tomato'));
     expect(matchKey('berries')).toBe(matchKey('berry'));
+    expect(matchKey('cookies')).toBe(matchKey('cookie'));
+    expect(matchKey('pies')).toBe(matchKey('pie'));
     expect(matchKey('glass')).toBe('glass');
   });
 

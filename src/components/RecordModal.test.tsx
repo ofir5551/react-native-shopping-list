@@ -1,4 +1,5 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { RecordModal } from './RecordModal';
 import { useTheme } from '../context/ThemeContext';
@@ -132,6 +133,82 @@ describe('RecordModal', () => {
     expect(queryByText('eggs')).toBeNull();
     expect(getByText('milk')).toBeTruthy();
     expect(getByText('bread')).toBeTruthy();
+  });
+
+  it('keeps a removed chip removed when the recognizer revises the phrase', async () => {
+    const { getByLabelText, getByText, queryByText } = setup();
+    await waitForStart(1);
+
+    speak('milk and eggs', false);
+    fireEvent.press(getByLabelText(t('voiceRecord.removeItem', { name: 'eggs' })));
+    speak('Milk, eggs and bread', false);
+    expect(queryByText('eggs')).toBeNull();
+    speak('Milk, eggs and bread', true);
+
+    expect(queryByText('eggs')).toBeNull();
+    expect(getByText('milk')).toBeTruthy();
+    expect(getByText('bread')).toBeTruthy();
+  });
+
+  it('parses a phrase finalized after a language switch in the language it was spoken in', async () => {
+    const { getByText } = setup('en');
+    await waitForStart(1);
+
+    speak('two', false);
+    fireEvent.press(getByText(t('voiceRecord.langHe')));
+    speak('two milk', true);
+    act(() => mockListeners.end());
+
+    expect(getByText('2× milk')).toBeTruthy();
+    await waitForStart(2);
+    expect(mockSpeech.start.mock.calls[1][0].lang).toBe('he-IL');
+  });
+
+  it('accepts a deliberate repeat after a pause', async () => {
+    const now = jest.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    try {
+      const { getByText } = setup();
+      await waitForStart(1);
+
+      speak('milk, eggs');
+      speak('undo');
+      now.mockReturnValue(1_003_000);
+      speak('undo');
+      expect(getByText(t('voiceRecord.noItems'))).toBeTruthy();
+    } finally {
+      now.mockRestore();
+    }
+  });
+
+  it('uses the latest translations in listeners registered on an earlier render', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const { rerender } = setup('en');
+    await waitForStart(1);
+
+    (useLocale as jest.Mock).mockReturnValue({ t: createT('he'), locale: 'he', isRTL: true, setLocale: jest.fn() });
+    rerender(<RecordModal visible onClose={jest.fn()} onAdd={jest.fn()} vocabulary={[]} />);
+    act(() => mockListeners.error({ error: 'not-allowed', message: '' }));
+
+    expect(alert.mock.calls[0][0]).toBe(createT('he')('voiceRecord.permDeniedTitle'));
+    alert.mockRestore();
+  });
+
+  it('starts listening when reopened while the first permission request is still pending', async () => {
+    const resolvers: ((value: { granted: boolean }) => void)[] = [];
+    const pending = () => new Promise<{ granted: boolean }>((resolve) => resolvers.push(resolve));
+    mockSpeech.requestPermissionsAsync.mockImplementationOnce(pending).mockImplementationOnce(pending);
+    const modal = (visible: boolean) => (
+      <RecordModal visible={visible} onClose={jest.fn()} onAdd={jest.fn()} vocabulary={[]} />
+    );
+    (useLocale as jest.Mock).mockReturnValue({ t, locale: 'en', isRTL: false, setLocale: jest.fn() });
+
+    const { rerender } = render(modal(true));
+    rerender(modal(false));
+    rerender(modal(true));
+    await waitFor(() => expect(resolvers).toHaveLength(2));
+    await act(async () => resolvers.forEach((resolve) => resolve({ granted: true })));
+
+    await waitForStart(1);
   });
 
   it('ignores a duplicated closing result', async () => {

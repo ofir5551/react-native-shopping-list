@@ -8,7 +8,7 @@ import { createT, Locale, TranslationKey } from '../i18n/index';
 import { usePreferences } from '../context/PreferencesContext';
 import { useAppStyles } from '../styles/appStyles';
 import { POPULAR_ITEMS } from '../data/popularItems';
-import { applyCommands, matchKey, parseCommands, ParsedItem, VoiceCommand } from '../utils/itemParser';
+import { applyCommands, buildVocabulary, matchKey, parseCommands, ParsedItem, VoiceCommand } from '../utils/itemParser';
 
 const SILENCE_TIMEOUT_MS = 15000;
 const SILENCE_CHECK_INTERVAL_MS = 500;
@@ -17,6 +17,9 @@ const RESTART_DELAY_MS = 250;
 const QUICK_END_MS = 1000;
 const MAX_QUICK_RESTARTS = 3;
 const MAX_CONTEXTUAL_STRINGS = 100;
+// Android can re-deliver the last phrase as the session's closing result. A deliberate repeat
+// needs a pause long enough for the recognizer to finalize the first one, so it arrives later.
+const DUPLICATE_FINAL_MS = 1000;
 
 const SPEECH_LOCALES: Locale[] = ['en', 'he'];
 const SPEECH_LANG: Record<Locale, string> = { en: 'en-US', he: 'he-IL' };
@@ -44,9 +47,13 @@ function getExpoSpeechModule() {
   }
 }
 
-// Each spoken phrase keeps the language it was spoken in, so switching language mid-recording
-// doesn't re-parse earlier phrases with the wrong lexicon
-type Segment = { kind: 'speech'; text: string; locale: Locale } | { kind: 'remove'; name: string };
+// Phrases are parsed once, when committed, in the language of the session that heard them.
+// `pending` holds chip removals made while a phrase was still being heard: they apply after that
+// phrase, so the recognizer revising its words can't bring a removed chip back.
+type Transcript = { committed: VoiceCommand[]; pending: VoiceCommand[] };
+type Phrase = { text: string; commands: VoiceCommand[] };
+const EMPTY_TRANSCRIPT: Transcript = { committed: [], pending: [] };
+const EMPTY_PHRASE: Phrase = { text: '', commands: [] };
 
 function mergeVocabulary(...lists: string[][]): string[] {
   const seen = new Set<string>();
@@ -64,7 +71,7 @@ type RecordModalProps = {
   visible: boolean;
   onClose: () => void;
   onAdd: (items: ParsedItem[]) => void;
-  /** Known item names (recents, list items) — used to split run-on speech and bias recognition */
+  /** The user's own item names (list items, recents) — used to split run-on speech and bias recognition */
   vocabulary: string[];
 };
 
@@ -78,8 +85,9 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
 
   const [speechLocale, setSpeechLocale] = useState<Locale>(locale);
   const [isActive, setIsActive] = useState(false);
-  const [segments, setSegments] = useState<Segment[]>([]);
-  const [interim, setInterim] = useState('');
+  const [transcript, setTranscript] = useState<Transcript>(EMPTY_TRANSCRIPT);
+  const [interim, setInterim] = useState<Phrase>(EMPTY_PHRASE);
+  const [lastPhrase, setLastPhrase] = useState('');
   const [devInput, setDevInput] = useState('');
   const [errorKey, setErrorKey] = useState<TranslationKey | null>(null);
 
@@ -89,14 +97,11 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
   const generationRef = useRef(0);
   const isStartingRef = useRef(false);
   const wantListeningRef = useRef(false);
+  // The language picked in the toggle, and the language of the session currently running
   const speechLocaleRef = useRef<Locale>(locale);
-  // Parsed portion of the in-progress phrase, the recognizer's full text for it, and the prefix
-  // of that text already committed early (by a chip removal or language switch). iOS keeps the
-  // whole session as one growing interim phrase, so committed words must not be re-read from it.
-  const interimRef = useRef('');
-  const rawInterimRef = useRef('');
-  const consumedRef = useRef('');
-  const lastFinalRef = useRef('');
+  const sessionLocaleRef = useRef<Locale>(locale);
+  const interimTextRef = useRef('');
+  const lastFinalRef = useRef({ text: '', at: 0 });
   const sessionStartedAtRef = useRef(0);
   const quickEndsRef = useRef(0);
   const lastResultAtRef = useRef(Date.now());
@@ -107,43 +112,35 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
   const prevItemsRef = useRef<ParsedItem[]>([]);
   const chipAnims = useRef<Map<string, Animated.Value>>(new Map());
 
-  const vocabularyByLocale = useMemo(
+  // Only the user's own items split run-on speech: a wrong split ("chocolate milk") can't be
+  // undone from the chips, while the catalog is safe to use for recognition bias
+  const splitVocabulary = useMemo(() => buildVocabulary(vocabulary), [vocabulary]);
+  const contextualStrings = useMemo(
     () => ({
-      en: mergeVocabulary(vocabulary, POPULAR_ITEMS.en),
-      he: mergeVocabulary(vocabulary, POPULAR_ITEMS.he),
+      en: mergeVocabulary(vocabulary, POPULAR_ITEMS.en).slice(0, MAX_CONTEXTUAL_STRINGS),
+      he: mergeVocabulary(vocabulary, POPULAR_ITEMS.he).slice(0, MAX_CONTEXTUAL_STRINGS),
     }),
     [vocabulary]
   );
 
-  // Read by native event handlers and restarts, which outlive any single render
-  const sessionOptionsRef = useRef({ vocabularyByLocale, preferences });
-  sessionOptionsRef.current = { vocabularyByLocale, preferences };
+  const items = useMemo(
+    () =>
+      applyCommands(
+        showTextInput
+          ? [...parseCommands(devInput, speechLocale, splitVocabulary), ...transcript.committed]
+          : [...transcript.committed, ...interim.commands, ...transcript.pending]
+      ),
+    [transcript, interim, devInput, showTextInput, speechLocale, splitVocabulary]
+  );
 
-  const items = useMemo(() => {
-    const allSegments: Segment[] = showTextInput
-      ? [{ kind: 'speech', text: devInput, locale: speechLocale }, ...segments]
-      : interim
-        ? [...segments, { kind: 'speech', text: interim, locale: speechLocale }]
-        : segments;
-    const commands = allSegments.flatMap((segment): VoiceCommand[] =>
-      segment.kind === 'speech'
-        ? parseCommands(segment.text, segment.locale, vocabularyByLocale[segment.locale])
-        : [{ type: 'remove', name: segment.name }]
-    );
-    return applyCommands(commands);
-  }, [segments, interim, devInput, showTextInput, speechLocale, vocabularyByLocale]);
-
-  const caption = useMemo(() => {
-    if (interim) return interim;
-    const lastSpeech = [...segments].reverse().find((s) => s.kind === 'speech');
-    return lastSpeech?.kind === 'speech' ? lastSpeech.text : '';
-  }, [segments, interim]);
+  const caption = interim.text || lastPhrase;
 
   useEffect(() => {
     if (!visible) return;
-    setSegments([]);
-    setInterim('');
-    interimRef.current = '';
+    setTranscript(EMPTY_TRANSCRIPT);
+    setInterim(EMPTY_PHRASE);
+    setLastPhrase('');
+    interimTextRef.current = '';
     setDevInput('');
     setErrorKey(null);
     setUseTextFallback(false);
@@ -207,31 +204,21 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
     );
   };
 
-  const commitFinal = (text: string) => {
-    interimRef.current = '';
-    setInterim('');
-    // Android can re-deliver the last phrase as the session's closing result
-    if (!text || text === lastFinalRef.current) return;
-    lastFinalRef.current = text;
-    const segmentLocale = speechLocaleRef.current;
-    setSegments((prev) => [...prev, { kind: 'speech', text, locale: segmentLocale }]);
-  };
+  const parseSpoken = (text: string) => parseCommands(text, sessionLocaleRef.current, splitVocabulary);
 
-  const unconsumed = (text: string) => {
-    const consumed = consumedRef.current;
-    return consumed && text.startsWith(consumed) ? text.slice(consumed.length).trim() : text;
-  };
-
-  const resetPhrase = () => {
-    rawInterimRef.current = '';
-    consumedRef.current = '';
-  };
-
-  /** Commits the in-progress phrase now, so later results only contribute newly heard words */
-  const commitInterimEarly = () => {
-    if (!interimRef.current) return;
-    consumedRef.current = rawInterimRef.current;
-    commitFinal(interimRef.current);
+  const commitPhrase = (text: string) => {
+    interimTextRef.current = '';
+    setInterim(EMPTY_PHRASE);
+    const now = Date.now();
+    const last = lastFinalRef.current;
+    const isDuplicate = text === last.text && now - last.at < DUPLICATE_FINAL_MS;
+    let commands: VoiceCommand[] = [];
+    if (text && !isDuplicate) {
+      lastFinalRef.current = { text, at: now };
+      commands = parseSpoken(text);
+      setLastPhrase(text);
+    }
+    setTranscript(({ committed, pending }) => ({ committed: [...committed, ...commands, ...pending], pending: [] }));
   };
 
   const handleResult = (event: { isFinal: boolean; results: { transcript: string }[] }) => {
@@ -239,12 +226,10 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
     const text = event.results[0]?.transcript?.trim() ?? '';
     if (event.isFinal) {
       quickEndsRef.current = 0;
-      commitFinal(unconsumed(text));
-      resetPhrase();
+      commitPhrase(text);
     } else {
-      rawInterimRef.current = text;
-      interimRef.current = unconsumed(text);
-      setInterim(interimRef.current);
+      interimTextRef.current = text;
+      setInterim({ text, commands: parseSpoken(text) });
     }
   };
 
@@ -261,8 +246,7 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
 
   const handleEnd = () => {
     // Keep whatever was heard last, even if the session closed before finalizing it
-    if (interimRef.current) commitFinal(interimRef.current);
-    resetPhrase();
+    commitPhrase(interimTextRef.current);
     if (!wantListeningRef.current) return;
     const endedQuickly = Date.now() - sessionStartedAtRef.current < QUICK_END_MS;
     quickEndsRef.current = endedQuickly ? quickEndsRef.current + 1 : 0;
@@ -277,6 +261,11 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
       if (wantListeningRef.current) beginSession();
     }, RESTART_DELAY_MS);
   };
+
+  // Native listeners outlive any single render — they call through this ref to reach the latest
+  // handlers (and the latest `t`, `onClose` and vocabulary)
+  const handlersRef = useRef({ handleResult, handleError, handleEnd });
+  handlersRef.current = { handleResult, handleError, handleEnd };
 
   const ensureSpeechModule = async (generation: number) => {
     if (speechModuleRef.current) return speechModuleRef.current;
@@ -294,9 +283,9 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
       return null;
     }
     subscriptionsRef.current = [
-      speech.addListener('result', handleResult),
-      speech.addListener('error', handleError),
-      speech.addListener('end', handleEnd),
+      speech.addListener('result', (event: any) => handlersRef.current.handleResult(event)),
+      speech.addListener('error', (event: any) => handlersRef.current.handleError(event)),
+      speech.addListener('end', () => handlersRef.current.handleEnd()),
     ];
     speechModuleRef.current = speech;
     return speech;
@@ -305,21 +294,22 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
   const beginSession = () => {
     const speech = speechModuleRef.current;
     if (!speech) return;
-    const { vocabularyByLocale: vocab, preferences: prefs } = sessionOptionsRef.current;
     const sessionLocale = speechLocaleRef.current;
-    lastFinalRef.current = '';
-    resetPhrase();
+    // Results from this session are parsed in its language, even after the toggle changes
+    sessionLocaleRef.current = sessionLocale;
     sessionStartedAtRef.current = Date.now();
     try {
       speech.start({
         lang: SPEECH_LANG[sessionLocale],
         interimResults: true,
         continuous: true,
-        contextualStrings: vocab[sessionLocale].slice(0, MAX_CONTEXTUAL_STRINGS),
+        contextualStrings: contextualStrings[sessionLocale],
+        // Commas between items become separators (iOS; Android only with on-device recognition)
+        addsPunctuation: true,
         // Reduce silence threshold so rapid consecutive items segment faster
         androidIntentOptions: {
-          EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: prefs.silenceCompleteMs,
-          EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: prefs.silencePossiblyCompleteMs,
+          EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: preferences.silenceCompleteMs,
+          EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: preferences.silencePossiblyCompleteMs,
         },
         iosTaskHint: 'search',
       });
@@ -346,7 +336,8 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
       }, SILENCE_CHECK_INTERVAL_MS);
       beginSession();
     } finally {
-      isStartingRef.current = false;
+      // A newer opening owns the flag once teardown has reset it
+      if (generation === generationRef.current) isStartingRef.current = false;
     }
   };
 
@@ -369,6 +360,7 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
 
   const teardown = () => {
     generationRef.current++;
+    isStartingRef.current = false;
     stopListening();
     subscriptionsRef.current.forEach((subscription) => subscription.remove());
     subscriptionsRef.current = [];
@@ -389,13 +381,12 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
     if (next === speechLocaleRef.current) return;
     Haptics.selectionAsync().catch(() => {});
     const hadLanguageError = errorKey === 'voiceRecord.errorLanguage';
-    // Words heard so far belong to the previous language
-    commitInterimEarly();
     speechLocaleRef.current = next;
     setSpeechLocale(next);
     setErrorKey(null);
     if (wantListeningRef.current) {
-      // Ending the session makes the auto-restart pick up the new language
+      // Ending the session commits its last phrase in the old language, then the auto-restart
+      // picks up the new one
       lastResultAtRef.current = Date.now();
       try { speechModuleRef.current?.stop(); } catch {}
     } else if (hadLanguageError && !showTextInput) {
@@ -406,8 +397,11 @@ export const RecordModal = ({ visible, onClose, onAdd, vocabulary }: RecordModal
   const handleRemoveItem = (item: ParsedItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     // Recorded as a step in the transcript, so saying the item again later re-adds it
-    commitInterimEarly();
-    setSegments((prev) => [...prev, { kind: 'remove', name: item.name }]);
+    const removal: VoiceCommand = { type: 'remove', name: item.name };
+    const isMidPhrase = !!interimTextRef.current;
+    setTranscript(({ committed, pending }) =>
+      isMidPhrase ? { committed, pending: [...pending, removal] } : { committed: [...committed, removal], pending }
+    );
   };
 
   const handleAdd = () => {

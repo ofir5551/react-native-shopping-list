@@ -139,9 +139,10 @@ export const ShoppingListScreen = ({
 
   // Record modal state
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  // The user's own items across all lists — not `suggestions`, which mixes in the popular catalog
   const recordVocabulary = useMemo(
-    () => [...activeItems, ...completedItems].map((item) => item.name).concat(suggestions),
-    [activeItems, completedItems, suggestions]
+    () => allLists.flatMap((list) => [...list.items.map((item) => item.name), ...list.recents]),
+    [allLists]
   );
 
   // Photo modal state
