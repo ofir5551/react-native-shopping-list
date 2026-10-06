@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -139,6 +139,10 @@ export const ShoppingListScreen = ({
 
   // Record modal state
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const recordVocabulary = useMemo(
+    () => [...activeItems, ...completedItems].map((item) => item.name).concat(suggestions),
+    [activeItems, completedItems, suggestions]
+  );
 
   // Photo modal state
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
@@ -678,6 +682,7 @@ export const ShoppingListScreen = ({
       {/* Record modal */}
       <RecordModal
         visible={isRecordModalOpen}
+        vocabulary={recordVocabulary}
         onClose={() => setIsRecordModalOpen(false)}
         onAdd={(items) => {
           handleQuickAddMultiple(items);

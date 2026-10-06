@@ -1,4 +1,4 @@
-import { parseTranscript } from './itemParser';
+import { applyCommands, matchKey, parseCommands, parseTranscript } from './itemParser';
 
 describe('parseTranscript', () => {
   it('returns empty array for empty input', () => {
@@ -166,5 +166,216 @@ describe('parseTranscript', () => {
       { name: 'popcorn', quantity: 5 },
       { name: 'paper', quantity: 6 },
     ]);
+  });
+});
+
+describe('parseTranscript — English fluency', () => {
+  it('strips stacked fillers and hesitations', () => {
+    expect(parseTranscript('okay so um I need some milk')).toEqual([{ name: 'milk', quantity: 1 }]);
+    expect(parseTranscript("let's get the eggs please")).toEqual([{ name: 'eggs', quantity: 1 }]);
+    expect(parseTranscript('add milk to the list')).toEqual([{ name: 'milk', quantity: 1 }]);
+  });
+
+  it('parses "2x" and "times" quantities', () => {
+    expect(parseTranscript('2x milk')).toEqual([{ name: 'milk', quantity: 2 }]);
+    expect(parseTranscript('eggs times 3')).toEqual([{ name: 'eggs', quantity: 3 }]);
+  });
+
+  it('parses extended quantity words', () => {
+    expect(parseTranscript('half a dozen eggs')).toEqual([{ name: 'eggs', quantity: 6 }]);
+    expect(parseTranscript('fifteen eggs')).toEqual([{ name: 'eggs', quantity: 15 }]);
+    expect(parseTranscript('a couple of bananas')).toEqual([{ name: 'bananas', quantity: 2 }]);
+  });
+
+  it('strips count containers', () => {
+    expect(parseTranscript('2 bottles of water')).toEqual([{ name: 'water', quantity: 2 }]);
+    expect(parseTranscript('a bag of chips')).toEqual([{ name: 'chips', quantity: 1 }]);
+  });
+
+  it('keeps measure units in the name', () => {
+    expect(parseTranscript('500 grams of cheese')).toEqual([{ name: '500 grams of cheese', quantity: 1 }]);
+    expect(parseTranscript('two kilos of tomatoes')).toEqual([{ name: '2 kilos of tomatoes', quantity: 1 }]);
+  });
+
+  it('dedupes singular and plural forms', () => {
+    expect(parseTranscript('apple and 3 apples')).toEqual([{ name: 'apples', quantity: 3 }]);
+  });
+
+  it('splits run-on items using the vocabulary', () => {
+    const vocabulary = ['Milk', 'Eggs', 'Bread', 'Peanut Butter', 'Butter', 'Jelly'];
+    expect(parseTranscript('milk eggs bread', 'en', vocabulary)).toEqual([
+      { name: 'milk', quantity: 1 },
+      { name: 'eggs', quantity: 1 },
+      { name: 'bread', quantity: 1 },
+    ]);
+    expect(parseTranscript('peanut butter jelly', 'en', vocabulary)).toEqual([
+      { name: 'peanut butter', quantity: 1 },
+      { name: 'jelly', quantity: 1 },
+    ]);
+    expect(parseTranscript('2 milk eggs', 'en', vocabulary)).toEqual([
+      { name: 'milk', quantity: 2 },
+      { name: 'eggs', quantity: 1 },
+    ]);
+  });
+
+  it('keeps unknown multi-word items whole', () => {
+    expect(parseTranscript('chocolate milk', 'en', ['Milk'])).toEqual([{ name: 'chocolate milk', quantity: 1 }]);
+  });
+});
+
+describe('parseTranscript — English voice commands', () => {
+  it('removes an item by name', () => {
+    expect(parseTranscript('milk, eggs, bread, remove the eggs')).toEqual([
+      { name: 'milk', quantity: 1 },
+      { name: 'bread', quantity: 1 },
+    ]);
+  });
+
+  it('removes with plural tolerance and quantity', () => {
+    expect(parseTranscript('3 apples and milk, delete 2 apple')).toEqual([{ name: 'milk', quantity: 1 }]);
+  });
+
+  it('re-adds an item said again after removal', () => {
+    expect(parseTranscript('milk, remove milk, milk')).toEqual([{ name: 'milk', quantity: 1 }]);
+  });
+
+  it('ignores removal of an item that was never said', () => {
+    expect(parseTranscript('milk, remove cheese')).toEqual([{ name: 'milk', quantity: 1 }]);
+  });
+
+  it('does not treat "don\'t forget" as a removal', () => {
+    expect(parseTranscript("don't forget milk")).toEqual([{ name: 'milk', quantity: 1 }]);
+  });
+
+  it('handles "we don\'t need" as a removal', () => {
+    expect(parseTranscript("milk and eggs, we don't need eggs")).toEqual([{ name: 'milk', quantity: 1 }]);
+  });
+
+  it('undoes the last item with "scratch that" / "never mind"', () => {
+    expect(parseTranscript('milk, eggs, scratch that')).toEqual([{ name: 'milk', quantity: 1 }]);
+    expect(parseTranscript('milk, eggs never mind bread')).toEqual([
+      { name: 'milk', quantity: 1 },
+      { name: 'bread', quantity: 1 },
+    ]);
+    expect(parseTranscript('2 milk scratch that 3 milk')).toEqual([{ name: 'milk', quantity: 3 }]);
+  });
+
+  it('clears everything', () => {
+    expect(parseTranscript('milk, eggs, start over, bread')).toEqual([{ name: 'bread', quantity: 1 }]);
+    expect(parseTranscript('milk delete everything')).toEqual([]);
+  });
+});
+
+describe('parseTranscript — Hebrew', () => {
+  it('splits on the ו prefix', () => {
+    expect(parseTranscript('חלב וביצים ולחם', 'he')).toEqual([
+      { name: 'חלב', quantity: 1 },
+      { name: 'ביצים', quantity: 1 },
+      { name: 'לחם', quantity: 1 },
+    ]);
+  });
+
+  it('keeps words that naturally start with ו', () => {
+    expect(parseTranscript('גלידה וניל', 'he')).toEqual([{ name: 'גלידה וניל', quantity: 1 }]);
+    expect(parseTranscript('וופלים', 'he')).toEqual([{ name: 'וופלים', quantity: 1 }]);
+  });
+
+  it('splits on Hebrew separators', () => {
+    expect(parseTranscript('חלב גם ביצים ואז לחם', 'he')).toEqual([
+      { name: 'חלב', quantity: 1 },
+      { name: 'ביצים', quantity: 1 },
+      { name: 'לחם', quantity: 1 },
+    ]);
+  });
+
+  it('parses gendered number words', () => {
+    expect(parseTranscript('שתי ביצים', 'he')).toEqual([{ name: 'ביצים', quantity: 2 }]);
+    expect(parseTranscript('שלושה מלפפונים', 'he')).toEqual([{ name: 'מלפפונים', quantity: 3 }]);
+    expect(parseTranscript('שתים עשרה ביצים', 'he')).toEqual([{ name: 'ביצים', quantity: 12 }]);
+    expect(parseTranscript('תריסר ביצים', 'he')).toEqual([{ name: 'ביצים', quantity: 12 }]);
+  });
+
+  it('parses the post-nominal "one"', () => {
+    expect(parseTranscript('לחם אחד', 'he')).toEqual([{ name: 'לחם', quantity: 1 }]);
+  });
+
+  it('splits on number boundaries', () => {
+    expect(parseTranscript('חלב שלוש ביצים 2 לחם', 'he')).toEqual([
+      { name: 'חלב', quantity: 1 },
+      { name: 'ביצים', quantity: 3 },
+      { name: 'לחם', quantity: 2 },
+    ]);
+    expect(parseTranscript('חלב ושתי ביצים', 'he')).toEqual([
+      { name: 'חלב', quantity: 1 },
+      { name: 'ביצים', quantity: 2 },
+    ]);
+  });
+
+  it('strips Hebrew fillers and the object marker', () => {
+    expect(parseTranscript('אני צריך חלב', 'he')).toEqual([{ name: 'חלב', quantity: 1 }]);
+    expect(parseTranscript('תקנה את החלב בבקשה', 'he')).toEqual([{ name: 'חלב', quantity: 1 }]);
+    expect(parseTranscript('יאללה נגמר לנו לחם', 'he')).toEqual([{ name: 'לחם', quantity: 1 }]);
+  });
+
+  it('strips containers', () => {
+    expect(parseTranscript('2 בקבוקי מים', 'he')).toEqual([{ name: 'מים', quantity: 2 }]);
+    expect(parseTranscript('שתי חבילות של פסטה', 'he')).toEqual([{ name: 'פסטה', quantity: 2 }]);
+  });
+
+  it('keeps measure units in the name', () => {
+    expect(parseTranscript('2 קילו עגבניות', 'he')).toEqual([{ name: '2 קילו עגבניות', quantity: 1 }]);
+  });
+
+  it('removes items by voice', () => {
+    expect(parseTranscript('חלב, ביצים, תמחק את החלב', 'he')).toEqual([{ name: 'ביצים', quantity: 1 }]);
+    expect(parseTranscript('חלב וביצים בלי ביצים', 'he')).toEqual([{ name: 'חלב', quantity: 1 }]);
+    expect(parseTranscript('חלב, ביצים, אני לא צריך ביצים', 'he')).toEqual([{ name: 'חלב', quantity: 1 }]);
+  });
+
+  it('undoes and clears', () => {
+    expect(parseTranscript('חלב, ביצים, בטל', 'he')).toEqual([{ name: 'חלב', quantity: 1 }]);
+    expect(parseTranscript('חלב, ביצים, תמחק את זה', 'he')).toEqual([{ name: 'חלב', quantity: 1 }]);
+    expect(parseTranscript('חלב, ביצים, לא משנה', 'he')).toEqual([{ name: 'חלב', quantity: 1 }]);
+    expect(parseTranscript('חלב, ביצים, תמחק הכל, לחם', 'he')).toEqual([{ name: 'לחם', quantity: 1 }]);
+  });
+
+  it('splits run-on items using the vocabulary', () => {
+    expect(parseTranscript('חלב ביצים לחם', 'he', ['חלב', 'ביצים', 'לחם'])).toEqual([
+      { name: 'חלב', quantity: 1 },
+      { name: 'ביצים', quantity: 1 },
+      { name: 'לחם', quantity: 1 },
+    ]);
+  });
+});
+
+describe('applyCommands', () => {
+  it('applies commands across separately parsed segments', () => {
+    const commands = [
+      ...parseCommands('2 milk and eggs', 'en'),
+      { type: 'remove' as const, name: 'milk' },
+      ...parseCommands('bread', 'en'),
+    ];
+    expect(applyCommands(commands)).toEqual([
+      { name: 'eggs', quantity: 1 },
+      { name: 'bread', quantity: 1 },
+    ]);
+  });
+
+  it('undo removes the most recently touched item', () => {
+    const commands = [...parseCommands('milk, eggs, 3 milk', 'en'), { type: 'undo' as const }];
+    expect(applyCommands(commands)).toEqual([{ name: 'eggs', quantity: 1 }]);
+  });
+});
+
+describe('matchKey', () => {
+  it('normalizes articles, case and plurals', () => {
+    expect(matchKey('The Apples')).toBe('apple');
+    expect(matchKey('tomatoes')).toBe(matchKey('tomato'));
+    expect(matchKey('berries')).toBe(matchKey('berry'));
+    expect(matchKey('glass')).toBe('glass');
+  });
+
+  it('treats the Hebrew definite article as optional', () => {
+    expect(matchKey('החלב')).toBe(matchKey('חלב'));
   });
 });
