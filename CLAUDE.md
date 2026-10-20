@@ -2,41 +2,6 @@
 
 Expo + React Native + TypeScript shopping list app with Supabase cloud sync and real-time sharing.
 
-## Commands
-
-- `npm start` — start Expo dev server (all platforms)
-- `npm run web` — start web only (fastest for testing)
-- `npm run android` / `npm run ios` — start on device/emulator
-- `npm test` — run Jest test suite (**always run after implementing a feature**)
-
-## Tech Stack
-
-- **Expo SDK 54**, React Native 0.81, React 19, TypeScript
-- **Supabase** — auth, Postgres DB, realtime subscriptions
-- **AsyncStorage** — primary data store for all users (offline-first)
-
-## Architecture
-
-```
-App.tsx
-  AuthProvider        → AuthContext (Supabase session)
-    SyncProvider      → SyncContext (always LocalStorage + SyncEngine for auth users)
-      ThemeProvider
-        ToastProvider
-          HomeScreen  → useShoppingListsApp() — all state/logic
-```
-
-Key directories:
-- `src/screens/` — HomeScreen (router), ListsScreen, ShoppingListScreen, SettingsScreen
-- `src/components/` — ItemRow, Header, Fab, modals, etc.
-- `src/context/` — AuthContext, SyncContext, ThemeContext, ToastContext
-- `src/hooks/useShoppingListsApp.ts` — single hook that owns all app state
-- `src/storage.ts` — LocalStorageProvider + StorageProvider interface
-- `src/sync/SyncEngine.ts` — background sync orchestrator (merge, dirty queue, retry backoff)
-- `src/sync/SupabaseApiClient.ts` — thin Supabase API wrapper
-- `src/types.ts` — ShoppingItem, ShoppingList, AppRoute
-- `supabase/` — config, migrations, edge functions
-
 ## Offline-First Architecture
 
 AsyncStorage is the **primary data store for all users**. Supabase is a background sync target, never the source of truth at read time.
@@ -84,9 +49,23 @@ Online-only operations (throw if offline — caught by existing try/catch in hoo
 - `I18nManager.forceRTL()` auto-flips: flexDirection rows, marginLeft/Right, paddingLeft/Right, absolute left/right positions — no manual overrides needed
 - Popular items catalog is locale-keyed: `POPULAR_ITEMS[locale]` in `src/data/popularItems.ts`
 
+## Environments (dev / prod)
+
+Two Supabase projects: **dev** `Shoppy-DEV` (`uotuyizxamgwihguofoo`) and **prod** `Shoppy` (`rdyxzhuctlyzhyamqyml`).
+
+- Local `.env` → dev (`expo start`, web, Playwright). EAS `preview`/`production` env vars → prod. `.easignore` keeps `.env*` out of cloud builds.
+- `npm run build:android` builds locally and bakes in `.env` (dev) — use EAS builds for anything sent to users.
+- Supabase CLI link: `npm run supabase:which` (prints `dev` or `PROD`), `npm run supabase:dev`, `npm run supabase:prod`. **Leave it linked to dev.** Relink to dev right after any prod operation.
+- Before any `db push`, `functions deploy`, or `config push`: run `supabase:which` and pass `--project-ref` explicitly on deploys. **Prod writes need the user's explicit go-ahead each time**; dev is free to change.
+- The Supabase MCP tools are bound to **prod** — read-only checks only. For dev SQL use `npx supabase db query --linked`.
+- Schema changes: new file in `supabase/migrations/`, apply to dev, test, then prod. Never edit an applied migration except to keep it replayable on a fresh DB.
+- Dev auth/config is pushed with a minimal throwaway `config.toml` (`supabase config push --project-ref`); never push the repo's full `config.toml` — it describes local dev, not a hosted project.
+- Edge functions `parse-photo`/`suggest-items` authenticate in code (deployed with `verify_jwt: false`); `delete-account` relies on `verify_jwt: true`.
+- Gemini is the only AI provider. Dev and prod deliberately share one Gemini key/billing for now (preview scale); dev has no `GEMINI_API_KEY` secret unless set manually.
+- AI limits live in `check_and_increment_ai_usage` (20/user/day, 1000/day global, guests 0) and in `parse-photo` (image ≤ ~9 MB).
+
 ## Testing
 
-- All tests must pass before committing
-- Test files co-located with source: `src/**/*.test.ts` / `*.test.tsx`
+- Run `npm test` after implementing a feature; all tests must pass before committing
 - AsyncStorage mocked globally in `jest.setup.js`; Supabase and expo modules mocked per-test
 - If you add or change business logic (sync, storage, validation), add or update tests
