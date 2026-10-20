@@ -8,9 +8,7 @@
     "icon": "./assets/adaptive-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/952fe7b5-aac0-4e6b-be36-2b4e3c4011e3"
     },
