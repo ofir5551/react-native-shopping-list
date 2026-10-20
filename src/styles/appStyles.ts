@@ -686,6 +686,7 @@ export const useAppStyles = () => {
       },
       overlaySearchInput: {
         flex: 1,
+        minWidth: 0,
         fontSize: 16,
         fontFamily: theme.fonts.regular,
         color: theme.colors.text,
