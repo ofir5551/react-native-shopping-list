@@ -57,7 +57,9 @@ export async function generateItems(opts: {
   )
 
   if (!response.ok) {
-    throw new Error(`Gemini API Error: ${await response.text()}`)
+    // The upstream body stays in the server logs; callers only see the status.
+    console.error('Gemini API error:', response.status, await response.text())
+    throw new Error(`Gemini API error (${response.status})`)
   }
 
   const data = await response.json()

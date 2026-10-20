@@ -2,6 +2,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 import { DEFAULT_MODEL, PHOTO_SYSTEM_PROMPT, generateItems } from "../_shared/gemini.ts"
 
+// ~9 MB of JPEG once base64-decoded; a normal phone photo is well under this.
+const MAX_IMAGE_BASE64_CHARS = 12_000_000
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -62,8 +65,18 @@ Deno.serve(async (req: Request) => {
   try {
     const { imageBase64 } = await req.json()
 
-    if (!imageBase64) {
-      throw new Error("imageBase64 is required")
+    if (typeof imageBase64 !== 'string' || !imageBase64) {
+      return new Response(JSON.stringify({ error: 'imageBase64 is required' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      })
+    }
+
+    if (imageBase64.length > MAX_IMAGE_BASE64_CHARS) {
+      return new Response(JSON.stringify({ error: 'Image too large' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 413,
+      })
     }
 
     const apiKey = Deno.env.get('GEMINI_API_KEY')
@@ -88,7 +101,7 @@ Deno.serve(async (req: Request) => {
     })
   } catch (error: any) {
     console.error(error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'AI request failed' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })
