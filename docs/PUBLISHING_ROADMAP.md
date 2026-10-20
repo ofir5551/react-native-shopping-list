@@ -7,7 +7,7 @@ Status legend: `[ ]` todo, `[~]` partly done, `[x]` done. Items marked **(verify
 - [x] Expo SDK 54 packages bumped to the expected patch versions (`expo` 54.0.37, `expo-updates` 29.0.20, `expo-font` 14.0.12, `jest-expo` 54.0.18); `expo install --check` is clean and tests pass. Not yet run on a device or in a production build.
 - [x] Account deletion backend and UI built, deployed and tested (details in section 1).
 - [x] Separate dev and prod Supabase projects (`Shoppy-DEV` and `Shoppy`), with a one-command CLI link toggle. See `CLAUDE.md`, "Environments (dev / prod)".
-- [x] EAS build config: remote versioning with auto-increment, `runtimeVersion` (appVersion policy), `preview`/`production` channels, Supabase env vars set in EAS for both profiles, `.env*` excluded from cloud uploads via `.easignore`.
+- [x] EAS build config: remote versioning with auto-increment, `runtimeVersion` (`"1.0.0"`), `preview`/`production` channels, Supabase env vars set in EAS for both profiles, `.env*` excluded from cloud uploads via `.easignore`.
 - [x] Security hardening migration (anon `EXECUTE` revoked on `SECURITY DEFINER` functions, `search_path` pinned) and global AI cap migration, tested on dev and applied to prod.
 - [x] `tsc --noEmit` is clean and all 245 tests pass (2026-10-21).
 
@@ -56,7 +56,8 @@ Known open item: `npm audit --omit=dev` reports 42 vulnerabilities (1 critical, 
 
 - [ ] `icon` points at `adaptive-icon.png`. Use a dedicated full-bleed 1024x1024 icon, and verify the adaptive icon foreground sits within the safe zone. The adaptive icon background is plain white, which may not match the brand.
 - [ ] `userInterfaceStyle` is `"light"` although the app has dark themes. Set `"automatic"` so system UI (keyboard, dialogs) matches. Check this against `ThemeScreen`.
-- [x] `runtimeVersion` (`{ "policy": "appVersion" }`) added to `app.json`, and `channel` (`preview`, `production`) added to the `eas.json` build profiles. Bump `version` in `app.json` whenever native code changes, so OTA updates only reach compatible binaries.
+- [x] `runtimeVersion` is the plain string `"1.0.0"` in `app.json`, and `channel` (`preview`, `production`) was added to the `eas.json` build profiles. It must be a string, not a policy: a local, gitignored `android/` folder exists and `.easignore` (which replaces `.gitignore` for EAS uploads) lets it upload, so EAS treats the project as bare workflow. Keep it equal to `expo_runtime_version` in `android/app/src/main/res/values/strings.xml`, and bump both whenever native code changes so OTA updates only reach compatible binaries.
+- [ ] Decide whether EAS should build from a fresh `expo prebuild` (add `/android` to `.easignore`) instead of the stale local `android/` folder. That makes builds reproducible from a clean checkout, but changes the native build path, so test the resulting APK first.
 - [ ] Declare Android permissions deliberately. `expo-speech-recognition` and `expo-image-picker` add microphone and camera permissions. Check the merged manifest and add clear permission strings in plugin config. Remove any permission the app does not actually use. **(verify)**
 - [ ] Add `eas submit` config (service account key) to automate uploads, or plan to upload the `.aab` manually.
 - [ ] Confirm `edgeToEdgeEnabled` layouts look right on Android 15 (status/navigation bars) in all themes and in RTL.
