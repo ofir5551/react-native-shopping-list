@@ -29,6 +29,7 @@ Known open item: `npm audit --omit=dev` reports 42 vulnerabilities (1 critical, 
 
 ## 2. Cost and abuse protection (AI features)
 
+- [ ] Decision (2026-10-21): dev and prod share one Gemini key and billing while this is a small preview. Revisit before a public launch: give dev its own Google Cloud project and key, and note that Google Cloud budgets only alert; the real ceilings are the 1000/day in-code cap and an optional per-key quota.
 - [ ] Enable billing on the Gemini API key (the free tier throttles with 429s and lets Google train on user content), and set a hard monthly spending limit in Google Cloud billing.
 - [x] Guests get no AI (`20261003212720_disable_guest_ai.sql`). Anonymous sessions are free to create, so a per-user guest allowance was unlimited in practice.
 - [x] **Global daily AI cap.** `check_and_increment_ai_usage` now also counts calls in `ai_usage_global` and refuses above 1000/day (constant `c_global_limit`, change it with a new migration). A denied call rolls back both counters. Migration `20261021130000_add_global_ai_cap.sql`, live on prod. Boundary behavior was tested in SQL on dev; there is no automated test for it.
