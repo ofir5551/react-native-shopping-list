@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS list_shares (
 ALTER TABLE list_shares ENABLE ROW LEVEL SECURITY;
 
 -- A user can see shares for lists they own, or shares involving themselves
+DROP POLICY IF EXISTS "Users can view relevant shares" ON list_shares;
 CREATE POLICY "Users can view relevant shares"
 ON list_shares FOR SELECT
 USING (
@@ -19,11 +20,13 @@ USING (
 );
 
 -- A user can insert a share for themselves (joining a list)
+DROP POLICY IF EXISTS "Users can insert their own share to join a list" ON list_shares;
 CREATE POLICY "Users can insert their own share to join a list"
 ON list_shares FOR INSERT
 WITH CHECK (auth.uid() = user_id);
 
 -- A user can delete their own share (leave a list) or the owner can remove a share
+DROP POLICY IF EXISTS "Users can delete relevant shares" ON list_shares;
 CREATE POLICY "Users can delete relevant shares"
 ON list_shares FOR DELETE
 USING (

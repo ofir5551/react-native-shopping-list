@@ -32,6 +32,7 @@ export type ShoppingListsAppState = {
   setOverlayInput: (value: string) => void;
   suggestions: string[];
   selectedRecent: SelectedRecentItem[];
+  hasOverlayChanges: boolean;
   handleOverlayAdd: () => void;
   handleAddSelected: () => void;
   handleToggleRecent: (name: string) => void;
@@ -102,7 +103,7 @@ export const useShoppingListsApp = (): ShoppingListsAppState => {
   const [overlayInput, setOverlayInput] = useState('');
   const [selectedRecent, setSelectedRecent] = useState<SelectedRecentItem[]>([]);
   const preExistingNamesRef = useRef<Set<string>>(new Set());
-  const preExistingQuantitiesRef = useRef<Map<string, string | undefined>>(new Map());
+  const preExistingQuantitiesRef = useRef<Map<string, number>>(new Map());
   const [isListNameModalOpen, setIsListNameModalOpen] = useState(false);
   const [listNameMode, setListNameMode] = useState<ListNameModalMode>('create');
   const [editingListId, setEditingListId] = useState<string | null>(null);

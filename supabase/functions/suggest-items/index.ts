@@ -88,7 +88,7 @@ Deno.serve(async (req: Request) => {
     })
   } catch (error: any) {
     console.error(error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'AI request failed' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })

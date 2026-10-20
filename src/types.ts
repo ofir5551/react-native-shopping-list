@@ -14,7 +14,7 @@ export type ShoppingList = {
   updatedAt: number;
   items: ShoppingItem[];
   recents: string[];
-  dismissedSuggestions: string[];
+  dismissedSuggestions?: string[];
   ownerId?: string;
   shareCode?: string;
   isArchived?: boolean;

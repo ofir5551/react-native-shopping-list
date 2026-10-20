@@ -8,6 +8,9 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
+    "supabase:dev": "npx supabase link --project-ref uotuyizxamgwihguofoo",
+    "supabase:prod": "npx supabase link --project-ref rdyxzhuctlyzhyamqyml",
+    "supabase:which": "node -p \"({uotuyizxamgwihguofoo:'dev',rdyxzhuctlyzhyamqyml:'PROD'})[require('fs').readFileSync('supabase/.temp/project-ref','utf8').trim()]\"",
     "build:android:prebuild": "expo prebuild --platform android --no-install",
     "build:android": "npm run build:android:prebuild && cd android && ./gradlew assembleRelease"
   },
