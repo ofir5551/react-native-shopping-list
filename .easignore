@@ -1,5 +1,7 @@
 .agents/
 .claude/
+.env
+.env.*
 node_modules/
 builds/
 android/.gradle/
